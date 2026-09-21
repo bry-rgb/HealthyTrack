@@ -3,40 +3,36 @@ let metaAgua = 2.5;
 let falta = metaAgua - agua;
 let mensagemMeta = document.getElementById("mensagemMeta");
 let mensagemFalta = document.getElementById("mensagemFalta");
-
-if (agua >= metaAgua) {
-    mensagemMeta.textContent = "Meta Atingida 🎉";
-} else {
-    mensagemFalta.textContent = `Ainda faltam ${falta} L`;
-}
-
+let quantidadeAgua = document.getElementById("agua");
 let registrosAgua = JSON.parse(localStorage.getItem("registrosAgua")) || [];
 let total = 0;
 for (let i = 0; i < registrosAgua.length; i++) {
 total += registrosAgua[i].quantidade;
 }
 agua = total;
-
-console.log(total);
-
-let quantidadeAgua = document.getElementById("agua");
-quantidadeAgua.textContent = `${agua} L`;
+atualizarTela();
 
 let botao = document.getElementById("botaoAgua");
 let textoAgua = document.getElementById("agua");
 let listaAgua = document.getElementById("listaAgua");
 
+function atualizarTela(){
+    quantidadeAgua.textContent = `${agua} L`;
+    falta = metaAgua - agua;
+    
+    if (agua >= metaAgua) {
+        mensagemMeta.textContent = "Meta Atingida 🎉";
+        mensagemFalta.textContent =" ";
+    } 
+        else {
+        mensagemFalta.textContent = `Ainda faltam ${falta} L`;
+    }
+
+}
+
 function adicionarAgua(quantidade) {
     agua = agua + quantidade;
-    falta = metaAgua - agua;
-
-    if (agua >= metaAgua) {
-    mensagemMeta.textContent = "Meta Atingida 🎉";
-    mensagemFalta.textContent = " ";
-}
-        else{
-    mensagemFalta.textContent = `Quase lá! Faltam: ${falta} L`;
-}
+    atualizarTela();
 
     let registro = {
         quantidade: quantidade,
@@ -46,11 +42,6 @@ function adicionarAgua(quantidade) {
     localStorage.setItem("registrosAgua", JSON.stringify(registrosAgua));
     textoAgua.textContent = agua + " L";
     mostrarHistorico();
-    console.log(registrosAgua);
-    
-    for (let i = 0; i < registrosAgua.length; i++) {
-    console.log(registrosAgua[i].quantidade);
-}
 }
 
 botao.addEventListener("click", function() {
