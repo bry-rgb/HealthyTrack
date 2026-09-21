@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthyTrack</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Healthy Track</h1>
+    <p>Seu monitor de saúde</p>
+    <p>Tente ser cada mais saudável</p>
+    <div class="card">
+        <h2>💧 Agua</h2>
+        <p>você bebeu:</p>
+        <strong id="agua">0 L</strong>
+        <button id="botaoAgua"> ➕ Registrar água</button>
+    </div>
+
+    <div class="historico">
+        <h2>💾 Histórico de água</h2>
+        <div id="listaAgua"></div>
+    </div>
+
+    <button onclick="limparHistorico()">🗑️ Apagar Histórico</button>
+
+    <p id="mensagemMeta"></p>
+    <p id="mensagemFalta"></p>
+
+    <script src="script.js"></script>
+</body>
+</html>
