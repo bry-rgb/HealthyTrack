@@ -1,13 +1,25 @@
 let agua = 0;
 let metaAgua = 2.5;
+let metaSalva = Number(localStorage.getItem("metaAgua"));
+    if (metaSalva) {
+        metaAgua = metaSalva;
+    }
 let falta = metaAgua - agua;
+let selecionarMeta = document.getElementById("meta");
+selecionarMeta.value = metaAgua;
+
+let botaoMeta = document.getElementById("salvarMeta");
+    botaoMeta.addEventListener("click", function () {
+        metaAgua = Number(selecionarMeta.value);
+        localStorage.setItem("metaAgua", metaAgua);
+});
 let mensagemMeta = document.getElementById("mensagemMeta");
 let mensagemFalta = document.getElementById("mensagemFalta");
 let quantidadeAgua = document.getElementById("agua");
 let registrosAgua = JSON.parse(localStorage.getItem("registrosAgua")) || [];
 let total = 0;
 for (let i = 0; i < registrosAgua.length; i++) {
-total += registrosAgua[i].quantidade;
+    total += registrosAgua[i].quantidade;
 }
 agua = total;
 atualizarTela();
