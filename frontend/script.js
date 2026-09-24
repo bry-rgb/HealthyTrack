@@ -81,4 +81,25 @@ function limparHistorico() {
     mostrarHistorico();
     }
 }
+fetch("http://localhost:3000/api/registros-agua")
+    .then(function (resposta) {
+        return resposta.json();
+    })
+    .then(function (dados) {
+        for (let i = 0; i < dados.length; i++) {
+            console.log(dados[i]);
+            console.log(dados[i].quantidade);
+            listaAgua.innerHTML += dados[i].quantidade + "L - " + dados[i].horario + "<br>";
+        }
+    })
 
+fetch("http://localhost:3000/api/registros-agua", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        quantidade: 0.5,
+        horario: "12:30"    
+    })
+})
