@@ -1,5 +1,23 @@
 const express = require("express");
 const cors = require("cors");
+const { Pool } = require("pg");
+const pool = new Pool({
+    host: "localhost",
+    port: 5432,
+    user: "healthytrack",
+    password: "healthytrack111111",
+    database: "healthytrack"
+});
+
+pool.query("SELECT NOW()", function (erro, resultado) {
+    if (erro) {
+        console.error( "Erro ao conectar ao banco de dados:", erro);
+        return;
+    }
+    console.log("Connectado ao Postgres com sucesso! Hora atual:", resultado.rows[0].now);
+});
+
+
 const app = express();
 app.use(express.json());
 app.use(cors({
