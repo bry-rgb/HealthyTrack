@@ -21,8 +21,9 @@ app.get("/api/registros-agua", function (req, res) {
     res.json(registroAgua)
 });
 
-app.post("/api/registros-agua", function (req, res) {console.log(req.body);
-
+app.post("/api/registros-agua", function (req, res) {
+    registroAgua.push(req.body);
+    
     res.json({
         mensagem: "Registro de água recebido com sucesso!"
     });
