@@ -24,26 +24,29 @@ app.use(cors({
     origin: "http://localhost:5500"
 }));
 const PORT = 3000;
-const registroAgua = [
-    {
-        quantidade: 0.5,
-        horario: "9:30"
-    },
-    {
-        quantidade: 0.5,
-        horario: "11:00"
-    }
-];
+
 
 app.get("/api/registros-agua", function (req, res) {
-    res.json(registroAgua)
+    pool.query("SELECT * FROM registro_agua", function (erro, resultado) {
+        if (erro) {
+            console.error("Erro ao buscar registros de água:", erro);
+            res.status(500).json({ mensagem: "Erro ao buscar registros de água" });
+            return;
+        }
+        res.json(resultado.rows);
+    });
 });
 
 app.post("/api/registros-agua", function (req, res) {
-    registroAgua.push(req.body);
-    
-    res.json({
-        mensagem: "Registro de água recebido com sucesso!"
+    pool.query("INSERT INTO registro_agua (quantidade, horario) VALUES ($1, $2)", [req.body.quantidade, req.body.horario], function (erro, resultado) {
+        if (erro) {
+            console.error("Erro ao inserir registro de água:", erro);
+            res.status(500).json({ mensagem: "Erro ao inserir registro de água" });
+            return;
+        }
+        res.json({
+            mensagem: "Registro de água recebido com sucesso!"
+        });
     });
 });
 
