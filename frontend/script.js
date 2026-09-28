@@ -50,26 +50,54 @@ function adicionarAgua(quantidade) {
         quantidade: quantidade,
         horario: new Date()
     };
-    registrosAgua.push(registro);
-    localStorage.setItem("registrosAgua", JSON.stringify(registrosAgua));
+    fetch("http://localhost:3000/api/registros-agua", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(registro)
+    })
+     .then(function (resposta) {
+        return resposta.json();
+    })
+    .then(function (dados) {
+        return fetch("http://localhost:3000/api/registros-agua");
+    })
+    .then(function (resposta) {
+        return resposta.json();
+    })
+    .then(function (dados) {
+        mostrarHistorico(dados);
+    });
+    
     textoAgua.textContent = agua + " L";
-    mostrarHistorico();
 }
 
 botao.addEventListener("click", function() {
     adicionarAgua(0.5);
 })
 
-function mostrarHistorico() {
+function mostrarHistorico(registros) {
     listaAgua.innerHTML = "";
-    for (let i = 0; i < registrosAgua.length; i++) {
-        let registro = registrosAgua[i];
+    for (let i = 0; i < registros.length; i++) {
+        let registro = registros[i];
         let item = document.createElement("p");
-        item.textContent = "💧 " + registro.quantidade + " L";
+        let data = new Date(registro.horario);
+        let hora = data.toLocaleTimeString("pt-PT",{
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+        item.textContent = "💧 " + registro.quantidade + " L - " + hora;
         listaAgua.appendChild(item);
     }
 }
-mostrarHistorico();
+fetch("http://localhost:3000/api/registros-agua")
+    .then(function (resposta) {
+        return resposta.json();
+    })
+    .then(function (dados) {
+        mostrarHistorico(dados);
+    });
 
 function limparHistorico() {
     let resposta = confirm ("Tem certeza que deseja limpar o histórico?")
@@ -93,13 +121,3 @@ fetch("http://localhost:3000/api/registros-agua")
         }
     })
 
-fetch("http://localhost:3000/api/registros-agua", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        quantidade: 0.5,
-        horario: "12:30"    
-    })
-})
