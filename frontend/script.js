@@ -16,13 +16,6 @@ let botaoMeta = document.getElementById("salvarMeta");
 let mensagemMeta = document.getElementById("mensagemMeta");
 let mensagemFalta = document.getElementById("mensagemFalta");
 let quantidadeAgua = document.getElementById("agua");
-let registrosAgua = JSON.parse(localStorage.getItem("registrosAgua")) || [];
-let total = 0;
-for (let i = 0; i < registrosAgua.length; i++) {
-    total += registrosAgua[i].quantidade;
-}
-agua = total;
-atualizarTela();
 
 let botao = document.getElementById("botaoAgua");
 let textoAgua = document.getElementById("agua");
@@ -96,28 +89,28 @@ fetch("http://localhost:3000/api/registros-agua")
         return resposta.json();
     })
     .then(function (dados) {
+        let total = 0;
+        for (let i = 0; i < dados.length; i++) {
+            total += dados[i].quantidade;
+        }
+        agua = total;
+        atualizarTela();
         mostrarHistorico(dados);
     });
 
 function limparHistorico() {
     let resposta = confirm ("Tem certeza que deseja limpar o histórico?")
     if (resposta) {
-    localStorage.removeItem("registrosAgua");
-    registrosAgua = [];
-    agua = 0;
-    quantidadeAgua.textContent = `${agua} L`;
-    mostrarHistorico();
+    fetch("http://localhost:3000/api/registros-agua", {
+        method: "DELETE"
+    })
+        .then(function (resposta) {
+            return resposta.json();
+        })
+        .then(function (dados) {
+            agua = 0;
+            atualizarTela();
+            mostrarHistorico([]);
+        });
     }
 }
-fetch("http://localhost:3000/api/registros-agua")
-    .then(function (resposta) {
-        return resposta.json();
-    })
-    .then(function (dados) {
-        for (let i = 0; i < dados.length; i++) {
-            console.log(dados[i]);
-            console.log(dados[i].quantidade);
-            listaAgua.innerHTML += dados[i].quantidade + "L - " + dados[i].horario + "<br>";
-        }
-    })
-

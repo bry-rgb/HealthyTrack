@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
@@ -5,7 +7,7 @@ const pool = new Pool({
     host: "localhost",
     port: 5432,
     user: "healthytrack",
-    password: "healthytrack111111",
+    password: process.env.DB_PASSWORD,
     database: "healthytrack"
 });
 
@@ -46,6 +48,20 @@ app.post("/api/registros-agua", function (req, res) {
         }
         res.json({
             mensagem: "Registro de água recebido com sucesso!"
+        });
+    });
+});
+
+app.delete("/api/registros-agua", function (req, res) {
+    pool.query("DELETE FROM registro_agua", function (erro, resultado) {
+        if (erro) {
+            console.error("Erro ao apagar registros de água:", erro);
+            res.status(500).json({ mensagem: "Erro ao apagar registros de água" });
+            return;
+        }
+
+        res.json({
+            mensagem: "Registros de água apagados com sucesso!"
         });
     });
 });
