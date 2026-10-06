@@ -40,6 +40,19 @@ app.get("/api/registros-agua", function (req, res) {
 });
 
 app.post("/api/registros-agua", function (req, res) {
+    if (
+    typeof req.body.quantidade !== "number" ||
+    req.body.quantidade <= 0 ||
+    req.body.quantidade > 0.5 ||
+    !req.body.horario ||
+    isNaN(Date.parse(req.body.horario))
+) {
+    res.status(400).json({
+        mensagem: "Dados inválidos"
+    });
+    return;
+}
+
     pool.query("INSERT INTO registro_agua (quantidade, horario) VALUES ($1, $2)", [req.body.quantidade, req.body.horario], function (erro, resultado) {
         if (erro) {
             console.error("Erro ao inserir registro de água:", erro);

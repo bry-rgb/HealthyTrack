@@ -63,7 +63,6 @@ function adicionarAgua(quantidade) {
         mostrarHistorico(dados);
     });
     
-    textoAgua.textContent = agua + " L";
 }
 
 botao.addEventListener("click", function() {
@@ -91,7 +90,7 @@ fetch("http://localhost:3000/api/registros-agua")
     .then(function (dados) {
         let total = 0;
         for (let i = 0; i < dados.length; i++) {
-            total += dados[i].quantidade;
+            total += Number(dados[i].quantidade);
         }
         agua = total;
         atualizarTela();
