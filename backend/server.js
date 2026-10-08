@@ -3,6 +3,11 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+const JWT_SECRET = process.env.JWT_SECRET;
+console.log("JWT_SECRET carregado:", !!JWT_SECRET);
 const pool = new Pool({
     host: "localhost",
     port: 5432,
@@ -13,63 +18,214 @@ const pool = new Pool({
 
 pool.query("SELECT NOW()", function (erro, resultado) {
     if (erro) {
-        console.error( "Erro ao conectar ao banco de dados:", erro);
+        console.error("Erro ao conectar ao banco de dados:", erro);
         return;
     }
-    console.log("Connectado ao Postgres com sucesso! Hora atual:", resultado.rows[0].now);
+
+    console.log(
+        "Conectado ao Postgres com sucesso! Hora atual:",
+        resultado.rows[0].now
+    );
 });
 
-
 const app = express();
+
 app.use(express.json());
+
 app.use(cors({
     origin: "http://localhost:5500"
 }));
+
 const PORT = 3000;
 
+// Função para verificar o token JWT
+function verificarToken(req, res, next) {
+const authHeader = req.headers.authorization;
 
-app.get("/api/registros-agua", function (req, res) {
+if (!authHeader) {
+    res.status(401).json({
+        mensagem: "Token não fornecido"
+    });
+    return;
+ }
+
+    const token = authHeader.split(" ")[1];
+
+    try {
+    const usuario = jwt.verify(token, JWT_SECRET);
+    
+    req.usuario = usuario;
+    
+    next();
+
+} catch (erro) {
+    res.status(401).json({
+    mensagem: "Token inválido ou expirado"
+});
+return;
+
+}
+}
+
+
+// GET - buscar registros de água
+app.get("/api/registros-agua", verificarToken, function (req, res) {
     pool.query("SELECT * FROM registro_agua", function (erro, resultado) {
         if (erro) {
             console.error("Erro ao buscar registros de água:", erro);
-            res.status(500).json({ mensagem: "Erro ao buscar registros de água" });
+            res.status(500).json({
+                mensagem: "Erro ao buscar registros de água"
+            });
             return;
         }
+
         res.json(resultado.rows);
     });
 });
 
+
+// POST - registrar água
 app.post("/api/registros-agua", function (req, res) {
+
     if (
-    typeof req.body.quantidade !== "number" ||
-    req.body.quantidade <= 0 ||
-    req.body.quantidade > 0.5 ||
-    !req.body.horario ||
-    isNaN(Date.parse(req.body.horario))
-) {
-    res.status(400).json({
-        mensagem: "Dados inválidos"
+        typeof req.body.quantidade !== "number" ||
+        req.body.quantidade <= 0 ||
+        req.body.quantidade > 0.5 ||
+        !req.body.horario ||
+        isNaN(Date.parse(req.body.horario))
+    ) {
+        res.status(400).json({
+            mensagem: "Dados inválidos"
+        });
+        return;
+    }
+
+    pool.query(
+        "INSERT INTO registro_agua (quantidade, horario) VALUES ($1, $2)",
+        [req.body.quantidade, req.body.horario],
+        function (erro, resultado) {
+
+            if (erro) {
+                console.error("Erro ao inserir registro de água:", erro);
+                res.status(500).json({
+                    mensagem: "Erro ao inserir registro de água"
+                });
+                return;
+            }
+
+            res.json({
+                mensagem: "Registro de água recebido com sucesso!"
+            });
+        }
+    );
+});
+
+
+// POST - criar usuário
+app.post("/api/usuarios", async function (req, res) {
+
+    const { nome, email, senha } = req.body;
+
+    if (!nome || !email || !senha) {
+        res.status(400).json({
+            mensagem: "Nome, email e senha são obrigatórios"
+        });
+        return;
+    }
+
+    try {
+
+        const hash = await bcrypt.hash(senha, 10);
+
+        const resultado = await pool.query(
+            "INSERT INTO usuarios (nome, email, senha) VALUES ($1, $2, $3)",
+            [nome, email, hash]
+        );
+
+        res.status(201).json({
+            mensagem: "Usuário criado com sucesso!"
+        });
+
+    } catch (erro) {
+
+        if (erro.code === "23505") {
+            res.status(409).json({
+                mensagem: "Este email já está cadastrado"
+            });
+            return;
+        }
+
+        console.error("Erro ao criar usuário:", erro);
+
+        res.status(500).json({
+            mensagem: "Erro ao criar usuário"
+        });
+    }
+});
+
+// POST - login de usuário
+    app.post("/api/login", async function (req, res) { 
+        console.log("ENTREI NA ROTA DE LOGIN");
+
+        const { email, senha } = req.body;
+
+        const resultado = await pool.query(
+    "SELECT * FROM usuarios WHERE email = $1",
+    [email]
+);
+        if (resultado.rows.length === 0) {
+    res.status(401).json({
+        mensagem: "Email ou senha incorretos"
     });
     return;
 }
 
-    pool.query("INSERT INTO registro_agua (quantidade, horario) VALUES ($1, $2)", [req.body.quantidade, req.body.horario], function (erro, resultado) {
-        if (erro) {
-            console.error("Erro ao inserir registro de água:", erro);
-            res.status(500).json({ mensagem: "Erro ao inserir registro de água" });
-            return;
-        }
-        res.json({
-            mensagem: "Registro de água recebido com sucesso!"
+    const usuario = resultado.rows[0];
+
+    const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
+    
+    if (!senhaCorreta) {
+        res.status(401).json({
+            mensagem: "Email ou senha incorretos"
         });
-    });
+        return;
+}
+
+    const token = jwt.sign(
+    {
+        id: usuario.id,
+        email: usuario.email
+    },
+    JWT_SECRET,
+    {
+        expiresIn: "1h"
+    }
+);
+    console.log("TOKEN GERADO:", token);
+
+    res.json({
+    mensagem: "Login realizado com sucesso!",
+    token: token,
+    usuario: {
+        id: usuario.id,
+        nome: usuario.nome,
+        email: usuario.email
+    }
 });
 
+});
+
+
+// DELETE - apagar registros de água
 app.delete("/api/registros-agua", function (req, res) {
+
     pool.query("DELETE FROM registro_agua", function (erro, resultado) {
+
         if (erro) {
             console.error("Erro ao apagar registros de água:", erro);
-            res.status(500).json({ mensagem: "Erro ao apagar registros de água" });
+            res.status(500).json({
+                mensagem: "Erro ao apagar registros de água"
+            });
             return;
         }
 
@@ -79,12 +235,15 @@ app.delete("/api/registros-agua", function (req, res) {
     });
 });
 
-app.get("/api", function (req, res){
+
+// Rota de teste da API
+app.get("/api", function (req, res) {
     res.json({
         mensagem: "HealthyTrack API está funcionando!"
     });
-})
+});
 
-app.listen(PORT, function() {
+
+app.listen(PORT, function () {
     console.log(`Servidor rodando na porta ${PORT}`);
-})
+});
