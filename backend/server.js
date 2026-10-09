@@ -70,7 +70,10 @@ return;
 
 // GET - buscar registros de água
 app.get("/api/registros-agua", verificarToken, function (req, res) {
-    pool.query("SELECT * FROM registro_agua", function (erro, resultado) {
+   pool.query(
+    "SELECT * FROM registro_agua WHERE usuario_id = $1",
+    [req.usuario.id],
+    function (erro, resultado) {
         if (erro) {
             console.error("Erro ao buscar registros de água:", erro);
             res.status(500).json({
@@ -85,7 +88,7 @@ app.get("/api/registros-agua", verificarToken, function (req, res) {
 
 
 // POST - registrar água
-app.post("/api/registros-agua", function (req, res) {
+app.post("/api/registros-agua", verificarToken, function (req, res) {
 
     if (
         typeof req.body.quantidade !== "number" ||
@@ -100,9 +103,9 @@ app.post("/api/registros-agua", function (req, res) {
         return;
     }
 
-    pool.query(
-        "INSERT INTO registro_agua (quantidade, horario) VALUES ($1, $2)",
-        [req.body.quantidade, req.body.horario],
+  pool.query(
+    "INSERT INTO registro_agua (quantidade, horario, usuario_id) VALUES ($1, $2, $3)",
+    [req.body.quantidade, req.body.horario, req.usuario.id],
         function (erro, resultado) {
 
             if (erro) {
@@ -217,9 +220,12 @@ app.post("/api/usuarios", async function (req, res) {
 
 
 // DELETE - apagar registros de água
-app.delete("/api/registros-agua", function (req, res) {
+app.delete("/api/registros-agua", verificarToken, function (req, res) {
 
-    pool.query("DELETE FROM registro_agua", function (erro, resultado) {
+   pool.query(
+    "DELETE FROM registro_agua WHERE usuario_id = $1",
+    [req.usuario.id],
+    function (erro, resultado) {
 
         if (erro) {
             console.error("Erro ao apagar registros de água:", erro);
