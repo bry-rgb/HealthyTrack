@@ -7,7 +7,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const JWT_SECRET = process.env.JWT_SECRET;
-console.log("JWT_SECRET carregado:", !!JWT_SECRET);
+
 const pool = new Pool({
     host: "localhost",
     port: 5432,
@@ -168,7 +168,6 @@ app.post("/api/usuarios", async function (req, res) {
 
 // POST - login de usuário
     app.post("/api/login", async function (req, res) { 
-        console.log("ENTREI NA ROTA DE LOGIN");
 
         const { email, senha } = req.body;
 
@@ -204,8 +203,6 @@ app.post("/api/usuarios", async function (req, res) {
         expiresIn: "1h"
     }
 );
-    console.log("TOKEN GERADO:", token);
-
     res.json({
     mensagem: "Login realizado com sucesso!",
     token: token,

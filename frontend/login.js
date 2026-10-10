@@ -33,3 +33,41 @@ botaoLogin.addEventListener("click", function () {
         mensagemAutenticacao.textContent = erro.message;
     });
 });
+
+
+let botaoRegisto = document.getElementById("botaoRegisto");
+
+botaoRegisto.addEventListener("click", function () { 
+
+    let nome = document.getElementById("nomeRegisto").value;
+    let email = document.getElementById("emailRegisto").value;
+    let senha = document.getElementById("senhaRegisto").value;
+
+    fetch("http://localhost:3000/api/usuarios", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            nome: nome,
+            email: email,
+            senha: senha
+        })
+    })
+    .then(function (resposta) {
+        return resposta.json().then(function (dados) {
+            if (!resposta.ok) {
+                throw new Error(dados.mensagem || "Erro ao criar conta");
+            }
+
+            return dados;
+        });
+    })
+    .then(function (dados) {
+        mensagemAutenticacao.textContent = dados.mensagem;
+    })
+    .catch(function (erro) {
+        mensagemAutenticacao.textContent = erro.message;
+    });
+});
+

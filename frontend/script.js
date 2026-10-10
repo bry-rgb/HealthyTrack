@@ -1,3 +1,9 @@
+let token = sessionStorage.getItem("token");
+
+if (!token) {
+    window.location.href = "login.html";
+}
+
 let agua = 0;
 let metaAgua = 2.5;
 let metaSalva = Number(localStorage.getItem("metaAgua"));
@@ -54,9 +60,13 @@ function adicionarAgua(quantidade) {
      .then(function (resposta) {
         return resposta.json();
     })
-    .then(function (dados) {
-        return fetch("http://localhost:3000/api/registros-agua");
-    })
+   .then(function (dados) {
+    return fetch("http://localhost:3000/api/registros-agua", {
+        headers: {
+            "Authorization": "Bearer " + sessionStorage.getItem("token")
+        }
+    });
+})
     .then(function (resposta) {
         return resposta.json();
     })
@@ -70,6 +80,7 @@ botao.addEventListener("click", function() {
     adicionarAgua(0.5);
 })
 
+// mostrar histórico de registros de água
 function mostrarHistorico(registros) {
     listaAgua.innerHTML = "";
     for (let i = 0; i < registros.length; i++) {
@@ -84,7 +95,11 @@ function mostrarHistorico(registros) {
         listaAgua.appendChild(item);
     }
 }
-fetch("http://localhost:3000/api/registros-agua")
+fetch("http://localhost:3000/api/registros-agua", {
+    headers: {
+        "Authorization": "Bearer " + sessionStorage.getItem("token")
+    }
+})
     .then(function (resposta) {
         return resposta.json();
     })
@@ -101,9 +116,12 @@ fetch("http://localhost:3000/api/registros-agua")
 function limparHistorico() {
     let resposta = confirm ("Tem certeza que deseja limpar o histórico?")
     if (resposta) {
-    fetch("http://localhost:3000/api/registros-agua", {
-        method: "DELETE"
-    })
+   fetch("http://localhost:3000/api/registros-agua", {
+    method: "DELETE",
+    headers: {
+        "Authorization": "Bearer " + sessionStorage.getItem("token")
+    }
+})
         .then(function (resposta) {
             return resposta.json();
         })
@@ -114,3 +132,10 @@ function limparHistorico() {
         });
     }
 }
+
+let botaoLogout = document.getElementById("botaoLogout");
+
+botaoLogout.addEventListener("click", function () {
+    sessionStorage.removeItem("token");
+    window.location.href = "login.html";
+});
