@@ -4,6 +4,18 @@ if (!token) {
     window.location.href = "login.html";
 }
 
+
+function verificarResposta(resposta) {
+    if (resposta.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "login.html";
+        throw new Error("Sessão expirada. Inicia sessão novamente.");
+    }
+
+    return resposta;
+}
+
+
 let agua = 0;
 let metaAgua = 2.5;
 let metaSalva = Number(localStorage.getItem("metaAgua"));
@@ -42,9 +54,6 @@ function atualizarTela(){
 }
 
 function adicionarAgua(quantidade) {
-    agua = agua + quantidade;
-    atualizarTela();
-
     let registro = {
         quantidade: quantidade,
         horario: new Date()
@@ -57,9 +66,10 @@ function adicionarAgua(quantidade) {
 },
         body: JSON.stringify(registro)
     })
-     .then(function (resposta) {
-        return resposta.json();
-    })
+   .then(verificarResposta)
+.then(function (resposta) {
+    return resposta.json();
+})
    .then(function (dados) {
     return fetch("http://localhost:3000/api/registros-agua", {
         headers: {
@@ -67,12 +77,21 @@ function adicionarAgua(quantidade) {
         }
     });
 })
-    .then(function (resposta) {
-        return resposta.json();
-    })
-    .then(function (dados) {
-        mostrarHistorico(dados);
-    });
+   .then(verificarResposta)
+.then(function (resposta) {
+    return resposta.json();
+})
+.then(function (dados) {
+    let total = 0;
+
+    for (let i = 0; i < dados.length; i++) {
+        total += Number(dados[i].quantidade);
+    }
+
+    agua = total;
+    atualizarTela();
+    mostrarHistorico(dados);
+});
     
 }
 
@@ -100,6 +119,7 @@ fetch("http://localhost:3000/api/registros-agua", {
         "Authorization": "Bearer " + sessionStorage.getItem("token")
     }
 })
+        .then(verificarResposta)
     .then(function (resposta) {
         return resposta.json();
     })
@@ -122,9 +142,10 @@ function limparHistorico() {
         "Authorization": "Bearer " + sessionStorage.getItem("token")
     }
 })
-        .then(function (resposta) {
-            return resposta.json();
-        })
+        .then(verificarResposta)
+         .then(function (resposta) {
+        return resposta.json();
+})
         .then(function (dados) {
             agua = 0;
             atualizarTela();
