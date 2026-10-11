@@ -13,3 +13,185 @@ h1{
     padding: 25px;
     border-radius: 15px;
 }
+
+
+/* ===== ESTILO RPG DO LOGIN ===== */
+
+.login-header {
+    text-align: center;
+    margin: 35px 20px 20px;
+}
+
+.login-header h1 {
+    color: #426b3c;
+    font-size: 2.4rem;
+    margin-bottom: 8px;
+}
+
+.login-header p {
+    color: #77664f;
+}
+
+
+.login-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 900px;
+    box-sizing: border-box;
+    margin: 20px auto 50px;
+    padding: 20px;
+}
+
+
+
+.mascotes-login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+    max-width: 280px;
+}
+
+.mascote {
+    display: block;
+    width: 100%;
+    max-width: 250px;
+    height: auto;
+    object-fit: contain;
+}
+
+.login-layout .card {
+    flex: 1;
+    width: 100%;
+    max-width: 420px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 30px;
+    background-color: #fffaf0;
+    border: 3px solid #b99a70;
+    border-radius: 12px;
+    box-shadow: 5px 5px 0 #e6d6bd;
+    text-align: left;
+}
+
+.login-layout .card h2 {
+    color: #426b3c;
+    text-align: center;
+}
+
+.login-layout .card label {
+    display: block;
+    margin: 14px 0 6px;
+    color: #66523c;
+    font-weight: bold;
+}
+
+.login-layout .card input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: 2px solid #d9c8a9;
+    border-radius: 7px;
+    background-color: white;
+    font-size: 1rem;
+}
+
+.login-layout .card input:focus {
+    outline: 2px solid #82a96b;
+    border-color: #426b3c;
+}
+
+.login-layout .card button {
+    width: 100%;
+    margin-top: 18px;
+    padding: 12px;
+    background-color: #5d874b;
+    color: white;
+    border: 2px solid #426b3c;
+    border-radius: 7px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.login-layout .card button:hover {
+    background-color: #426b3c;
+}
+
+.login-layout .card hr {
+    border: none;
+    border-top: 2px dashed #d9c8a9;
+    margin: 28px 0;
+}
+
+#mensagemAutenticacao {
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 750px) {
+    .login-header h1 {
+        font-size: 2rem;
+    }
+
+    .login-layout {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .mascotes-login {
+        flex-direction: row;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .mascote {
+        width: 45%;
+        max-width: 150px;
+    }
+
+    .login-layout .card {
+        max-width: 420px;
+        padding: 22px;
+    }
+}
+
+/* Separadores Entrar / Criar conta */
+
+.login-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.login-layout .card .login-tabs button {
+    flex: 1;
+    width: auto;
+    margin-top: 0;
+    padding: 10px 8px;
+    background-color: #f0e7d6;
+    color: #66523c;
+    border: 2px solid #d9c8a9;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.login-layout .card .login-tabs button.tab-ativa {
+    background-color: #5d874b;
+    color: white;
+    border-color: #426b3c;
+}
+
+.painel-autenticacao[hidden] {
+    display: none;
+}
+

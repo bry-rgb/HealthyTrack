@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sessão expirada | HealthyTrack</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="erro-sessao">
+        <h1>🐸 Alto lá, aventureiro!</h1>
+
+        <p>
+            O fiscal de tokens não te deixa passar!
+        </p>
+
+        <img
+            src="assets/mascotes/sessao-expirada.png"
+            alt="Aventureiro sapo à procura do seu token perante um mago fiscal"
+            class="imagem-erro"
+        >
+
+        <h2>A tua sessão expirou!</h2>
+
+        <p>
+            Nem uma espada lendária te safa desta.
+            Precisamos de renovar a tua sessão.
+        </p>
+
+        <button id="botaoLogin">
+            Voltar ao login
+        </button>
+    </main>
+
+    <script>
+        document.getElementById("botaoLogin")
+            .addEventListener("click", function () {
+                sessionStorage.removeItem("token");
+                window.location.href = "login.html";
+            });
+    </script>
+</body>
+</html>

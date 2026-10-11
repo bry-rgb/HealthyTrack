@@ -1,7 +1,37 @@
-
 let botaoLogin = document.getElementById("botaoLogin");
+let botaoRegisto = document.getElementById("botaoRegisto");
 let mensagemAutenticacao = document.getElementById("mensagemAutenticacao");
 
+// Separadores e painéis
+let tabEntrar = document.getElementById("tabEntrar");
+let tabCriarConta = document.getElementById("tabCriarConta");
+
+let painelLogin = document.getElementById("painelLogin");
+let painelRegisto = document.getElementById("painelRegisto");
+
+// Alternar para o login
+tabEntrar.addEventListener("click", function () {
+    painelLogin.hidden = false;
+    painelRegisto.hidden = true;
+
+    tabEntrar.classList.add("tab-ativa");
+    tabCriarConta.classList.remove("tab-ativa");
+
+    mensagemAutenticacao.textContent = "";
+});
+
+// Alternar para o registo
+tabCriarConta.addEventListener("click", function () {
+    painelLogin.hidden = true;
+    painelRegisto.hidden = false;
+
+    tabCriarConta.classList.add("tab-ativa");
+    tabEntrar.classList.remove("tab-ativa");
+
+    mensagemAutenticacao.textContent = "";
+});
+
+// Iniciar sessão
 botaoLogin.addEventListener("click", function () {
     let email = document.getElementById("emailLogin").value;
     let senha = document.getElementById("senhaLogin").value;
@@ -19,7 +49,9 @@ botaoLogin.addEventListener("click", function () {
     .then(function (resposta) {
         return resposta.json().then(function (dados) {
             if (!resposta.ok) {
-                throw new Error(dados.mensagem || "Erro ao iniciar sessão");
+                throw new Error(
+                    dados.mensagem || "Erro ao iniciar sessão"
+                );
             }
 
             return dados;
@@ -34,11 +66,8 @@ botaoLogin.addEventListener("click", function () {
     });
 });
 
-
-let botaoRegisto = document.getElementById("botaoRegisto");
-
-botaoRegisto.addEventListener("click", function () { 
-
+// Criar conta
+botaoRegisto.addEventListener("click", function () {
     let nome = document.getElementById("nomeRegisto").value;
     let email = document.getElementById("emailRegisto").value;
     let senha = document.getElementById("senhaRegisto").value;
@@ -57,17 +86,16 @@ botaoRegisto.addEventListener("click", function () {
     .then(function (resposta) {
         return resposta.json().then(function (dados) {
             if (!resposta.ok) {
-                throw new Error(dados.mensagem || "Erro ao criar conta");
+                throw new Error(
+                    dados.mensagem || "Erro ao criar conta"
+                );
             }
 
-            return dados;
+            mensagemAutenticacao.textContent =
+                dados.mensagem || "Conta criada com sucesso!";
         });
-    })
-    .then(function (dados) {
-        mensagemAutenticacao.textContent = dados.mensagem;
     })
     .catch(function (erro) {
         mensagemAutenticacao.textContent = erro.message;
     });
 });
-

@@ -8,7 +8,7 @@ if (!token) {
 function verificarResposta(resposta) {
     if (resposta.status === 401) {
         sessionStorage.removeItem("token");
-        window.location.href = "login.html";
+        window.location.href = "sessao-expirada.html";
         throw new Error("Sessão expirada. Inicia sessão novamente.");
     }
 

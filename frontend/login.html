@@ -1,45 +1,114 @@
-
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | HealthyTrack</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <h1>🐸 HealthyTrack</h1>
-    <p>Cuida de ti, um hábito de cada vez.</p>
 
-    <div class="card">
-        <h2>Iniciar sessão</h2>
+    <header class="login-header">
+        <h1>🌱 HealthyTrack</h1>
+        <p>Pequenos hábitos, grandes aventuras.</p>
+    </header>
 
-        <label for="emailLogin">Email</label>
-        <input id="emailLogin" type="email" placeholder="O teu email">
+    <main class="login-layout">
 
-        <label for="senhaLogin">Senha</label>
-        <input id="senhaLogin" type="password" placeholder="A tua senha">
+        <div class="mascotes-login">
+            <img
+                src="assets/mascotes/mascote-login.png"
+                alt="Sapo aventureiro com mapa"
+                class="mascote mascote-aventureiro"
+            >
+        </div>
 
-        <button id="botaoLogin">Entrar</button>
+        <div class="card">
 
-        <hr>
+            <div class="login-tabs">
+                <button
+                    type="button"
+                    id="tabEntrar"
+                    class="tab-ativa"
+                >
+                    Entrar
+                </button>
 
-        <h2>Criar conta</h2>
+                <button
+                    type="button"
+                    id="tabCriarConta"
+                >
+                    Criar conta
+                </button>
+            </div>
 
-        <label for="nomeRegisto">Nome</label>
-        <input id="nomeRegisto" type="text" placeholder="O teu nome">
+            <div id="painelLogin" class="painel-autenticacao">
 
-        <label for="emailRegisto">Email</label>
-        <input id="emailRegisto" type="email" placeholder="O teu email">
+                <h2>Bem-vindo de volta!</h2>
+                <p>Continua a tua aventura.</p>
 
-        <label for="senhaRegisto">Senha</label>
-        <input id="senhaRegisto" type="password" placeholder="Cria uma senha">
+                <label for="emailLogin">Email</label>
+                <input
+                    id="emailLogin"
+                    type="email"
+                    placeholder="O teu email"
+                >
 
-        <button id="botaoRegisto">Criar conta</button>
+                <label for="senhaLogin">Senha</label>
+                <input
+                    id="senhaLogin"
+                    type="password"
+                    placeholder="A tua senha"
+                >
 
-        <p id="mensagemAutenticacao"></p>
-    </div>
+                <button id="botaoLogin">Entrar</button>
+
+            </div>
+
+            <div
+                id="painelRegisto"
+                class="painel-autenticacao"
+                hidden
+            >
+
+                <h2>Nova aventura!</h2>
+                <p>Cria a tua conta HealthyTrack.</p>
+
+                <label for="nomeRegisto">Nome</label>
+                <input
+                    id="nomeRegisto"
+                    type="text"
+                    placeholder="O teu nome"
+                >
+
+                <label for="emailRegisto">Email</label>
+                <input
+                    id="emailRegisto"
+                    type="email"
+                    placeholder="O teu email"
+                >
+
+                <label for="senhaRegisto">Senha</label>
+                <input
+                    id="senhaRegisto"
+                    type="password"
+                    placeholder="Cria uma senha"
+                >
+
+                <button id="botaoRegisto">Criar conta</button>
+
+            </div>
+
+            <p id="mensagemAutenticacao"></p>
+
+        </div>
+
+    </main>
 
     <script src="login.js"></script>
+
 </body>
 </html>
+
