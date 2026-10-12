@@ -5,6 +5,7 @@ const cors = require("cors");
 const { Pool } = require("pg");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { senhaValida } = require("./validacoes");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -157,12 +158,14 @@ app.post("/api/usuarios", async function (req, res) {
     });
     return;
 }
-     if (typeof senha !== "string" || senha.length < 8) {
+     
+if (!senhaValida(senha)) {
     res.status(400).json({
         mensagem: "A senha deve ter pelo menos 8 caracteres"
     });
     return;
-}   
+}
+ 
 
     try {
 

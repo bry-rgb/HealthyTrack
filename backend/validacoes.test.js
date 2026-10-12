@@ -1,6 +1,4 @@
-function senhaValida(senha) {
-    return typeof senha === "string" && senha.length >= 8;
-}
+const { senhaValida } = require("./validacoes");
 
 test("rejeita senhas com menos de 8 caracteres", function () {
     expect(senhaValida("abc123")).toBe(false);
