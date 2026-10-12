@@ -8,6 +8,11 @@ const jwt = require("jsonwebtoken");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+if (!JWT_SECRET) {
+    console.error("Erro: JWT_SECRET não está definido no ficheiro .env");
+    process.exit(1);
+}
+
 const pool = new Pool({
     host: "localhost",
     port: 5432,
@@ -42,14 +47,21 @@ const PORT = 3000;
 function verificarToken(req, res, next) {
 const authHeader = req.headers.authorization;
 
-if (!authHeader) {
+if (!authHeader || !authHeader.startsWith("Bearer ")) {
     res.status(401).json({
-        mensagem: "Token não fornecido"
+        mensagem: "Token não fornecido ou formato inválido"
     });
     return;
- }
+}
 
-    const token = authHeader.split(" ")[1];
+const token = authHeader.split(" ")[1];
+
+if (!token) {
+    res.status(401).json({
+        mensagem: "Token não fornecido ou formato inválido"
+    });
+    return;
+}
 
     try {
     const usuario = jwt.verify(token, JWT_SECRET);
@@ -136,6 +148,22 @@ app.post("/api/usuarios", async function (req, res) {
         return;
     }
 
+    if (
+    typeof email !== "string" ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+) {
+    res.status(400).json({
+        mensagem: "O formato do email é inválido"
+    });
+    return;
+}
+     if (typeof senha !== "string" || senha.length < 8) {
+    res.status(400).json({
+        mensagem: "A senha deve ter pelo menos 8 caracteres"
+    });
+    return;
+}   
+
     try {
 
         const hash = await bcrypt.hash(senha, 10);
@@ -170,6 +198,13 @@ app.post("/api/usuarios", async function (req, res) {
     app.post("/api/login", async function (req, res) { 
 
         const { email, senha } = req.body;
+
+        if (!email || !senha) {
+    res.status(400).json({
+        mensagem: "Email e senha são obrigatórios"
+    });
+    return;
+}
 
         const resultado = await pool.query(
     "SELECT * FROM usuarios WHERE email = $1",
