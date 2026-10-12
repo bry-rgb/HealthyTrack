@@ -33,18 +33,20 @@ h1{
 }
 
 
+
 .login-layout {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 20px;
+    gap: 35px;
     width: 100%;
-    max-width: 900px;
+    max-width: 1000px;
     box-sizing: border-box;
     margin: 20px auto 50px;
     padding: 20px;
 }
+
 
 
 
@@ -141,16 +143,20 @@ h1{
     }
 
     .login-layout {
-        flex-direction: column;
-        gap: 15px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 35px;
         padding: 15px;
     }
 
     .mascotes-login {
-        flex-direction: row;
-        justify-content: center;
-        gap: 10px;
-        width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 1 300px;
+    max-width: 300px;
     }
 
     .mascote {
