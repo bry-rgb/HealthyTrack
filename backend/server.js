@@ -22,17 +22,20 @@ const pool = new Pool({
     database: "healthytrack"
 });
 
-pool.query("SELECT NOW()", function (erro, resultado) {
-    if (erro) {
-        console.error("Erro ao conectar ao banco de dados:", erro);
-        return;
-    }
 
-    console.log(
-        "Conectado ao Postgres com sucesso! Hora atual:",
-        resultado.rows[0].now
-    );
-});
+if (require.main === module) {
+    pool.query("SELECT NOW()", function (erro, resultado) {
+        if (erro) {
+            console.error("Erro ao conectar ao banco de dados:", erro);
+            return;
+        }
+
+        console.log(
+            "Conectado ao Postgres com sucesso! Hora atual:",
+            resultado.rows[0].now
+        );
+    });
+}
 
 const app = express();
 
@@ -209,6 +212,14 @@ if (!senhaValida(senha)) {
     return;
 }
 
+if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    res.status(400).json({
+        mensagem: "Email inválido"
+    });
+    return;
+}
+
+
         const resultado = await pool.query(
     "SELECT * FROM usuarios WHERE email = $1",
     [email]
@@ -285,6 +296,10 @@ app.get("/api", function (req, res) {
 });
 
 
-app.listen(PORT, function () {
-    console.log(`Servidor rodando na porta ${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, function () {
+        console.log(`Servidor rodando na porta ${PORT}`);
+    });
+}
+
+module.exports = app;
