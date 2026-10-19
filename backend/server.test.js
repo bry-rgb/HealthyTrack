@@ -1,6 +1,5 @@
-
 const request = require("supertest");
-const app = require("./server");
+const { app, pool } = require("./server");
 
 test("GET /api devolve uma mensagem de sucesso", async function () {
     const resposta = await request(app).get("/api");
@@ -32,4 +31,22 @@ test("POST /api/login rejeita email inválido", async function () {
 
     expect(resposta.status).toBe(400);
 });
+
+
+test("POST /api/login rejeita um email válido que não existe", async function () {
+    const resposta = await request(app)
+        .post("/api/login")
+        .send({
+            email: "utilizador.inexistente@example.com",
+            senha: "Aventura123"
+        });
+
+    expect(resposta.status).toBe(401);
+});
+
+afterAll(async function () {
+    await pool.end();
+});
+
+
 

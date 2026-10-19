@@ -302,4 +302,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = app;
+module.exports = { app, pool };
