@@ -29,6 +29,8 @@ jobs:
 
       - name: Executar testes
         run: npm test
+        env:
+          JWT_SECRET: test-secret-for-ci-only
 
       - name: Analisar código com ESLint
         run: npm run lint
