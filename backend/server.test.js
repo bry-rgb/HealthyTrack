@@ -41,16 +41,26 @@ test("POST /api/login rejeita email inválido", async function () {
 });
 
 
-test("POST /api/login rejeita um email válido que não existe", async function () {
-    const resposta = await request(app)
-        .post("/api/login")
-        .send({
-            email: "utilizador.inexistente@example.com",
-            senha: "Aventura123"
-        });
 
-    expect(resposta.status).toBe(401);
+test("POST /api/login rejeita um email válido que não existe", async function () {
+    const consultaOriginal = pool.query;
+
+    pool.query = jest.fn().mockResolvedValue({ rows: [] });
+
+    try {
+        const resposta = await request(app)
+            .post("/api/login")
+            .send({
+                email: "utilizador.inexistente@example.com",
+                senha: "Aventura123"
+            });
+
+        expect(resposta.status).toBe(401);
+    } finally {
+        pool.query = consultaOriginal;
+    }
 });
+
 
 
 test("POST /api/registros-agua rejeita quantidade superior a 0.5 litros", async function () {
