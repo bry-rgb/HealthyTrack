@@ -74,7 +74,7 @@ if (!token) {
     
     next();
 
-} catch (erro) {
+} catch {
     res.status(401).json({
     mensagem: "Token inválido ou expirado"
 });
@@ -122,7 +122,7 @@ app.post("/api/registros-agua", verificarToken, function (req, res) {
   pool.query(
     "INSERT INTO registro_agua (quantidade, horario, usuario_id) VALUES ($1, $2, $3)",
     [req.body.quantidade, req.body.horario, req.usuario.id],
-        function (erro, resultado) {
+        function (erro) {
 
             if (erro) {
                 console.error("Erro ao inserir registro de água:", erro);
@@ -174,10 +174,12 @@ if (!senhaValida(senha)) {
 
         const hash = await bcrypt.hash(senha, 10);
 
-        const resultado = await pool.query(
-            "INSERT INTO usuarios (nome, email, senha) VALUES ($1, $2, $3)",
-            [nome, email, hash]
-        );
+        
+await pool.query(
+    "INSERT INTO usuarios (nome, email, senha) VALUES ($1, $2, $3)",
+    [nome, email, hash]
+);
+
 
         res.status(201).json({
             mensagem: "Usuário criado com sucesso!"
@@ -271,7 +273,7 @@ app.delete("/api/registros-agua", verificarToken, function (req, res) {
    pool.query(
     "DELETE FROM registro_agua WHERE usuario_id = $1",
     [req.usuario.id],
-    function (erro, resultado) {
+    function (erro) {
 
         if (erro) {
             console.error("Erro ao apagar registros de água:", erro);
