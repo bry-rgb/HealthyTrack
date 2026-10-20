@@ -184,6 +184,33 @@ test("POST /api/login rejeita senha em falta", async function () {
 });
 
 
+
+test("POST /api/usuarios rejeita email duplicado", async function () {
+    const consultaOriginal = pool.query;
+
+    pool.query = jest.fn().mockRejectedValue({
+        code: "23505"
+    });
+
+    try {
+        const resposta = await request(app)
+            .post("/api/usuarios")
+            .send({
+                nome: "Teste",
+                email: "duplicado@example.com",
+                senha: "Aventura123"
+            });
+
+        expect(resposta.status).toBe(409);
+        expect(resposta.body.mensagem).toBe(
+            "Este email já está cadastrado"
+        );
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
+
 afterAll(async function () {
     await pool.end();
 });
