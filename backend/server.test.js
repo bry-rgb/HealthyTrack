@@ -221,6 +221,109 @@ test("POST /api/usuarios rejeita email duplicado", async function () {
 });
 
 
+test("GET /api/meta-diaria devolve a meta do utilizador autenticado", async function () {
+    const consultaOriginal = pool.query;
+
+    pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        callback(null, {
+            rows: [{ meta_diaria: "2.5" }]
+        });
+    });
+
+    try {
+        const resposta = await request(app)
+            .get("/api/meta-diaria")
+            .set("Authorization", `Bearer ${tokenTeste}`);
+
+        expect(resposta.status).toBe(200);
+        expect(resposta.body.meta_diaria).toBe(2.5);
+        expect(pool.query).toHaveBeenCalledWith(
+            "SELECT meta_diaria FROM usuarios WHERE id = $1",
+            [1],
+            expect.any(Function)
+        );
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
+
+test("PUT /api/meta-diaria atualiza a meta do utilizador autenticado", async function () {
+    const consultaOriginal = pool.query;
+
+    pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        callback(null, {
+            rows: [{ meta_diaria: parametros[0] }]
+        });
+    });
+
+    try {
+        const resposta = await request(app)
+            .put("/api/meta-diaria")
+            .set("Authorization", `Bearer ${tokenTeste}`)
+            .send({ meta_diaria: 3.5 });
+
+        expect(resposta.status).toBe(200);
+        expect(resposta.body.meta_diaria).toBe(3.5);
+        expect(pool.query).toHaveBeenCalledWith(
+            "UPDATE usuarios SET meta_diaria = $1 WHERE id = $2 RETURNING meta_diaria",
+            [3.5, 1],
+            expect.any(Function)
+        );
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
+
+test("PUT /api/meta-diaria rejeita uma meta superior a 10 litros", async function () {
+    const resposta = await request(app)
+        .put("/api/meta-diaria")
+        .set("Authorization", `Bearer ${tokenTeste}`)
+        .send({ meta_diaria: 11 });
+
+    expect(resposta.status).toBe(400);
+    expect(resposta.body.mensagem).toBe(
+        "A meta diária deve estar entre 0,5 e 10 litros"
+    );
+});
+
+
+test("PUT /api/meta-diaria rejeita uma meta inferior a 0.5 litros", async function () {
+    const resposta = await request(app)
+        .put("/api/meta-diaria")
+        .set("Authorization", `Bearer ${tokenTeste}`)
+        .send({ meta_diaria: 0.4 });
+
+    expect(resposta.status).toBe(400);
+    expect(resposta.body.mensagem).toBe(
+        "A meta diária deve estar entre 0,5 e 10 litros"
+    );
+});
+
+
+test("PUT /api/meta-diaria rejeita uma meta enviada como texto", async function () {
+    const resposta = await request(app)
+        .put("/api/meta-diaria")
+        .set("Authorization", `Bearer ${tokenTeste}`)
+        .send({ meta_diaria: "3.5" });
+
+    expect(resposta.status).toBe(400);
+    expect(resposta.body.mensagem).toBe(
+        "A meta diária deve estar entre 0,5 e 10 litros"
+    );
+});
+
+
+test("PUT /api/meta-diaria rejeita pedidos sem token", async function () {
+    const resposta = await request(app)
+        .put("/api/meta-diaria")
+        .send({ meta_diaria: 3.5 });
+
+    expect(resposta.status).toBe(401);
+});
+
+
 afterAll(async function () {
     await pool.end();
 });

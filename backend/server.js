@@ -103,6 +103,123 @@ app.get("/api/registros-agua", verificarToken, function (req, res) {
 });
 
 
+ // GET - buscar meta diária do utilizador
+app.get("/api/meta-diaria", verificarToken, function (req, res) {
+    pool.query(
+        "SELECT meta_diaria FROM usuarios WHERE id = $1",
+        [req.usuario.id],
+        function (erro, resultado) {
+            if (erro) {
+                console.error("Erro ao buscar meta diária:", erro);
+                res.status(500).json({
+                    mensagem: "Erro ao buscar meta diária"
+                });
+                return;
+            }
+
+            if (resultado.rows.length === 0) {
+                res.status(404).json({
+                    mensagem: "Utilizador não encontrado"
+                });
+                return;
+            }
+
+            res.json({
+                meta_diaria: Number(resultado.rows[0].meta_diaria)
+            });
+        }
+    );
+});
+
+
+ // PUT - atualizar meta diária do utilizador
+app.put("/api/meta-diaria", verificarToken, function (req, res) {
+    const metaDiaria = req.body.meta_diaria;
+
+    if (
+        typeof metaDiaria !== "number" ||
+        !Number.isFinite(metaDiaria) ||
+        metaDiaria < 0.5 ||
+        metaDiaria > 10
+    ) {
+        res.status(400).json({
+            mensagem: "A meta diária deve estar entre 0,5 e 10 litros"
+        });
+        return;
+    }
+
+    pool.query(
+        "UPDATE usuarios SET meta_diaria = $1 WHERE id = $2 RETURNING meta_diaria",
+        [metaDiaria, req.usuario.id],
+        function (erro, resultado) {
+            if (erro) {
+                console.error("Erro ao atualizar meta diária:", erro);
+                res.status(500).json({
+                    mensagem: "Erro ao atualizar meta diária"
+                });
+                return;
+            }
+
+            if (resultado.rows.length === 0) {
+                res.status(404).json({
+                    mensagem: "Utilizador não encontrado"
+                });
+                return;
+            }
+
+            res.json({
+                mensagem: "Meta diária atualizada com sucesso",
+                meta_diaria: Number(resultado.rows[0].meta_diaria)
+            });
+        }
+    );
+});
+
+
+ // PUT - atualizar meta diária do utilizador
+app.put("/api/meta-diaria", verificarToken, function (req, res) {
+    const metaDiaria = req.body.meta_diaria;
+
+    if (
+        typeof metaDiaria !== "number" ||
+        !Number.isFinite(metaDiaria) ||
+        metaDiaria < 0.5 ||
+        metaDiaria > 10
+    ) {
+        res.status(400).json({
+            mensagem: "A meta diária deve estar entre 0,5 e 10 litros"
+        });
+        return;
+    }
+
+    pool.query(
+        "UPDATE usuarios SET meta_diaria = $1 WHERE id = $2 RETURNING meta_diaria",
+        [metaDiaria, req.usuario.id],
+        function (erro, resultado) {
+            if (erro) {
+                console.error("Erro ao atualizar meta diária:", erro);
+                res.status(500).json({
+                    mensagem: "Erro ao atualizar meta diária"
+                });
+                return;
+            }
+
+            if (resultado.rows.length === 0) {
+                res.status(404).json({
+                    mensagem: "Utilizador não encontrado"
+                });
+                return;
+            }
+
+            res.json({
+                mensagem: "Meta diária atualizada com sucesso",
+                meta_diaria: Number(resultado.rows[0].meta_diaria)
+            });
+        }
+    );
+});
+
+
 // POST - registrar água
 app.post("/api/registros-agua", verificarToken, function (req, res) {
 
