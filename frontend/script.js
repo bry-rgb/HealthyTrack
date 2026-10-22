@@ -62,6 +62,8 @@ async function carregarMetaDiaria() {
 
         const dados = await resposta.json();
 
+        console.log("Estatísticas recebidas:", dados);
+
         if (!resposta.ok) {
             throw new Error(
                 dados.mensagem || "Não foi possível carregar a meta."
@@ -83,6 +85,95 @@ async function carregarMetaDiaria() {
         mensagemMeta.textContent = "Não foi possível carregar a meta diária.";
     }
 }
+
+
+ // Carregar as estatísticas de hidratação
+async function carregarEstatisticas() {
+    try {
+        const resposta = await fetch(
+            "http://localhost:3000/api/estatisticas-diarias",
+            {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+        verificarResposta(resposta);
+
+        const dados = await resposta.json();
+        
+        console.log("Estatísticas recebidas:", dados);
+        console.log("URL chamada:", resposta.url);
+
+        if (!resposta.ok) {
+            throw new Error(
+                "Não foi possível carregar as estatísticas."
+            );
+        }
+
+        const hoje = new Date().toLocaleDateString("en-CA");
+
+        let consumoHoje = 0;
+
+        for (let i = 0; i < dados.length; i++) {
+            if (dados[i].data === hoje) {
+                consumoHoje = Number(dados[i].total_litros);
+                break;
+            }
+        }
+
+        document.getElementById("consumoHoje").textContent =
+            `${consumoHoje.toFixed(2)} L`;
+            
+        mostrarGraficoEstatisticas(dados);
+
+    } catch (erro) {
+        console.error("Erro ao carregar estatísticas:", erro);
+        document.getElementById("consumoHoje").textContent =
+            "Não foi possível carregar.";
+    }
+}
+
+
+function mostrarGraficoEstatisticas(dados) {
+    const grafico = document.getElementById("graficoEstatisticas");
+
+    grafico.innerHTML = "";
+
+    for (let i = 0; i < dados.length; i++) {
+        const dia = dados[i];
+        const litros = Number(dia.total_litros);
+
+        const coluna = document.createElement("div");
+        const barra = document.createElement("div");
+        const legenda = document.createElement("p");
+        const valor = document.createElement("span");
+
+        coluna.className = "coluna-grafico";
+        barra.className = "barra-grafico";
+
+        barra.style.height = `${Math.max(litros * 40, 4)}px`;
+        barra.title = `${litros} L`;
+
+        const data = new Date(`${dia.data}T12:00:00`);
+
+        legenda.textContent = data.toLocaleDateString("pt-PT", {
+            day: "2-digit",
+            month: "2-digit"
+        });
+
+        valor.textContent = `${litros} L`;
+
+        coluna.appendChild(valor);
+        coluna.appendChild(barra);
+        coluna.appendChild(legenda);
+
+        grafico.appendChild(coluna);
+    }
+}
+
+
 
 // Guardar uma nova meta no PostgreSQL
 botaoMeta.addEventListener("click", async function () {
@@ -287,3 +378,4 @@ botaoLogout.addEventListener("click", function () {
 // Carregar os dados ao abrir a página
 carregarRegistrosAgua();
 carregarMetaDiaria();
+carregarEstatisticas();

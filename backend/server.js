@@ -132,6 +132,39 @@ app.get("/api/meta-diaria", verificarToken, function (req, res) {
 });
 
 
+ // GET - obter estatísticas diárias de hidratação
+app.get("/api/estatisticas-diarias", verificarToken, function (req, res) {
+    pool.query(
+        `SELECT
+            dias.data::date AS data,
+            COALESCE(SUM(registros.quantidade), 0) AS total_litros
+        FROM generate_series(
+            CURRENT_DATE - INTERVAL '6 days',
+            CURRENT_DATE,
+            INTERVAL '1 day'
+        ) AS dias(data)
+        LEFT JOIN registro_agua AS registros
+            ON registros.horario::date = dias.data::date
+            AND registros.usuario_id = $1
+        GROUP BY dias.data
+        ORDER BY dias.data`,
+        [req.usuario.id],
+        function (erro, resultado) {
+            if (erro) {
+                console.error("Erro ao buscar estatísticas diárias:", erro);
+                res.status(500).json({
+                    mensagem: "Erro ao buscar estatísticas diárias"
+                });
+                return;
+            }
+
+            res.json(resultado.rows);
+        }
+    );
+});
+
+
+
  // PUT - atualizar meta diária do utilizador
 app.put("/api/meta-diaria", verificarToken, function (req, res) {
     const metaDiaria = req.body.meta_diaria;

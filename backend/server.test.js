@@ -324,6 +324,51 @@ test("PUT /api/meta-diaria rejeita pedidos sem token", async function () {
 });
 
 
+test("GET /api/estatisticas-diarias rejeita pedidos sem token", async function () {
+    const resposta = await request(app)
+        .get("/api/estatisticas-diarias");
+
+    expect(resposta.status).toBe(401);
+});
+
+
+test("GET /api/estatisticas-diarias devolve sete dias para o utilizador autenticado", async function () {
+    const consultaOriginal = pool.query;
+
+    pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        callback(null, {
+            rows: [
+                { data: "2026-10-16", total_litros: "0" },
+                { data: "2026-10-17", total_litros: "0.5" },
+                { data: "2026-10-18", total_litros: "0" },
+                { data: "2026-10-19", total_litros: "1" },
+                { data: "2026-10-20", total_litros: "1.5" },
+                { data: "2026-10-21", total_litros: "2" },
+                { data: "2026-10-22", total_litros: "0.5" }
+            ]
+        });
+    });
+
+    try {
+        const resposta = await request(app)
+            .get("/api/estatisticas-diarias")
+            .set("Authorization", `Bearer ${tokenTeste}`);
+
+        expect(resposta.status).toBe(200);
+        expect(resposta.body).toHaveLength(7);
+        expect(resposta.body[4].total_litros).toBe("1.5");
+        expect(pool.query).toHaveBeenCalledWith(
+            expect.stringContaining("generate_series"),
+            [1],
+            expect.any(Function)
+        );
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
+
+
 afterAll(async function () {
     await pool.end();
 });

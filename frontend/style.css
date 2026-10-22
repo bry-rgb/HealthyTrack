@@ -1,21 +1,359 @@
-body{
+
+/* ========================================
+   HEALTHYTRACK — ESTILO RPG / AVENTURA
+   ======================================== */
+
+:root {
+    --verde-escuro: #426b3c;
+    --verde: #5d874b;
+    --verde-claro: #82a96b;
+    --creme: #fffaf0;
+    --creme-escuro: #f0e7d6;
+    --castanho: #b99a70;
+    --castanho-claro: #d9c8a9;
+    --texto: #66523c;
+    --fundo: #f4f0e6;
+    --branco: #ffffff;
+    --sombra: #e6d6bd;
+}
+
+/* ===== BASE ===== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 24px 20px 40px;
     font-family: Arial, Helvetica, sans-serif;
-    background-color: #f4f7f6;
+    color: var(--texto);
+    background-color: var(--fundo);
+    text-align: center;
+    line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+    color: var(--verde-escuro);
+}
+
+h1 {
+    margin: 10px 0;
+    font-size: 2.4rem;
+    letter-spacing: 1px;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+p {
+    margin: 10px 0;
+}
+
+/* ===== BOTÕES ===== */
+
+button {
+    padding: 11px 16px;
+    color: var(--branco);
+    background-color: var(--verde);
+    border: 2px solid var(--verde-escuro);
+    border-radius: 7px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--sombra);
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+button:hover {
+    background-color: var(--verde-escuro);
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translate(2px, 2px);
+}
+
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid var(--verde-claro);
+    outline-offset: 3px;
+}
+
+#botaoLogout {
+    display: block;
+    margin: 12px auto 20px;
+    background-color: var(--creme);
+    color: var(--verde-escuro);
+    border-color: var(--castanho);
+}
+
+#botaoLogout:hover {
+    background-color: var(--creme-escuro);
+}
+
+/* ========================================
+   DASHBOARD — ÁGUA E ESTATÍSTICAS LADO A LADO
+   ======================================== */
+
+/*
+   O HTML atual não tem um contentor comum
+   para o cartão e as estatísticas.
+   Por isso, usamos um layout com CSS Grid
+   no body e posicionamos as secções existentes.
+*/
+
+body {
+    display: grid;
+    grid-template-columns: minmax(280px, 420px) minmax(0, 700px);
+    grid-template-areas:
+        "titulo titulo"
+        "logout logout"
+        "intro intro"
+        "subintro subintro"
+        "agua estatisticas"
+        "historico historico"
+        "apagar apagar"
+        "mensagem mensagem"
+        "falta falta";
+    column-gap: 28px;
+    align-items: start;
+    justify-content: center;
+}
+
+/* Posicionamento dos elementos do dashboard */
+
+body > h1 {
+    grid-area: titulo;
+}
+
+body > #botaoLogout {
+    grid-area: logout;
+}
+
+body > #botaoLogout + p {
+    grid-area: intro;
+}
+
+body > #botaoLogout + p + p {
+    grid-area: subintro;
+}
+
+body > .card {
+    grid-area: agua;
+    width: 100%;
+    max-width: 420px;
+    margin: 28px 0;
+}
+
+body > .estatisticas {
+    grid-area: estatisticas;
+    width: 100%;
+    max-width: 700px;
+    margin: 28px 0;
+}
+
+body > .historico {
+    grid-area: historico;
+    width: 100%;
+    max-width: 700px;
+    justify-self: center;
+    margin: 28px 0;
+}
+
+body > button[onclick="limparHistorico()"] {
+    grid-area: apagar;
+    justify-self: center;
+    margin: 8px auto 20px;
+}
+
+body > #mensagemMeta {
+    grid-area: mensagem;
+}
+
+body > #mensagemFalta {
+    grid-area: falta;
+}
+
+/* ===== CARTÕES ===== */
+
+.card,
+.estatisticas,
+.historico {
+    padding: 26px;
+    background-color: var(--creme);
+    border: 3px solid var(--castanho);
+    border-radius: 12px;
+    box-shadow: 5px 5px 0 var(--sombra);
+}
+
+.card h2,
+.estatisticas h2,
+.historico h2 {
+    margin-bottom: 18px;
+}
+
+/* ===== CARTÃO DA ÁGUA ===== */
+
+#agua {
+    display: inline-block;
+    margin: 8px 0 18px;
+    color: var(--verde-escuro);
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+#meta {
+    display: block;
+    width: 100%;
+    max-width: 180px;
+    margin: 8px auto 14px;
+    padding: 10px;
+    color: var(--texto);
+    background-color: var(--branco);
+    border: 2px solid var(--castanho-claro);
+    border-radius: 7px;
+    font-size: 1rem;
     text-align: center;
 }
-h1{
-    color:#2e7d32;
-}
-.card{
-    background-color: white;
-    width: 350px;
-    margin: 30px auto;
-    padding: 25px;
-    border-radius: 15px;
+
+#salvarMeta {
+    margin-bottom: 14px;
 }
 
+#botaoAgua {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    font-size: 1.05rem;
+}
 
-/* ===== ESTILO RPG DO LOGIN ===== */
+/* ===== MENSAGENS DA META ===== */
+
+#mensagemMeta,
+#mensagemFalta {
+    width: 100%;
+    max-width: 700px;
+    margin: 12px auto;
+    font-weight: bold;
+}
+
+#mensagemMeta {
+    color: var(--verde-escuro);
+}
+
+#mensagemFalta {
+    color: var(--texto);
+}
+
+/* ===== ESTATÍSTICAS ===== */
+
+.resumo-diario {
+    padding: 20px;
+    margin-bottom: 28px;
+    background-color: var(--creme-escuro);
+    border: 2px solid var(--castanho-claro);
+    border-radius: 10px;
+}
+
+.resumo-diario h3,
+.grafico-diario h3 {
+    margin-top: 0;
+    color: var(--verde-escuro);
+}
+
+#consumoHoje {
+    margin: 8px 0;
+    color: var(--verde-escuro);
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+#progressoMeta {
+    color: var(--texto);
+    font-weight: bold;
+}
+
+/* ===== GRÁFICO DOS ÚLTIMOS 7 DIAS ===== */
+
+#graficoEstatisticas {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    gap: 10px;
+    min-height: 190px;
+    padding: 20px 8px 0;
+    border-bottom: 3px solid var(--castanho-claro);
+    background-color: rgba(240, 231, 214, 0.35);
+    border-radius: 8px 8px 0 0;
+}
+
+.coluna-grafico {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 0;
+    height: 190px;
+}
+
+.barra-grafico {
+    width: 100%;
+    max-width: 48px;
+    min-height: 4px;
+    background-color: var(--verde);
+    border: 2px solid var(--verde-escuro);
+    border-bottom: 0;
+    border-radius: 7px 7px 0 0;
+    transition: height 0.3s ease;
+}
+
+.barra-grafico:hover {
+    background-color: var(--verde-claro);
+}
+
+.coluna-grafico p {
+    margin: 8px 0;
+    color: var(--texto);
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.coluna-grafico span {
+    margin-bottom: 5px;
+    color: var(--verde-escuro);
+    font-size: 0.8rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+/* ===== HISTÓRICO ===== */
+
+#listaAgua {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#listaAgua p {
+    margin: 0;
+    padding: 12px;
+    text-align: left;
+    background-color: var(--creme-escuro);
+    border: 1px solid var(--castanho-claro);
+    border-radius: 7px;
+}
+
+/* ========================================
+   LOGIN — MANTER O ESTILO RPG
+   ======================================== */
 
 .login-header {
     text-align: center;
@@ -23,7 +361,7 @@ h1{
 }
 
 .login-header h1 {
-    color: #426b3c;
+    color: var(--verde-escuro);
     font-size: 2.4rem;
     margin-bottom: 8px;
 }
@@ -31,8 +369,6 @@ h1{
 .login-header p {
     color: #77664f;
 }
-
-
 
 .login-layout {
     display: flex;
@@ -42,13 +378,9 @@ h1{
     gap: 35px;
     width: 100%;
     max-width: 1000px;
-    box-sizing: border-box;
     margin: 20px auto 50px;
     padding: 20px;
 }
-
-
-
 
 .mascotes-login {
     display: flex;
@@ -71,64 +403,51 @@ h1{
     flex: 1;
     width: 100%;
     max-width: 420px;
-    box-sizing: border-box;
     margin: 0;
     padding: 30px;
-    background-color: #fffaf0;
-    border: 3px solid #b99a70;
+    background-color: var(--creme);
+    border: 3px solid var(--castanho);
     border-radius: 12px;
-    box-shadow: 5px 5px 0 #e6d6bd;
+    box-shadow: 5px 5px 0 var(--sombra);
     text-align: left;
 }
 
 .login-layout .card h2 {
-    color: #426b3c;
+    color: var(--verde-escuro);
     text-align: center;
 }
 
 .login-layout .card label {
     display: block;
     margin: 14px 0 6px;
-    color: #66523c;
+    color: var(--texto);
     font-weight: bold;
 }
 
 .login-layout .card input {
     display: block;
     width: 100%;
-    box-sizing: border-box;
     padding: 12px;
-    border: 2px solid #d9c8a9;
+    border: 2px solid var(--castanho-claro);
     border-radius: 7px;
-    background-color: white;
+    background-color: var(--branco);
     font-size: 1rem;
 }
 
 .login-layout .card input:focus {
-    outline: 2px solid #82a96b;
-    border-color: #426b3c;
+    outline: 2px solid var(--verde-claro);
+    border-color: var(--verde-escuro);
 }
 
 .login-layout .card button {
     width: 100%;
     margin-top: 18px;
     padding: 12px;
-    background-color: #5d874b;
-    color: white;
-    border: 2px solid #426b3c;
-    border-radius: 7px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.login-layout .card button:hover {
-    background-color: #426b3c;
 }
 
 .login-layout .card hr {
     border: none;
-    border-top: 2px dashed #d9c8a9;
+    border-top: 2px dashed var(--castanho-claro);
     margin: 28px 0;
 }
 
@@ -136,41 +455,6 @@ h1{
     text-align: center;
     overflow-wrap: anywhere;
 }
-
-@media (max-width: 750px) {
-    .login-header h1 {
-        font-size: 2rem;
-    }
-
-    .login-layout {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        gap: 35px;
-        padding: 15px;
-    }
-
-    .mascotes-login {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 1 300px;
-    max-width: 300px;
-    }
-
-    .mascote {
-        width: 45%;
-        max-width: 150px;
-    }
-
-    .login-layout .card {
-        max-width: 420px;
-        padding: 22px;
-    }
-}
-
-/* Separadores Entrar / Criar conta */
 
 .login-tabs {
     display: flex;
@@ -183,21 +467,103 @@ h1{
     width: auto;
     margin-top: 0;
     padding: 10px 8px;
-    background-color: #f0e7d6;
-    color: #66523c;
-    border: 2px solid #d9c8a9;
+    background-color: var(--creme-escuro);
+    color: var(--texto);
+    border-color: var(--castanho-claro);
     border-radius: 8px;
     font-size: 0.95rem;
-    cursor: pointer;
 }
 
 .login-layout .card .login-tabs button.tab-ativa {
-    background-color: #5d874b;
-    color: white;
-    border-color: #426b3c;
+    background-color: var(--verde);
+    color: var(--branco);
+    border-color: var(--verde-escuro);
 }
 
 .painel-autenticacao[hidden] {
     display: none;
 }
 
+/* ========================================
+   RESPONSIVIDADE
+   ======================================== */
+
+@media (max-width: 900px) {
+    body {
+        grid-template-columns: minmax(0, 700px);
+        grid-template-areas:
+            "titulo"
+            "logout"
+            "intro"
+            "subintro"
+            "agua"
+            "estatisticas"
+            "historico"
+            "apagar"
+            "mensagem"
+            "falta";
+        padding: 18px 12px 30px;
+    }
+
+    body > .card,
+    body > .estatisticas,
+    body > .historico {
+        width: 100%;
+        max-width: 700px;
+        margin: 18px 0;
+        justify-self: center;
+    }
+}
+
+@media (max-width: 750px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    .card,
+    .estatisticas,
+    .historico {
+        padding: 20px 16px;
+    }
+
+    .login-header h1 {
+        font-size: 2rem;
+    }
+
+    .login-layout {
+        flex-direction: column;
+        gap: 20px;
+        padding: 12px;
+    }
+
+    .mascotes-login {
+        flex-direction: row;
+        justify-content: center;
+        flex: 0 1 auto;
+        max-width: 100%;
+    }
+
+    .mascote {
+        width: 45%;
+        max-width: 150px;
+    }
+
+    .login-layout .card {
+        max-width: 420px;
+        padding: 22px;
+    }
+
+    #graficoEstatisticas {
+        gap: 5px;
+        padding-right: 3px;
+        padding-left: 3px;
+    }
+
+    .coluna-grafico span {
+        font-size: 0.7rem;
+    }
+
+    .coluna-grafico p {
+        font-size: 0.68rem;
+    }
+}
