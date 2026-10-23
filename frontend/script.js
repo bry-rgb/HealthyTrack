@@ -114,18 +114,36 @@ async function carregarEstatisticas() {
 
         const hoje = new Date().toLocaleDateString("en-CA");
 
+        console.log("Data de hoje:", hoje);
+        console.log("Data recebida pela API:", dados.map(dia => dia.data));
+        console.log("Meta diária atual:", metaAgua);
+        console.table(dados);
+
         let consumoHoje = 0;
 
-        for (let i = 0; i < dados.length; i++) {
-            if (dados[i].data === hoje) {
-                consumoHoje = Number(dados[i].total_litros);
-                break;
-            }
-        }
+      for (let i = 0; i < dados.length; i++) {
+    const dataRegisto = new Date(dados[i].data)
+        .toLocaleDateString("en-CA");
+
+    if (dataRegisto === hoje) {
+        consumoHoje = Number(dados[i].total_litros);
+        break;
+    }
+}
 
         document.getElementById("consumoHoje").textContent =
             `${consumoHoje.toFixed(2)} L`;
             
+                    const progresso = metaAgua > 0
+            ? Math.min((consumoHoje / metaAgua) * 100, 100)
+            : 0;
+
+        document.getElementById("progressoMeta").textContent =
+            `${Math.round(progresso)}% da meta diária atingida`;
+        const preenchimentoMeta = document.getElementById("preenchimentoMeta");
+
+        preenchimentoMeta.style.width = `${progresso}%`;
+
         mostrarGraficoEstatisticas(dados);
 
     } catch (erro) {
@@ -252,6 +270,19 @@ function mostrarHistorico(registros) {
         listaAgua.appendChild(item);
     }
 }
+
+const botaoHistorico = document.getElementById("botaoHistorico");
+const conteudoHistorico = document.getElementById("conteudoHistorico");
+
+botaoHistorico.addEventListener("click", function () {
+    if (conteudoHistorico.hidden) {
+        conteudoHistorico.hidden = false;
+        botaoHistorico.textContent = "Ocultar histórico";
+    } else {
+        conteudoHistorico.hidden = true;
+        botaoHistorico.textContent = "Ver histórico";
+    }
+});
 
 // Carregar os registos de água do utilizador
 async function carregarRegistrosAgua() {

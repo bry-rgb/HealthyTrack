@@ -30,6 +30,14 @@
             <h3>Consumo de hoje</h3>
             <p id="consumoHoje">A carregar...</p>
             <p id="progressoMeta"></p>
+            <div class="barra-meta" 
+            role="progressbar" 
+            aria-label="Progresso da meta diária de água"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0">
+            <div id="preenchimentoMeta" class="preenchimento-meta"></div>
+</div>
         </div>
 
         <div class="grafico-diario">
@@ -39,10 +47,16 @@
     </section>
 
 
-    <div class="historico">
+  <div class="historico">
+    <button id="botaoHistorico" type="button">
+        Ver histórico
+    </button>
+
+    <div id="conteudoHistorico" hidden>
         <h2>💾 Histórico de água</h2>
         <div id="listaAgua"></div>
     </div>
+</div>
 
     <button onclick="limparHistorico()">🗑️ Apagar Histórico</button>
 
