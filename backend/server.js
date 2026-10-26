@@ -209,50 +209,6 @@ app.put("/api/meta-diaria", verificarToken, function (req, res) {
 });
 
 
- // PUT - atualizar meta diária do utilizador
-app.put("/api/meta-diaria", verificarToken, function (req, res) {
-    const metaDiaria = req.body.meta_diaria;
-
-    if (
-        typeof metaDiaria !== "number" ||
-        !Number.isFinite(metaDiaria) ||
-        metaDiaria < 0.5 ||
-        metaDiaria > 10
-    ) {
-        res.status(400).json({
-            mensagem: "A meta diária deve estar entre 0,5 e 10 litros"
-        });
-        return;
-    }
-
-    pool.query(
-        "UPDATE usuarios SET meta_diaria = $1 WHERE id = $2 RETURNING meta_diaria",
-        [metaDiaria, req.usuario.id],
-        function (erro, resultado) {
-            if (erro) {
-                console.error("Erro ao atualizar meta diária:", erro);
-                res.status(500).json({
-                    mensagem: "Erro ao atualizar meta diária"
-                });
-                return;
-            }
-
-            if (resultado.rows.length === 0) {
-                res.status(404).json({
-                    mensagem: "Utilizador não encontrado"
-                });
-                return;
-            }
-
-            res.json({
-                mensagem: "Meta diária atualizada com sucesso",
-                meta_diaria: Number(resultado.rows[0].meta_diaria)
-            });
-        }
-    );
-});
-
-
 // POST - registrar água
 app.post("/api/registros-agua", verificarToken, function (req, res) {
 
@@ -371,7 +327,7 @@ if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return;
 }
 
-
+try {
         const resultado = await pool.query(
     "SELECT * FROM usuarios WHERE email = $1",
     [email]
@@ -414,8 +370,13 @@ if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     }
 });
 
+} catch (erro) {
+    console.error("Erro ao iniciar sessão:", erro);
+    res.status(500).json({
+        mensagem: "Erro interno de servidor"
+    });
+}
 });
-
 
 // DELETE - apagar registros de água
 app.delete("/api/registros-agua", verificarToken, function (req, res) {

@@ -61,6 +61,28 @@ test("POST /api/login rejeita um email válido que não existe", async function 
     }
 });
 
+test("POST /api/login trata erros na consulta à base de dados", async function () {
+    const consultaOriginal = pool.query;
+
+    pool.query = jest.fn().mockRejectedValue(
+        new Error("Erro de ligação à base de dados")
+    );
+
+    try {
+        const resposta = await request(app)
+            .post("/api/login")
+            .send({
+                email: "teste@example.com",
+                senha: "Aventura123"
+            });
+
+        expect(resposta.status).toBe(500);
+        expect(resposta.body).toHaveProperty("mensagem");
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
 
 
 test("POST /api/registros-agua rejeita quantidade superior a 0.5 litros", async function () {
