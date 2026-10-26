@@ -238,6 +238,8 @@ botaoMeta.addEventListener("click", async function () {
 
         atualizarTela();
 
+        await carregarEstatisticas();
+
         mensagemMeta.textContent =
             "Meta diária guardada com sucesso!";
     } catch (erro) {
@@ -350,6 +352,7 @@ async function adicionarAgua(quantidade) {
         }
 
         await carregarRegistrosAgua();
+        await carregarEstatisticas();
     } catch (erro) {
         console.error("Erro ao registar água:", erro);
     }
