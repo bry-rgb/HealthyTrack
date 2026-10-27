@@ -1,4 +1,5 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const express = require("express");
 const cors = require("cors");
@@ -15,7 +16,7 @@ if (!JWT_SECRET) {
 }
 
 const pool = new Pool({
-    host: "localhost",
+    host: process.env.DB_HOST || "localhost",
     port: 5432,
     user: "healthytrack",
     password: process.env.DB_PASSWORD,
@@ -42,7 +43,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-    origin: "http://localhost:5500"
+    origin: "http://localhost:8080"
 }));
 
 const PORT = 3000;
