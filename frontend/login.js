@@ -1,4 +1,5 @@
 let botaoLogin = document.getElementById("botaoLogin");
+let formLogin = document.getElementById("formLogin");
 let botaoRegisto = document.getElementById("botaoRegisto");
 let mensagemAutenticacao = document.getElementById("mensagemAutenticacao");
 
@@ -32,7 +33,9 @@ tabCriarConta.addEventListener("click", function () {
 });
 
 // Iniciar sessão
-botaoLogin.addEventListener("click", function () {
+formLogin.addEventListener("submit", function (evento) {
+    evento.preventDefault();
+    console.log("O formulário recebeu o submit");
     let email = document.getElementById("emailLogin").value;
     let senha = document.getElementById("senhaLogin").value;
 
