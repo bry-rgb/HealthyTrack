@@ -62,7 +62,13 @@ formLogin.addEventListener("submit", function (evento) {
     })
     .then(function (dados) {
         sessionStorage.setItem("token", dados.token);
-        window.location.href = "index.html";
+
+      console.log("Avaliação concluída no servidor:", dados.usuario.avaliacao_inicial_concluida);
+        if (dados.usuario.avaliacao_inicial_concluida) {
+    window.location.href = "index.html";
+        } else {
+    window.location.href = "avaliacao-inicial.html";
+    }
     })
     .catch(function (erro) {
         mensagemAutenticacao.textContent = erro.message;

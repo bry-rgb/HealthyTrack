@@ -209,6 +209,94 @@ app.put("/api/meta-diaria", verificarToken, function (req, res) {
     );
 });
 
+app.get("/api/avaliacao-inicial", verificarToken, function (req, res) {
+    pool.query(
+        "SELECT limite_liquidos FROM avaliacao_inicial WHERE usuario_id = $1",
+        [req.usuario.id],
+        function (erro, resultado) {
+            if (erro) {
+                console.error("Erro ao consultar avaliação inicial:", erro);
+                res.status(500).json({
+                    mensagem: "Erro ao consultar avaliação inicial"
+                });
+                return;
+            }
+
+            if (resultado.rows.length === 0) {
+                res.status(404).json({
+                    mensagem: "Avaliação inicial não encontrada"
+                });
+                return;
+            }
+
+            res.json({
+                limite_liquidos: resultado.rows[0].limite_liquidos
+            });
+        }
+    );
+});
+
+// PUT - marcar avaliação inicial como concluída
+app.put("/api/avaliacao-inicial", verificarToken, function (req, res) {
+    const {
+        faixa_etaria,
+        peso,
+        atividade,
+        exercicio_calor,
+        limite_liquidos,
+        unidade
+    } = req.body;
+
+    pool.query(
+        `INSERT INTO avaliacao_inicial
+            (usuario_id, faixa_etaria, peso, atividade, exercicio_calor, limite_liquidos, unidade)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (usuario_id)
+         DO UPDATE SET
+            faixa_etaria = EXCLUDED.faixa_etaria,
+            peso = EXCLUDED.peso,
+            atividade = EXCLUDED.atividade,
+            exercicio_calor = EXCLUDED.exercicio_calor,
+            limite_liquidos = EXCLUDED.limite_liquidos,
+            unidade = EXCLUDED.unidade`,
+        [
+            req.usuario.id,
+            faixa_etaria,
+            peso,
+            atividade,
+            exercicio_calor,
+            limite_liquidos,
+            unidade
+        ],
+        function (erro) {
+            if (erro) {
+                console.error("Erro ao guardar avaliação inicial:", erro);
+                res.status(500).json({
+                    mensagem: "Erro ao guardar avaliação inicial"
+                });
+                return;
+            }
+
+            pool.query(
+                "UPDATE usuarios SET avaliacao_inicial_concluida = true WHERE id = $1",
+                [req.usuario.id],
+                function (erroAtualizacao) {
+                    if (erroAtualizacao) {
+                        console.error("Erro ao concluir avaliação inicial:", erroAtualizacao);
+                        res.status(500).json({
+                            mensagem: "Respostas guardadas, mas não foi possível concluir a avaliação"
+                        });
+                        return;
+                    }
+
+                    res.json({
+                        mensagem: "Avaliação inicial guardada e concluída"
+                    });
+                }
+            );
+        }
+    );
+});
 
 // POST - registrar água
 app.post("/api/registros-agua", verificarToken, function (req, res) {
@@ -365,10 +453,11 @@ try {
     mensagem: "Login realizado com sucesso!",
     token: token,
     usuario: {
-        id: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email
-    }
+    id: usuario.id,
+    nome: usuario.nome,
+    email: usuario.email,
+    avaliacao_inicial_concluida: usuario.avaliacao_inicial_concluida
+}
 });
 
 } catch (erro) {

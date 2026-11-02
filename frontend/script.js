@@ -46,6 +46,44 @@ function atualizarTela() {
     }
 }
 
+// Consultar a avaliação e mostrar o aviso, se necessário
+async function verificarAvisoMetaMedica() {
+    const avisoMetaMedica = document.getElementById("avisoMetaMedica");
+    const fecharAvisoMeta = document.getElementById("fecharAvisoMeta");
+
+    try {
+        const resposta = await fetch(
+            "http://localhost:3000/api/avaliacao-inicial",
+            {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+        verificarResposta(resposta);
+
+        if (!resposta.ok) {
+            throw new Error("Não foi possível consultar a avaliação inicial.");
+        }
+
+        const dados = await resposta.json();
+
+        if (
+            dados.limite_liquidos === "sim" ||
+            dados.limite_liquidos === "nao-sei"
+        ) {
+            avisoMetaMedica.hidden = false;
+        }
+
+        fecharAvisoMeta.addEventListener("click", function () {
+            avisoMetaMedica.hidden = true;
+        });
+    } catch (erro) {
+        console.error("Erro ao verificar a avaliação inicial:", erro);
+    }
+}
+
 // Carregar a meta guardada no PostgreSQL
 async function carregarMetaDiaria() {
     try {
@@ -413,3 +451,4 @@ botaoLogout.addEventListener("click", function () {
 carregarRegistrosAgua();
 carregarMetaDiaria();
 carregarEstatisticas();
+verificarAvisoMetaMedica();
