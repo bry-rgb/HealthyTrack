@@ -834,3 +834,25 @@ body > #mensagemFalta {
         max-width: 480px;
     }
 }
+
+
+
+.card-agua {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.mascote-agua {
+    width: 160px;
+    height: auto;
+    transition: transform .3s ease;
+}
+.mascote-agua.trocou { animation: pulo .4s ease; }
+@keyframes pulo {
+    50% { transform: scale(1.1) translateY(-6px); }
+}
+@media (max-width: 500px) {
+    .card-agua { flex-direction: column-reverse; }
+    .mascote-agua { width: 130px; }
+}

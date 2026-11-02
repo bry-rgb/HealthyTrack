@@ -31,6 +31,32 @@ let agua = 0;
 let metaAgua = 2.5;
 let falta = metaAgua - agua;
 
+const mascoteAgua = document.getElementById("mascoteAgua");
+
+const etapasMascote = [
+    { min: 100, src: "assets/mascotes/100_meta_atingida_v2 1.png", alt: "Sapinho a celebrar a meta atingida" },
+    { min: 80, src: "assets/mascotes/75_quase_meta_v2 1.png", alt: "Sapinho quase na meta" },
+    { min: 60, src: "assets/mascotes/50_meio_caminho_v2.png", alt: "Sapinho a hidratar-se" },
+    { min: 40, src: "assets/mascotes/50_meio_caminho_v2.png", alt: "Sapinho a hidratar-se" },
+    { min: 20, src: "assets/mascotes/25_inicio_hidratacao_v2.png", alt: "Sapinho a começar a hidratar-se" },
+    { min: 0, src: "assets/mascotes/sapo_desidratado_10.png", alt: "Sapinho com sede" }
+];
+
+function atualizarMascote() {
+    const progresso = metaAgua > 0 ? (agua / metaAgua) * 100 : 0;
+    const etapa = etapasMascote.find(e => progresso >= e.min);
+
+    if (!mascoteAgua.src.endsWith(etapa.src)) {
+        mascoteAgua.src = etapa.src;
+        mascoteAgua.alt = etapa.alt;
+        mascoteAgua.classList.remove("trocou");
+        void mascoteAgua.offsetWidth; // reinicia a animação
+        mascoteAgua.classList.add("trocou");
+    }
+}
+    atualizarMascote();
+
+
 // Atualizar a interface
 function atualizarTela() {
     quantidadeAgua.textContent = `${Number(agua.toFixed(2))} L`;
@@ -44,6 +70,8 @@ function atualizarTela() {
         mensagemMeta.textContent = "";
         mensagemFalta.textContent = `Ainda faltam ${falta} L`;
     }
+
+    atualizarMascote();
 }
 
 // Consultar a avaliação e mostrar o aviso, se necessário
