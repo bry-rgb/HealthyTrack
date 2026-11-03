@@ -100,6 +100,11 @@ Para verificar a qualidade do código, executa:
 npm run lint
 ```
 
+Para executar os testes do front-end, a partir da pasta principal:
+
+```bash
+npm --prefix frontend test
+
 ## 🚀 Estado do projeto
 
 O HealthyTrack encontra-se em desenvolvimento, com funcionalidades de hidratação, autenticação, persistência de dados e testes automatizados já implementadas.
