@@ -4,96 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HealthyTrack</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
-<body>
-     <h1>🌱 HealthyTrack</h1>
-    <button id="botaoLogout">Terminar sessão</button>
-    <p>Seu monitor de saúde</p>
-    <p>Tente ser cada mais saudável</p>
-  
-<div class="card card-agua">
-    <div class="card-agua-info">
-        <h2>💧 Água</h2>
-        <p>Você bebeu:</p>
-        <strong id="agua">0 L</strong> <br>
-        <label for="meta">Meta diária:</label> <br>
-        <input id="meta" type="number"> <br>
-        <button id="salvarMeta">Salvar meta</button> <br>
-        <button id="botaoAgua">➕ Registrar água</button>
+<body class="dashboard">
+
+<header class="topo">
+    <div class="marca">
+        <span class="marca-icone" aria-hidden="true">🌱</span>
+        <div>
+            <h1>HealthyTrack</h1>
+            <p class="marca-sub">Seu monitor de saúde · Tente ser cada dia mais saudável</p>
+        </div>
     </div>
-    <img id="mascoteAgua" class="mascote-agua"
-         src="assets/mascotes/sapo_desidratado_10.png"
-         alt="Sapinho com sede">
-</div>
+    <button id="botaoLogout" type="button">Terminar sessão</button>
+</header>
 
+<main class="painel">
 
-
-    <section class="estatisticas">
-        <h2>📊 Estatísticas de hidratação</h2>
-
-        <div class="resumo-diario">
-            <h3>Consumo de hoje</h3>
-            <p id="consumoHoje">A carregar...</p>
-            <p id="progressoMeta"></p>
-            <div class="barra-meta" 
-            role="progressbar" 
-            aria-label="Progresso da meta diária de água"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            aria-valuenow="0">
-            <div id="preenchimentoMeta" class="preenchimento-meta"></div>
-</div>
+    <!-- CARTÃO HERÓI: água + mascote + meta atingida -->
+    <section class="card card-agua">
+        <div class="card-titulo">
+            <h2>💧 Água de hoje</h2>
+            <span class="selo">Missão diária</span>
         </div>
 
+        <div class="heroi">
+            <div class="mascote-palco">
+                <img id="mascoteAgua" class="mascote-agua"
+                     src="assets/mascotes/sapo_desidratado_10.png"
+                     alt="Sapinho com sede">
+            </div>
+
+            <div class="heroi-dados">
+                <p class="rotulo">Você bebeu</p>
+                <strong id="agua">0 L</strong>
+                <p id="progressoMeta" class="progresso-texto"></p>
+                <div class="barra-meta" role="progressbar"
+                     aria-label="Progresso da meta diária de água"
+                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div id="preenchimentoMeta" class="preenchimento-meta"></div>
+                </div>
+                <p id="consumoHoje" class="consumo-hoje">A carregar...</p>
+            </div>
+        </div>
+
+        <button id="botaoAgua" type="button">➕ Registrar água</button>
+
+        <div class="meta-linha">
+            <label for="meta">Meta diária (L)</label>
+            <div class="meta-campo">
+                <input id="meta" type="number" step="0.1" min="0">
+                <button id="salvarMeta" type="button">Salvar</button>
+            </div>
+        </div>
+
+        <p id="mensagemMeta" class="mensagem"></p>
+        <p id="mensagemFalta" class="mensagem mensagem-falta"></p>
+    </section>
+
+    <!-- ESTATÍSTICAS -->
+    <section class="card estatisticas">
+        <div class="card-titulo">
+            <h2>📊 Últimos 7 dias</h2>
+        </div>
         <div class="grafico-diario">
-            <h3>Últimos 7 dias</h3>
             <div id="graficoEstatisticas"></div>
         </div>
     </section>
 
+    <!-- HISTÓRICO -->
+    <section class="card historico">
+        <div class="historico-acoes">
+            <button id="botaoHistorico" type="button" class="botao-secundario">📜 Ver histórico</button>
+            <button type="button" class="botao-perigo" onclick="limparHistorico()">🗑️ Apagar histórico</button>
+        </div>
+        <div id="conteudoHistorico" hidden>
+            <h2>💾 Histórico de água</h2>
+            <div id="listaAgua"></div>
+        </div>
+    </section>
+</main>
 
-  <div class="historico">
-    <button id="botaoHistorico" type="button">
-        Ver histórico
-    </button>
-
-    <div id="conteudoHistorico" hidden>
-        <h2>💾 Histórico de água</h2>
-        <div id="listaAgua"></div>
-    </div>
-</div>
-
-    <button onclick="limparHistorico()">🗑️ Apagar Histórico</button>
-
-    <p id="mensagemMeta"></p>
-    <p id="mensagemFalta"></p>
-
-    <div id="avisoMetaMedica" class="modal-aviso" hidden>
-    <div class="modal-aviso-conteudo" role="dialog" aria-modal="true"
-         aria-labelledby="tituloAvisoMeta">
-        <img
-            src="assets/mascotes/Pixel Frog Nurse Pop-Up Icon.png"
-            alt="Sapinho médico com uma exclamação"
-            class="mascote-aviso"
-        >
-
+<div id="avisoMetaMedica" class="modal-aviso" hidden>
+    <div class="modal-aviso-conteudo" role="dialog" aria-modal="true" aria-labelledby="tituloAvisoMeta">
+        <img src="assets/mascotes/Pixel Frog Nurse Pop-Up Icon.png"
+             alt="Sapinho médico com uma exclamação" class="mascote-aviso">
         <h2 id="tituloAvisoMeta">Atenção à tua meta de água</h2>
-
-        <p>
-            Como indicaste que tens — ou não sabes se tens — uma limitação de líquidos,
-            consulta um profissional de saúde para definir uma meta adequada.
-        </p>
-
-        <p>
-            A meta atual é a predefinida e pode não ser adequada ao teu caso.
-        </p>
-
+        <p>Como indicaste que tens — ou não sabes se tens — uma limitação de líquidos,
+           consulta um profissional de saúde para definir uma meta adequada.</p>
+        <p>A meta atual é a predefinida e pode não ser adequada ao teu caso.</p>
         <button id="fecharAvisoMeta" type="button">Entendi</button>
     </div>
 </div>
 
-    <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

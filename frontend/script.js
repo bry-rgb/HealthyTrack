@@ -36,7 +36,7 @@ const mascoteAgua = document.getElementById("mascoteAgua");
 const etapasMascote = [
     { min: 100, src: "assets/mascotes/100_meta_atingida_v2 1.png", alt: "Sapinho a celebrar a meta atingida" },
     { min: 80, src: "assets/mascotes/75_quase_meta_v2 1.png", alt: "Sapinho quase na meta" },
-    { min: 60, src: "assets/mascotes/50_meio_caminho_v2.png", alt: "Sapinho a hidratar-se" },
+    { min: 60, src: "assets/mascotes/65_progresso_v1.png", alt: "Sapinho a hidratar-se" },
     { min: 40, src: "assets/mascotes/50_meio_caminho_v2.png", alt: "Sapinho a hidratar-se" },
     { min: 20, src: "assets/mascotes/25_inicio_hidratacao_v2.png", alt: "Sapinho a começar a hidratar-se" },
     { min: 0, src: "assets/mascotes/sapo_desidratado_10.png", alt: "Sapinho com sede" }
