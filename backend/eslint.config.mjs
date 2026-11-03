@@ -1,8 +1,9 @@
-
 export default [
     {
+        ignores: ["node_modules/**", "coverage/**"]
+    },
+    {
         files: ["**/*.js"],
-        ignores: ["node_modules/**", "coverage/**"],
         languageOptions: {
             ecmaVersion: "latest",
             sourceType: "commonjs",
@@ -21,8 +22,14 @@ export default [
         rules: {
             "no-unused-vars": "warn",
             "no-undef": "error",
-            "eqeqeq": "error",
-            "semi": ["error", "always"]
+            eqeqeq: "error",
+            semi: ["error", "always"]
+        }
+    },
+    {
+        files: ["db/migrations/**/*.js"],
+        languageOptions: {
+            sourceType: "module"
         }
     }
 ];
