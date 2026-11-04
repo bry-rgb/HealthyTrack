@@ -1,4 +1,3 @@
-
 let token = sessionStorage.getItem("token");
 
 if (!token) {
@@ -72,45 +71,82 @@ function atualizarTela() {
     }
 
     atualizarMascote();
+
+    const elementoConsumoHoje = document.getElementById("consumoHoje");
+    const elementoProgressoMeta = document.getElementById("progressoMeta");
+    const preenchimentoMeta = document.getElementById("preenchimentoMeta");
+    const progresso = metaAgua > 0
+        ? Math.min((agua / metaAgua) * 100, 100)
+        : 0;
+
+    if (elementoConsumoHoje) {
+        elementoConsumoHoje.textContent = `${agua.toFixed(2)} L`;
+    }
+    if (elementoProgressoMeta) {
+        elementoProgressoMeta.textContent =
+            `${Math.round(progresso)}% da meta diária atingida`;
+    }
+    if (preenchimentoMeta) {
+        preenchimentoMeta.style.width = `${progresso}%`;
+    }
 }
 
-// Consultar a avaliação e mostrar o aviso, se necessário
+
+
+function fecharAviso() {
+    const aviso = document.getElementById("avisoMetaMedica");
+    aviso.hidden = true;
+    aviso.style.display = "none";
+}
+
 async function verificarAvisoMetaMedica() {
-    const avisoMetaMedica = document.getElementById("avisoMetaMedica");
-    const fecharAvisoMeta = document.getElementById("fecharAvisoMeta");
+    const aviso = document.getElementById("avisoMetaMedica");
 
     try {
-        const resposta = await fetch(
-            "http://localhost:3000/api/avaliacao-inicial",
-            {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            }
-        );
-
+        const resposta = await fetch("http://localhost:3000/api/avaliacao-inicial", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
         verificarResposta(resposta);
-
-        if (!resposta.ok) {
-            throw new Error("Não foi possível consultar a avaliação inicial.");
-        }
+        if (!resposta.ok) throw new Error("Não foi possível consultar a avaliação inicial.");
 
         const dados = await resposta.json();
 
-        if (
-            dados.limite_liquidos === "sim" ||
-            dados.limite_liquidos === "nao-sei"
-        ) {
-            avisoMetaMedica.hidden = false;
-        }
+        const precisaAviso =
+            (dados.limite_liquidos === "sim" || dados.limite_liquidos === "nao-sei") &&
+            !dados.ocultar_aviso_meta;
 
-        fecharAvisoMeta.addEventListener("click", function () {
-            avisoMetaMedica.hidden = true;
-        });
+        if (precisaAviso) {
+            aviso.hidden = false;
+            aviso.style.display = "";
+        } else {
+            fecharAviso();
+        }
     } catch (erro) {
         console.error("Erro ao verificar a avaliação inicial:", erro);
     }
 }
+
+// Cliques nos botões do aviso
+document.addEventListener("click", async function (evento) {
+    if (evento.target.closest("#fecharAvisoMeta")) {
+        fecharAviso(); // volta a aparecer no próximo login
+    }
+
+    if (evento.target.closest("#naoMostrarAvisoMeta")) {
+        fecharAviso();
+        try {
+            const resposta = await fetch("http://localhost:3000/api/avaliacao-inicial/ocultar-aviso", {
+                method: "PUT",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (!resposta.ok) throw new Error("Falha ao guardar");
+        } catch (erro) {
+            console.error("Não foi possível guardar a preferência do aviso:", erro);
+        }
+    }
+});
+
+
 
 // Carregar a meta guardada no PostgreSQL
 async function carregarMetaDiaria() {
@@ -168,9 +204,6 @@ async function carregarEstatisticas() {
         verificarResposta(resposta);
 
         const dados = await resposta.json();
-        
-        console.log("Estatísticas recebidas:", dados);
-        console.log("URL chamada:", resposta.url);
 
         if (!resposta.ok) {
             throw new Error(
@@ -178,47 +211,11 @@ async function carregarEstatisticas() {
             );
         }
 
-        const hoje = new Date().toLocaleDateString("en-CA");
-
-        console.log("Data de hoje:", hoje);
-        console.log("Data recebida pela API:", dados.map(dia => dia.data));
-        console.log("Meta diária atual:", metaAgua);
-        console.table(dados);
-
-        let consumoHoje = 0;
-
-      for (let i = 0; i < dados.length; i++) {
-    const dataRegisto = new Date(dados[i].data)
-        .toLocaleDateString("en-CA");
-
-    if (dataRegisto === hoje) {
-        consumoHoje = Number(dados[i].total_litros);
-        break;
-    }
-}
-
-        document.getElementById("consumoHoje").textContent =
-            `${consumoHoje.toFixed(2)} L`;
-            
-                    const progresso = metaAgua > 0
-            ? Math.min((consumoHoje / metaAgua) * 100, 100)
-            : 0;
-
-        document.getElementById("progressoMeta").textContent =
-            `${Math.round(progresso)}% da meta diária atingida`;
-        const preenchimentoMeta = document.getElementById("preenchimentoMeta");
-
-        preenchimentoMeta.style.width = `${progresso}%`;
-
         mostrarGraficoEstatisticas(dados);
-
     } catch (erro) {
         console.error("Erro ao carregar estatísticas:", erro);
-        document.getElementById("consumoHoje").textContent =
-            "Não foi possível carregar.";
     }
 }
-
 
 function mostrarGraficoEstatisticas(dados) {
     const grafico = document.getElementById("graficoEstatisticas");
@@ -240,12 +237,22 @@ function mostrarGraficoEstatisticas(dados) {
         barra.style.height = `${Math.max(litros * 40, 4)}px`;
         barra.title = `${litros} L`;
 
-        const data = new Date(`${dia.data}T12:00:00`);
+        const data = new Date(`${String(dia.data).slice(0, 10)}T12:00:00`);
 
-        legenda.textContent = data.toLocaleDateString("pt-PT", {
+        // Dia da semana (ex.: "Qua") + data (ex.: "04/11")
+        let diaSemana = data.toLocaleDateString("pt-PT", { weekday: "short" })
+            .replace(".", "");
+        diaSemana = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
+
+        const diaMes = data.toLocaleDateString("pt-PT", {
             day: "2-digit",
             month: "2-digit"
         });
+
+        const eHoje = String(dia.data).slice(0, 10) === new Date().toLocaleDateString("en-CA");
+
+        legenda.innerHTML = `<strong>${eHoje ? "Hoje" : diaSemana}</strong><br>${diaMes}`;
+        if (eHoje) coluna.classList.add("coluna-hoje");
 
         valor.textContent = `${litros} L`;
 
@@ -356,7 +363,7 @@ botaoHistorico.addEventListener("click", function () {
 async function carregarRegistrosAgua() {
     try {
         const resposta = await fetch(
-            "http://localhost:3000/api/registros-agua",
+            `http://localhost:3000/api/registros-agua?${parametrosDiaAtual()}`,
             {
                 headers: {
                     "Authorization": `Bearer ${token}`
@@ -474,6 +481,73 @@ botaoLogout.addEventListener("click", function () {
     sessionStorage.removeItem("token");
     window.location.href = "login.html";
 });
+
+// ===== DATA, HORA E RECOMEÇO DIÁRIO =====
+const dataHoje = document.getElementById("dataHoje");
+const horaAgora = document.getElementById("horaAgora");
+
+// Chave do dia local (AAAA-MM-DD)
+function chaveDia(data = new Date()) {
+    return data.toLocaleDateString("en-CA");
+}
+
+let diaAtual = chaveDia();
+
+// Início e fim do dia local, enviados ao servidor
+function parametrosDiaAtual() {
+    const inicio = new Date();
+    inicio.setHours(0, 0, 0, 0);
+    const fim = new Date(inicio);
+    fim.setDate(fim.getDate() + 1);
+    return new URLSearchParams({
+        inicio: inicio.toISOString(),
+        fim: fim.toISOString()
+    }).toString();
+}
+
+
+
+// Ao voltar à aba (ex.: telemóvel acordou), verifica logo o dia
+document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) atualizarRelogio();
+});
+
+// Relógio, data de hoje e destaque do dia
+function atualizarRelogio() {
+    const agora = new Date();
+    let texto = agora.toLocaleDateString("pt-PT", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
+    });
+    texto = texto.charAt(0).toUpperCase() + texto.slice(1);
+
+    const dataHoje = document.getElementById("dataHoje");
+    const horaAgora = document.getElementById("horaAgora");
+    const seloHoje = document.getElementById("seloHoje");
+
+    if (dataHoje) dataHoje.textContent = texto;
+    if (horaAgora) horaAgora.textContent = agora.toLocaleTimeString("pt-PT", {
+        hour: "2-digit", minute: "2-digit", second: "2-digit"
+    });
+    if (seloHoje) {
+        const curto = agora.toLocaleDateString("pt-PT", { weekday: "short", day: "2-digit", month: "2-digit" })
+            .replace(".", "");
+        seloHoje.textContent = "Hoje · " + curto.charAt(0).toUpperCase() + curto.slice(1);
+    }
+
+    // Ao mudar o dia local, recomeça o contador sem apagar os registos guardados.
+    const novoDia = chaveDia(agora);
+    if (novoDia !== diaAtual) {
+        diaAtual = novoDia;
+        agua = 0;
+        atualizarTela();
+        mostrarHistorico([]);
+        carregarRegistrosAgua();
+        carregarEstatisticas();
+    }
+}
+atualizarRelogio();
+setInterval(atualizarRelogio, 1000);
+
 
 // Carregar os dados ao abrir a página
 carregarRegistrosAgua();

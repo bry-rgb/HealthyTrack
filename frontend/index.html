@@ -17,8 +17,17 @@
         <span class="marca-icone" aria-hidden="true">🌱</span>
         <div>
             <h1>HealthyTrack</h1>
-            <p class="marca-sub">Seu monitor de saúde · Tente ser cada dia mais saudável</p>
+            <p class="marca-sub">
+                <span class="lema">Água é vida</span>
+                <span class="lema-sep">•</span>
+                <span>Mantenha-se hidratado!</span>
+            </p>
+
         </div>
+    </div>
+    <div class="data-hora" aria-live="polite">
+        <span id="dataHoje" class="data-hoje">—</span>
+        <span id="horaAgora" class="hora-agora">--:--:--</span>
     </div>
     <button id="botaoLogout" type="button">Terminar sessão</button>
 </header>
@@ -29,7 +38,7 @@
     <section class="card card-agua">
         <div class="card-titulo">
             <h2>💧 Água de hoje</h2>
-            <span class="selo">Missão diária</span>
+            <span class="selo" id="seloHoje">Hoje</span>
         </div>
 
         <div class="heroi">
@@ -97,9 +106,37 @@
         <p>Como indicaste que tens — ou não sabes se tens — uma limitação de líquidos,
            consulta um profissional de saúde para definir uma meta adequada.</p>
         <p>A meta atual é a predefinida e pode não ser adequada ao teu caso.</p>
-        <button id="fecharAvisoMeta" type="button">Entendi</button>
+        <div class="aviso-botoes">
+            <button id="fecharAvisoMeta" type="button">Entendi</button>
+             <button id="naoMostrarAvisoMeta" type="button" class="botao-secundario">
+        Não mostrar novamente
+            </button>
+        </div>
+
     </div>
 </div>
+
+<script>
+(function () {
+    function atualizarRelogioTopo() {
+        var agora = new Date();
+        var elData = document.getElementById("dataHoje");
+        var elHora = document.getElementById("horaAgora");
+        if (!elData || !elHora) return;
+
+        var texto = agora.toLocaleDateString("pt-PT", {
+            weekday: "long", day: "numeric", month: "long", year: "numeric"
+        });
+        elData.textContent = texto.charAt(0).toUpperCase() + texto.slice(1);
+        elHora.textContent = agora.toLocaleTimeString("pt-PT", {
+            hour: "2-digit", minute: "2-digit", second: "2-digit"
+        });
+    }
+    atualizarRelogioTopo();
+    setInterval(atualizarRelogioTopo, 1000);
+})();
+</script>
+
 
 <script src="script.js"></script>
 </body>

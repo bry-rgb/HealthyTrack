@@ -202,3 +202,58 @@ body.dashboard .card-titulo h2 { white-space: nowrap; }
     body.dashboard .card-agua { display: block; }
     body.dashboard .mascote-agua { width: 150px; }
 }
+
+/* ===== RELÓGIO DO TOPO (estilo HealthyTrack) ===== */
+body.dashboard .data-hora {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 230px;
+    padding: 10px 22px;
+    margin: 0 auto;
+    background: var(--creme);
+    border: 3px solid var(--castanho);
+    border-radius: 16px;
+    box-shadow: 4px 4px 0 var(--sombra);
+    color: var(--verde-escuro);
+    text-align: center;
+    line-height: 1.15;
+}
+
+body.dashboard .hora-agora {
+    order: 1;
+    font-family: "Fredoka", "Nunito", sans-serif;
+    font-size: 1.9rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+}
+
+body.dashboard .data-hoje {
+    order: 2;
+    font-family: "Nunito", sans-serif;
+    font-size: .85rem;
+    font-weight: 700;
+    opacity: .8;
+    white-space: nowrap;
+}
+
+/* Botão e subtítulo sem partir em duas linhas */
+body.dashboard #botaoLogout,
+body.dashboard .marca-sub { white-space: nowrap; }
+
+/* Ecrãs pequenos: relógio passa para baixo, a toda a largura */
+@media (max-width: 760px) {
+    body.dashboard .topo { flex-wrap: wrap; }
+    body.dashboard .data-hora {
+        order: 3;
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 8px 16px;
+    }
+    body.dashboard .hora-agora { font-size: 1.4rem; }
+    body.dashboard .marca-sub { white-space: normal; }
+}

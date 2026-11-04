@@ -88,8 +88,25 @@ return;
 // GET - buscar registros de água
 app.get("/api/registros-agua", verificarToken, function (req, res) {
    pool.query(
-    "SELECT * FROM registro_agua WHERE usuario_id = $1",
-    [req.usuario.id],
+    // Só devolve os registos do dia atual (no fuso horário do utilizador).
+    // O cliente envia "inicio" e "fim" (ISO) do seu dia local; os dias
+    // anteriores continuam guardados na base de dados para o histórico.
+    `SELECT * FROM registro_agua
+     WHERE usuario_id = $1
+       AND horario >= $2
+       AND horario < $3
+     ORDER BY horario`,
+    (function () {
+        let inicio = Date.parse(req.query.inicio);
+        let fim = Date.parse(req.query.fim);
+        if (isNaN(inicio) || isNaN(fim)) {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            inicio = hoje.getTime();
+            fim = inicio + 24 * 60 * 60 * 1000;
+        }
+        return [req.usuario.id, new Date(inicio).toISOString(), new Date(fim).toISOString()];
+    })(),
     function (erro, resultado) {
         if (erro) {
             console.error("Erro ao buscar registros de água:", erro);
@@ -137,7 +154,7 @@ app.get("/api/meta-diaria", verificarToken, function (req, res) {
 app.get("/api/estatisticas-diarias", verificarToken, function (req, res) {
     pool.query(
         `SELECT
-            dias.data::date AS data,
+            to_char(dias.data, 'YYYY-MM-DD') AS data,
             COALESCE(SUM(registros.quantidade), 0) AS total_litros
         FROM generate_series(
             CURRENT_DATE - INTERVAL '6 days',
@@ -211,30 +228,42 @@ app.put("/api/meta-diaria", verificarToken, function (req, res) {
 
 app.get("/api/avaliacao-inicial", verificarToken, function (req, res) {
     pool.query(
-        "SELECT limite_liquidos FROM avaliacao_inicial WHERE usuario_id = $1",
+        "SELECT limite_liquidos, ocultar_aviso_meta FROM avaliacao_inicial WHERE usuario_id = $1",
         [req.usuario.id],
         function (erro, resultado) {
             if (erro) {
                 console.error("Erro ao consultar avaliação inicial:", erro);
-                res.status(500).json({
-                    mensagem: "Erro ao consultar avaliação inicial"
-                });
+                res.status(500).json({ mensagem: "Erro ao consultar avaliação inicial" });
                 return;
             }
-
             if (resultado.rows.length === 0) {
-                res.status(404).json({
-                    mensagem: "Avaliação inicial não encontrada"
-                });
+                res.status(404).json({ mensagem: "Avaliação inicial não encontrada" });
                 return;
             }
-
             res.json({
-                limite_liquidos: resultado.rows[0].limite_liquidos
+                limite_liquidos: resultado.rows[0].limite_liquidos,
+                ocultar_aviso_meta: resultado.rows[0].ocultar_aviso_meta
             });
         }
     );
 });
+
+// PUT - "Não mostrar novamente" o aviso médico
+app.put("/api/avaliacao-inicial/ocultar-aviso", verificarToken, function (req, res) {
+    pool.query(
+        "UPDATE avaliacao_inicial SET ocultar_aviso_meta = true WHERE usuario_id = $1",
+        [req.usuario.id],
+        function (erro) {
+            if (erro) {
+                console.error("Erro ao ocultar aviso:", erro);
+                res.status(500).json({ mensagem: "Erro ao guardar a preferência" });
+                return;
+            }
+            res.json({ mensagem: "Aviso ocultado" });
+        }
+    );
+});
+
 
 // PUT - marcar avaliação inicial como concluída
 app.put("/api/avaliacao-inicial", verificarToken, function (req, res) {
