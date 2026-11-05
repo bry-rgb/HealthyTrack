@@ -856,3 +856,117 @@ body > #mensagemFalta {
     .card-agua { flex-direction: column-reverse; }
     .mascote-agua { width: 130px; }
 }
+
+
+/* ===== Pop-up de avaliação inicial (passo a passo) ===== */
+.modal-avaliacao-conteudo {
+    max-width: 460px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    animation: avaliacao-entrar 0.25s ease-out;
+}
+
+@keyframes avaliacao-entrar {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+}
+
+.avaliacao-progresso {
+    height: 8px;
+    margin-bottom: 8px;
+    background-color: var(--creme-escuro);
+    border: 2px solid var(--castanho-claro);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.avaliacao-barra {
+    height: 100%;
+    width: 0;
+    background-color: var(--verde);
+    transition: width 0.3s ease;
+}
+
+.avaliacao-passo {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--castanho);
+    text-align: center !important;
+}
+
+.mascote-avaliacao-modal {
+    display: block;
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    margin: 0 auto 10px;
+}
+
+.avaliacao-texto {
+    text-align: center !important;
+}
+
+.avaliacao-corpo {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 16px 0 4px;
+}
+
+.opcao-avaliacao {
+    width: 100%;
+    margin: 0 !important;
+    text-align: left;
+    color: var(--verde-escuro);
+    background-color: var(--branco);
+    border-color: var(--castanho-claro);
+}
+
+.opcao-avaliacao:hover,
+.opcao-avaliacao.selecionada {
+    color: var(--branco);
+    background-color: var(--verde);
+    border-color: var(--verde-escuro);
+}
+
+.avaliacao-corpo input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.avaliacao-erro {
+    min-height: 1.2em;
+    margin: 6px 0 0;
+    color: #b0412e;
+    text-align: center !important;
+}
+
+.avaliacao-botoes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.avaliacao-carregar {
+    width: 48px;
+    height: 48px;
+    margin: 8px auto;
+    border: 5px solid var(--creme-escuro);
+    border-top-color: var(--verde);
+    border-radius: 50%;
+    animation: avaliacao-girar 0.9s linear infinite;
+}
+
+@keyframes avaliacao-girar {
+    to { transform: rotate(360deg); }
+}
+
+.meta-sugerida {
+    margin: 4px auto;
+    font-size: 2.6rem;
+    font-weight: 800;
+    color: var(--verde-escuro);
+    text-align: center;
+}

@@ -103,7 +103,7 @@ test("alternar separadores mostra o painel de registo e limpa a mensagem", () =>
     );
 });
 
-test("login envia credenciais, guarda o token e encaminha para a avaliação", async () => {
+test("login envia credenciais, guarda o token e encaminha para o painel (avaliação em pop-up)", async () => {
     let pedido;
 
     const { elementos, armazenamento, contexto } = criarAmbiente({
@@ -132,7 +132,7 @@ test("login envia credenciais, guarda o token e encaminha para a avaliação", a
     assert.equal(armazenamento.get("token"), "token-teste");
     assert.equal(
         contexto.window.location.href,
-        "avaliacao-inicial.html"
+        "index.html"
     );
 });
 

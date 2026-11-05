@@ -107,6 +107,16 @@ async function verificarAvisoMetaMedica() {
             headers: { "Authorization": `Bearer ${token}` }
         });
         verificarResposta(resposta);
+
+        // Ainda não fez a avaliação: abre o pop-up de boas-vindas + perguntas
+        if (resposta.status === 404) {
+            window.abrirAvaliacaoInicial(async function () {
+                await carregarMetaDiaria();
+                verificarAvisoMetaMedica();
+            });
+            return;
+        }
+
         if (!resposta.ok) throw new Error("Não foi possível consultar a avaliação inicial.");
 
         const dados = await resposta.json();

@@ -98,6 +98,20 @@
     </section>
 </main>
 
+<!-- POP-UP DE AVALIAÇÃO INICIAL (uma pergunta de cada vez) -->
+<div id="modalAvaliacao" class="modal-aviso modal-avaliacao" hidden>
+    <div class="modal-aviso-conteudo modal-avaliacao-conteudo" role="dialog" aria-modal="true" aria-labelledby="tituloAvaliacao">
+        <div class="avaliacao-progresso" aria-hidden="true"><div id="avaliacaoBarra" class="avaliacao-barra"></div></div>
+        <p id="avaliacaoPasso" class="avaliacao-passo"></p>
+        <img id="avaliacaoMascote" src="assets/mascotes/Winking Frog Adventurer with Water Bottle.png" alt="Sapinho com uma garrafa de água" class="mascote-avaliacao-modal">
+        <h2 id="tituloAvaliacao"></h2>
+        <p id="avaliacaoTexto" class="avaliacao-texto"></p>
+        <div id="avaliacaoCorpo" class="avaliacao-corpo"></div>
+        <p id="avaliacaoErro" class="avaliacao-erro" role="alert"></p>
+        <div id="avaliacaoBotoes" class="aviso-botoes avaliacao-botoes"></div>
+    </div>
+</div>
+
 <div id="avisoMetaMedica" class="modal-aviso" hidden>
     <div class="modal-aviso-conteudo" role="dialog" aria-modal="true" aria-labelledby="tituloAvisoMeta">
         <img src="assets/mascotes/Pixel Frog Nurse Pop-Up Icon.png"
@@ -138,6 +152,7 @@
 </script>
 
 
+<script src="avaliacao-inicial.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
