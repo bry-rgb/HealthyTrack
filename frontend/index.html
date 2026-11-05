@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="caixa-do-dia.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body class="dashboard">
@@ -96,6 +97,29 @@
             <div id="listaAgua"></div>
         </div>
     </section>
+
+    <!-- CAIXA DO DIA: cole dentro de <main class="painel">, logo depois da secção HISTÓRICO -->
+    <section class="card card-dia">
+        <div class="card-titulo">
+            <h2>📖 Livro do dia</h2>
+            <span class="selo">Hoje</span>
+        </div>
+        <div class="dia-corpo">
+            <img class="livro-dia" src="assets/mascotes/livro-do-dia.png"
+                 alt="Livro mágico do sapinho aventureiro">
+            <div>
+                <div class="dia-bloco">
+                    <p class="dia-rotulo">🌿 Dica de saúde</p>
+                    <p id="dicaDoDia">A carregar...</p>
+                </div>
+                <div class="dia-bloco">
+                    <p class="dia-rotulo">✨ Frase do dia</p>
+                    <p id="fraseDoDia"></p>
+                    <p class="dia-autora">— <span id="autoraDoDia"></span>, <span id="papelDoDia"></span></p>
+                </div>
+            </div>
+        </div>
+    </section>
 </main>
 
 <!-- POP-UP DE AVALIAÇÃO INICIAL (uma pergunta de cada vez) -->
@@ -154,5 +178,6 @@
 
 <script src="avaliacao-inicial.js"></script>
 <script src="script.js"></script>
+<script src="caixa-do-dia.js"></script>
 </body>
 </html>
