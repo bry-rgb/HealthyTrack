@@ -183,6 +183,57 @@ app.get("/api/estatisticas-diarias", verificarToken, function (req, res) {
 
 
 
+
+// GET - calendário mensal de hidratação do utilizador autenticado
+app.get("/api/calendario-hidratacao", verificarToken, function (req, res) {
+    const mes = req.query.mes;
+    if (typeof mes !== "string" || !/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) {
+        res.status(400).json({ mensagem: "Indica o mês no formato AAAA-MM" });
+        return;
+    }
+
+    const [ano, numeroMes] = mes.split("-").map(Number);
+    const agora = new Date();
+    if (ano < 2000 || ano > 9999 || ano * 100 + numeroMes > agora.getFullYear() * 100 + agora.getMonth() + 1) {
+        res.status(400).json({ mensagem: "Não é possível consultar um mês futuro" });
+        return;
+    }
+
+    pool.query(
+        `WITH periodo AS (
+            SELECT to_date($2 || '-01', 'YYYY-MM-DD') AS inicio
+        ), dias AS (
+            SELECT generate_series(
+                periodo.inicio,
+                LEAST((periodo.inicio + INTERVAL '1 month - 1 day')::date, CURRENT_DATE),
+                INTERVAL '1 day'
+            )::date AS data
+            FROM periodo
+        )
+        SELECT to_char(dias.data, 'YYYY-MM-DD') AS data,
+            COALESCE(SUM(registros.quantidade), 0)::numeric(10,2) AS total_litros,
+            utilizador.meta_diaria,
+            COALESCE(SUM(registros.quantidade), 0) >= utilizador.meta_diaria AS meta_cumprida
+        FROM dias
+        JOIN usuarios AS utilizador ON utilizador.id = $1
+        LEFT JOIN registro_agua AS registros
+            ON registros.usuario_id = utilizador.id
+            AND registros.horario >= dias.data
+            AND registros.horario < dias.data + INTERVAL '1 day'
+        GROUP BY dias.data, utilizador.meta_diaria
+        ORDER BY dias.data`,
+        [req.usuario.id, mes],
+        function (erro, resultado) {
+            if (erro) {
+                console.error("Erro ao buscar calendário de hidratação:", erro);
+                res.status(500).json({ mensagem: "Erro ao buscar calendário de hidratação" });
+                return;
+            }
+            res.json(resultado.rows);
+        }
+    );
+});
+
  // PUT - atualizar meta diária do utilizador
 app.put("/api/meta-diaria", verificarToken, function (req, res) {
     const metaDiaria = req.body.meta_diaria;
@@ -520,10 +571,85 @@ app.delete("/api/registros-agua", verificarToken, function (req, res) {
 });
 
 
+// GET - perfil, total de dias hidratados e sequência atual de metas atingidas
+app.get("/api/perfil", verificarToken, function (req, res) {
+    pool.query(
+        `WITH RECURSIVE meta_utilizador AS (
+            SELECT id, meta_diaria
+            FROM usuarios
+            WHERE id = $1
+        ), consumo_diario AS (
+            SELECT r.horario::date AS data, SUM(r.quantidade) AS total_litros
+            FROM registro_agua AS r
+            WHERE r.usuario_id = $1
+            GROUP BY r.horario::date
+        ), dias_por_grupo AS (
+            SELECT d.data,
+                d.data - ROW_NUMBER() OVER (ORDER BY d.data)::integer AS grupo
+            FROM consumo_diario AS d
+            CROSS JOIN meta_utilizador AS m
+            WHERE d.total_litros >= m.meta_diaria
+        ), sequencias_historicas AS (
+            SELECT COUNT(*) AS dias
+            FROM dias_por_grupo
+            GROUP BY grupo
+        ), inicio_sequencia AS (
+            SELECT CASE
+                WHEN COALESCE((SELECT total_litros FROM consumo_diario WHERE data = CURRENT_DATE), 0) >= m.meta_diaria
+                    THEN CURRENT_DATE
+                WHEN COALESCE((SELECT total_litros FROM consumo_diario WHERE data = CURRENT_DATE - 1), 0) >= m.meta_diaria
+                    THEN CURRENT_DATE - 1
+                ELSE NULL
+            END AS data
+            FROM meta_utilizador AS m
+        ), sequencia AS (
+            SELECT data FROM inicio_sequencia WHERE data IS NOT NULL
+            UNION ALL
+            SELECT s.data - 1
+            FROM sequencia AS s
+            JOIN consumo_diario AS d ON d.data = s.data - 1
+            CROSS JOIN meta_utilizador AS m
+            WHERE d.total_litros >= m.meta_diaria
+        )
+        SELECT u.nome, u.meta_diaria,
+            (SELECT COUNT(*) FROM (
+                SELECT r.horario::date
+                FROM registro_agua AS r
+                WHERE r.usuario_id = u.id
+                GROUP BY r.horario::date
+                HAVING SUM(r.quantidade) >= u.meta_diaria
+            ) AS dias) AS dias_hidratado,
+            (SELECT COUNT(*) FROM sequencia) AS sequencia_atual,
+            COALESCE((SELECT MAX(dias) FROM sequencias_historicas), 0) AS maior_sequencia
+        FROM usuarios AS u
+        WHERE u.id = $1`,
+        [req.usuario.id],
+        function (erro, resultado) {
+            if (erro) {
+                console.error("Erro ao buscar perfil:", erro);
+                res.status(500).json({ mensagem: "Erro ao buscar perfil" });
+                return;
+            }
+            if (resultado.rows.length === 0) {
+                res.status(404).json({ mensagem: "Utilizador não encontrado" });
+                return;
+            }
+            const linha = resultado.rows[0];
+            res.json({
+                nome: linha.nome,
+                dias_hidratado: Number(linha.dias_hidratado),
+                sequencia_atual: Number(linha.sequencia_atual),
+                maior_sequencia: Number(linha.maior_sequencia)
+            });
+        }
+    );
+});
+
+
 // Rota de teste da API
 app.get("/api", function (req, res) {
     res.json({
-        mensagem: "HealthyTrack API está funcionando!"
+        mensagem: "WaterKraft API está funcionando!"
     });
 });
 

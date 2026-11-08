@@ -1,4 +1,4 @@
-# HealthyTrack API
+# WaterKraft API
 
 ## Verificar se a API está a funcionar
 
@@ -10,9 +10,29 @@
 
 ```json
 {
-  "mensagem": "HealthyTrack API está funcionando!"
+  "mensagem": "WaterKraft API está funcionando!"
 }
 ```
+
+## Consultar perfil e sequência de hidratação
+
+- **Método:** `GET`
+- **Endpoint:** `/api/perfil`
+- **Autenticação:** JWT obrigatório
+- **Descrição:** devolve o nome, o total de dias em que a meta diária foi atingida, a sequência atual e o recorde de dias consecutivos. A sequência do dia atual só avança quando a meta for atingida; enquanto o dia decorre, a sequência de ontem continua válida.
+
+### Resposta de sucesso — `200 OK`
+
+```json
+{
+  "nome": "Ana",
+  "dias_hidratado": 18,
+  "sequencia_atual": 3,
+  "maior_sequencia": 7
+}
+```
+
+O recorde mantém os selos já conquistados mesmo que a sequência atual seja interrompida.
 
 ## Consultar registos de água
 
@@ -306,6 +326,30 @@ Devolve um array com uma entrada por dia, incluindo dias sem registos. Exemplo p
   "mensagem": "Erro ao buscar estatísticas diárias"
 }
 ```
+
+## Consultar calendário mensal de hidratação
+
+- **Método:** `GET`
+- **Endpoint:** `/api/calendario-hidratacao?mes=AAAA-MM`
+- **Autenticação:** JWT obrigatório
+- **Descrição:** devolve os registos de cada dia do mês indicado, incluindo total de água, meta diária vigente e indicação de meta cumprida. Um dia sem registo devolve total `0` e `meta_cumprida: false`; dias futuros são omitidos.
+
+### Resposta de sucesso — `200 OK`
+
+```json
+[
+  {
+    "data": "2026-11-01",
+    "total_litros": "2.50",
+    "meta_diaria": "2.5",
+    "meta_cumprida": true
+  }
+]
+```
+
+### Erros — `400 Bad Request` ou `500 Internal Server Error`
+
+O mês deve seguir o formato `AAAA-MM` e não pode estar no futuro. Em caso de falha de consulta, a API devolve uma mensagem clara.
 
 ## Atualizar meta diária
 
