@@ -1,3 +1,5 @@
+const API_BASE_URL = window.WATERKRAFT_API_BASE_URL || "http://localhost:3000";
+
 let token = sessionStorage.getItem("token");
 
 if (!token) {
@@ -137,7 +139,7 @@ async function verificarAvisoMetaMedica() {
     const aviso = document.getElementById("avisoMetaMedica");
 
     try {
-        const resposta = await fetch(`http://localhost:3000/api/avaliacao-inicial`, {
+        const resposta = await fetch(`${API_BASE_URL}/api/avaliacao-inicial`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
         verificarResposta(resposta);
@@ -179,7 +181,7 @@ document.addEventListener("click", async function (evento) {
     if (evento.target.closest("#naoMostrarAvisoMeta")) {
         fecharAviso();
         try {
-            const resposta = await fetch(`http://localhost:3000/api/avaliacao-inicial/ocultar-aviso`, {
+            const resposta = await fetch(`${API_BASE_URL}/api/avaliacao-inicial/ocultar-aviso`, {
                 method: "PUT",
                 headers: { "Authorization": `Bearer ${token}` }
             });
@@ -196,7 +198,7 @@ document.addEventListener("click", async function (evento) {
 async function carregarMetaDiaria() {
     try {
         const resposta = await fetch(
-            `http://localhost:3000/api/meta-diaria`,
+            `${API_BASE_URL}/api/meta-diaria`,
             {
                 headers: {
                     "Authorization": `Bearer ${token}`
@@ -237,7 +239,7 @@ async function carregarMetaDiaria() {
 async function carregarEstatisticas() {
     try {
         const resposta = await fetch(
-            `http://localhost:3000/api/estatisticas-diarias`,
+            `${API_BASE_URL}/api/estatisticas-diarias`,
             {
                 headers: {
                     "Authorization": `Bearer ${token}`
@@ -295,7 +297,7 @@ async function carregarCalendario() {
     if (!root) return;
     try {
         const mes = formatarChaveMesCalendario(mesCalendarioExibido);
-        const resposta = await fetch(`http://localhost:3000/api/calendario-hidratacao?mes=${encodeURIComponent(mes)}`, {
+        const resposta = await fetch(`${API_BASE_URL}/api/calendario-hidratacao?mes=${encodeURIComponent(mes)}`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
         verificarResposta(resposta);
@@ -397,7 +399,7 @@ botaoMeta.addEventListener("click", async function () {
 
     try {
         const resposta = await fetch(
-            `http://localhost:3000/api/meta-diaria`,
+            `${API_BASE_URL}/api/meta-diaria`,
             {
                 method: "PUT",
                 headers: {
@@ -478,7 +480,7 @@ botaoHistorico.addEventListener("click", function () {
 async function carregarRegistrosAgua() {
     try {
         const resposta = await fetch(
-            `http://localhost:3000/api/registros-agua?${parametrosDiaAtual()}`,
+            `${API_BASE_URL}/api/registros-agua?${parametrosDiaAtual()}`,
             {
                 headers: {
                     "Authorization": `Bearer ${token}`
@@ -518,7 +520,7 @@ async function adicionarAgua(quantidade) {
 
     try {
         const resposta = await fetch(
-            `http://localhost:3000/api/registros-agua`,
+            `${API_BASE_URL}/api/registros-agua`,
             {
                 method: "POST",
                 headers: {
@@ -565,7 +567,7 @@ async function limparHistorico() {
 
     try {
         const resposta = await fetch(
-            `http://localhost:3000/api/registros-agua`,
+            `${API_BASE_URL}/api/registros-agua`,
             {
                 method: "DELETE",
                 headers: {
@@ -820,7 +822,7 @@ document.addEventListener("keydown", function (evento) {
 // Mini perfil: nome, dias totais hidratados e sequência atual de metas diárias atingidas.
 async function carregarPerfil() {
     try {
-        const resposta = await fetch(`http://localhost:3000/api/perfil`, {
+        const resposta = await fetch(`${API_BASE_URL}/api/perfil`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
         verificarResposta(resposta);

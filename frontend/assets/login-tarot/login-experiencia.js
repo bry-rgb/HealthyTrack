@@ -49,7 +49,7 @@
     botao.classList.add("a-carregar");
     botao.querySelector("span").textContent = "A abrir a tua jornada…";
     try {
-      var resposta = await fetch(config.endpoint || "http://localhost:3000/api/login", {
+      var resposta = await fetch(config.endpoint || `${window.WATERKRAFT_API_BASE_URL || "http://localhost:3000"}/api/login`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: formulario.email.value.trim(), senha: senha.value })
       });
@@ -74,7 +74,7 @@
     var botao = formularioRegisto.querySelector("button[type='submit']");
     botao.disabled = true;
     try {
-      var resposta = await fetch(config.registerEndpoint || "http://localhost:3000/api/usuarios", {
+      var resposta = await fetch(config.registerEndpoint || `${window.WATERKRAFT_API_BASE_URL || "http://localhost:3000"}/api/usuarios`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome: formularioRegisto.nome.value.trim(), email: formularioRegisto.email.value.trim(), senha: formularioRegisto.senha.value })
       });

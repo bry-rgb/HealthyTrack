@@ -15,13 +15,16 @@ if (!JWT_SECRET) {
     process.exit(1);
 }
 
-const pool = new Pool({
-    host: process.env.DB_HOST || "localhost",
-    port: 5432,
-    user: "healthytrack",
-    password: process.env.DB_PASSWORD,
-    database: "healthytrack"
-});
+const pool = new Pool(process.env.DATABASE_URL
+    ? { connectionString: process.env.DATABASE_URL }
+    : {
+        host: process.env.DB_HOST || "localhost",
+        port: Number(process.env.DB_PORT || 5432),
+        user: process.env.DB_USER || "healthytrack",
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME || "healthytrack"
+    }
+);
 
 
 if (require.main === module) {
@@ -42,11 +45,26 @@ const app = express();
 
 app.use(express.json());
 
+const origensCorsPermitidas = new Set([
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    ...(process.env.CORS_ORIGINS || "")
+        .split(",")
+        .map((origem) => origem.trim())
+        .filter(Boolean)
+]);
+
 app.use(cors({
-    origin: "http://localhost:8080"
+    origin: (origem, callback) => {
+        if (!origem || origensCorsPermitidas.has(origem)) {
+            callback(null, true);
+            return;
+        }
+        callback(null, false);
+    }
 }));
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT || 3000);
 
 // Função para verificar o token JWT
 function verificarToken(req, res, next) {
@@ -655,7 +673,7 @@ app.get("/api", function (req, res) {
 
 
 if (require.main === module) {
-    app.listen(PORT, function () {
+    app.listen(PORT, "0.0.0.0", function () {
         console.log(`Servidor rodando na porta ${PORT}`);
     });
 }

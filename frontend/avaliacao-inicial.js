@@ -3,7 +3,7 @@
 // Uso: window.abrirAvaliacaoInicial(aoConcluir)
 
 (function () {
-    const API = "http://localhost:3000";
+    const API = window.WATERKRAFT_API_BASE_URL || "http://localhost:3000";
 
     const MASCOTE_BOAS_VINDAS = "assets/mascotes/Winking Frog Adventurer with Water Bottle.png";
     const MASCOTE_PERGUNTAS = "assets/mascotes/StandingMascot.png";

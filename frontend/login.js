@@ -1,3 +1,5 @@
+const API_BASE_URL = window.WATERKRAFT_API_BASE_URL || "http://localhost:3000";
+
 let botaoLogin = document.getElementById("botaoLogin");
 let formLogin = document.getElementById("formLogin");
 let botaoRegisto = document.getElementById("botaoRegisto");
@@ -39,7 +41,7 @@ formLogin.addEventListener("submit", function (evento) {
     let email = document.getElementById("emailLogin").value;
     let senha = document.getElementById("senhaLogin").value;
 
-    fetch("http://localhost:3000/api/login", {
+    fetch(`${API_BASE_URL}/api/login`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -78,7 +80,7 @@ botaoRegisto.addEventListener("click", function () {
     let email = document.getElementById("emailRegisto").value;
     let senha = document.getElementById("senhaRegisto").value;
 
-    fetch("http://localhost:3000/api/usuarios", {
+    fetch(`${API_BASE_URL}/api/usuarios`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"

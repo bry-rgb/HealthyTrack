@@ -194,7 +194,8 @@
 
   <footer><a class="marca marca-rodape" href="#entrar"><span class="marca-selo"><img src="assets/login-tarot/sapo.png" alt=""></span><span><strong>WATERKRAFT</strong><small>A TUA JORNADA DE HIDRATAÇÃO</small></span></a><p>Pequenos hábitos. Grandes aventuras.</p><span>✦</span></footer>
 
-  <script>window.WATERKRAFT_LOGIN = { endpoint: "http://localhost:3000/api/login", registerEndpoint: "http://localhost:3000/api/usuarios", redirectAfterLogin: "index.html", tokenStorageKey: "token" };</script>
+  <script src="api-config.js"></script>
+  <script>window.WATERKRAFT_LOGIN = { endpoint: `${window.WATERKRAFT_API_BASE_URL}/api/login`, registerEndpoint: `${window.WATERKRAFT_API_BASE_URL}/api/usuarios`, redirectAfterLogin: "index.html", tokenStorageKey: "token" };</script>
   <script src="assets/login-tarot/login-experiencia.js"></script>
 </body>
 </html>

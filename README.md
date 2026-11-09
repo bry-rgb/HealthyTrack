@@ -87,6 +87,12 @@ O ambiente de desenvolvimento utiliza Docker Compose para executar o PostgreSQL,
 
 Para iniciar os serviços, configura `DB_PASSWORD` e `JWT_SECRET` no ficheiro `.env` e executa `docker compose up --build`. A conta local de demonstração é `demo@waterkraft.local`, com a palavra-passe `WaterkraftDemo2026!`. Esta conta é criada apenas numa base vazia e destina-se ao ambiente local do projeto.
 
+## Deploy público
+
+O ficheiro `render.yaml` descreve os três serviços do deploy: site estático, API Node.js e PostgreSQL. Para criar o ambiente, liga o repositório GitHub ao Render e cria um Blueprint a partir da raiz do repositório. O Blueprint configura a ligação privada à base de dados, gera o `JWT_SECRET` e usa a URL pública da API no front-end. Se o Render atribuir um endereço diferente de `https://waterkraft-frontend.onrender.com`, atualiza `CORS_ORIGINS` no serviço da API com o endereço real do front-end. O seed de demonstração fica desativado no ambiente público; cria a conta de avaliação através do formulário de registo.
+
+Este Blueprint usa os planos gratuitos do Render para fins de avaliação. O PostgreSQL gratuito expira 30 dias após a criação; não importes dados pessoais reais e exporta os dados antes do fim desse período, caso precises de os conservar.
+
 ## 🧪 Testes e qualidade do código
 
 Os testes automatizados verificam o comportamento da API e as validações implementadas.

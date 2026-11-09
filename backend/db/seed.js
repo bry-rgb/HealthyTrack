@@ -1,18 +1,27 @@
 const { Pool } = require("pg");
 const bcrypt = require("bcrypt");
 
-const pool = new Pool({
-    host: process.env.DB_HOST || "localhost",
-    port: Number(process.env.DB_PORT || 5432),
-    user: process.env.DB_USER || "healthytrack",
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME || "healthytrack"
-});
+const pool = new Pool(process.env.DATABASE_URL
+    ? { connectionString: process.env.DATABASE_URL }
+    : {
+        host: process.env.DB_HOST || "localhost",
+        port: Number(process.env.DB_PORT || 5432),
+        user: process.env.DB_USER || "healthytrack",
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME || "healthytrack"
+    }
+);
 
 const DEMO_EMAIL = "demo@waterkraft.local";
 const DEMO_PASSWORD = "WaterkraftDemo2026!";
 
 async function seed() {
+    if (process.env.SEED_DEMO_DATA !== "true") {
+        console.log("Seed ignorado: SEED_DEMO_DATA não está ativo.");
+        await pool.end();
+        return;
+    }
+
     const client = await pool.connect();
 
     try {

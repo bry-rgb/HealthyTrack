@@ -28,6 +28,7 @@ services:
       PGUSER: healthytrack
       PGPASSWORD: ${DB_PASSWORD}
       PGDATABASE: healthytrack
+      SEED_DEMO_DATA: "true"
     command: ["sh", "-c", "unset PGM_DATABASE_URL; npm run migrate:up && npm run seed && node server.js"]
     ports:
       - "3000:3000"
