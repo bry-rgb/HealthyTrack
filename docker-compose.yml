@@ -9,6 +9,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U healthytrack -d healthytrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
     build: ./backend
@@ -16,10 +21,19 @@ services:
       - ./.env
     environment:
       DB_HOST: db
+      DB_USER: healthytrack
+      DB_NAME: healthytrack
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: healthytrack
+      PGPASSWORD: ${DB_PASSWORD}
+      PGDATABASE: healthytrack
+    command: ["sh", "-c", "unset PGM_DATABASE_URL; npm run migrate:up && npm run seed && node server.js"]
     ports:
       - "3000:3000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   frontend:
     build:

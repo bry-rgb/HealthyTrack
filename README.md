@@ -83,7 +83,9 @@ O projeto utiliza PostgreSQL para armazenar os dados dos utilizadores, os regist
 
 A estrutura da base de dados é gerida através de migrações, permitindo acompanhar a evolução do esquema ao longo do desenvolvimento.
 
-O ambiente de desenvolvimento utiliza Docker Compose para executar o PostgreSQL.
+O ambiente de desenvolvimento utiliza Docker Compose para executar o PostgreSQL, aplicar as migrações pendentes e preparar dados de demonstração quando a base ainda não tem utilizadores. Se já existirem utilizadores, o seed é ignorado e os dados existentes são preservados.
+
+Para iniciar os serviços, configura `DB_PASSWORD` e `JWT_SECRET` no ficheiro `.env` e executa `docker compose up --build`. A conta local de demonstração é `demo@waterkraft.local`, com a palavra-passe `WaterkraftDemo2026!`. Esta conta é criada apenas numa base vazia e destina-se ao ambiente local do projeto.
 
 ## 🧪 Testes e qualidade do código
 

@@ -34,3 +34,7 @@ jobs:
 
       - name: Analisar código com ESLint
         run: npm run lint
+
+      - name: Executar testes do front-end
+        run: npm test
+        working-directory: frontend
