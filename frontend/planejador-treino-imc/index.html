@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planejador de treino e IMC | WaterKraft</title>
+    <script src="../tema.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../dashboard.css">
+    <link rel="stylesheet" href="../tema.css">
+    <link rel="stylesheet" href="../dashboard-waterkraft.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="pagina.css">
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+</head>
+<body class="dashboard pagina-planejador">
+    <header class="topo">
+        <div class="marca">
+            <span class="marca-icone" aria-hidden="true">🌱</span>
+            <div><h1>WaterKraft</h1><p class="marca-sub">Água é vida · Mantenha-se hidratado!</p></div>
+        </div>
+        <a class="botao-configuracoes" href="../index.html">← Voltar ao dashboard</a>
+    </header>
+    <main class="planejador-main">
+        <section class="card card-planejador-pagina" aria-label="Planejador de treino e monitoramento de IMC">
+            <div class="planner" id="planejador-treino">
+<header class="heading" aria-labelledby="planner-heading"><div><p class="eyebrow">WaterKraft / Corpo &amp; equilíbrio</p><h1 id="planner-heading">Planejador de treino<br>e monitoramento de IMC</h1><p class="subtitle">Força para evoluir. Constância para manter.</p></div><div class="planner-art"><img class="warrior" src="../assets/mascotes/Winking Frog Adventurer with Water Bottle.png" alt="Guerreiro sapo a preparar-se para treinar"><img class="equipment" src="assets/equipamentos-treino.png" alt="Halteres, garrafa de água e toalha" width="160" height="160"></div></header>
+<div class="columns"><section class="library" aria-labelledby="library-title"><h2 id="library-title">Biblioteca de treinos</h2><div class="filters"><label>Objetivo<select id="goal"><option value="perder">Perder peso</option><option value="manter">Manter peso</option><option value="todos">Todos</option></select></label><label>Experiência<select id="level"><option value="todos">Todos os níveis</option><option value="iniciante">Iniciante</option><option value="intermediario">Intermediário</option></select></label></div><div class="list-heading"><span class="eyebrow">Planos disponíveis</span><span id="plan-count"></span></div><div id="plans"></div><p id="empty-plans" hidden>Nenhum plano para estes filtros.</p>
+<section class="workout" aria-labelledby="workout-title"><h2 id="workout-title"></h2><p class="schedule" id="schedule"></p><div class="tabs" id="sessions" aria-label="Sessões de treino"></div><div class="table-scroll"><table><thead><tr><th scope="col">Feito</th><th scope="col">Exercício</th><th scope="col">Séries</th><th scope="col">Repetições / tempo</th><th scope="col">Descanso / ritmo</th></tr></thead><tbody id="exercises"></tbody></table></div><div class="workout-actions"><p id="completed" role="status" aria-live="polite"></p><button id="reset-workout" class="secondary">↺ Reiniciar sessão</button></div><p class="note">Planos gerais e ilustrativos, não prescrições individuais. Alterne A/B entre os dias e mantenha descanso entre sessões de corpo inteiro. Ajuste carga, técnica e duração com um profissional; pare em caso de dor, tontura ou mal-estar. Não há garantia de perda de peso.</p></section></section>
+<aside class="bmi" aria-labelledby="bmi-title"><h2 id="bmi-title">Teu IMC</h2><p class="subtitle">Índice de massa corporal</p><form id="bmi-form" novalidate><label>Peso (kg)<input id="weight" name="weight" type="text" inputmode="decimal" placeholder="Ex.: 78" required></label><label>Altura (cm)<input id="height" name="height" type="text" inputmode="decimal" placeholder="Ex.: 170" required></label><button class="primary" type="submit">Calcular IMC</button><p id="error" role="alert"></p></form><div id="result" hidden aria-live="polite"><p class="eyebrow">Resultado</p><div class="bmi-number"><strong id="bmi-value"></strong><span>kg/m²</span></div><p id="category"></p><div class="scale" aria-hidden="true"><span></span><span></span><span></span><span></span></div><div class="scale-labels"><span>18,5</span><span>25</span><span>30</span></div></div><p class="note">Para adultos. IMC = peso (kg) ÷ altura (m)². É uma medida de triagem, não um diagnóstico; não mede composição corporal e não é apropriado para crianças ou gestantes. A interpretação pode variar para atletas e pessoas idosas. Procure orientação profissional.</p>
+<section class="history"><h3>Evolução do peso</h3><button id="record" class="secondary" disabled>＋ Registrar medida</button><div id="history-empty" class="note">Sem medidas nesta sessão.</div><svg id="weight-chart" viewBox="0 0 400 150" role="img" aria-label="Evolução das medidas registradas nesta sessão" hidden></svg><ul id="history-list"></ul><button id="clear-history" class="text-button" hidden>Limpar medidas</button><p class="note">Os registros ficam apenas nesta sessão e desaparecem ao recarregar. A integração pode conectá-los à sua conta.</p></section></aside></div><footer>Dados pessoais não são enviados por esta página. Treino e IMC não substituem avaliação profissional.</footer>
+</div>
+        </section>
+    </main>
+    <script type="module" src="app.js"></script>
+</body>
+</html>

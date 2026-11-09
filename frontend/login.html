@@ -1,115 +1,200 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-PT">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | HealthyTrack</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b132b">
+  <meta name="description" content="Entra no WaterKraft e transforma cada gole numa nova aventura de hidratação, progresso e descoberta.">
+  <title>WaterKraft — A tua jornada começa aqui</title>
+  <link rel="icon" href="assets/login-tarot/sapo.png" type="image/png">
+  <link rel="stylesheet" href="assets/login-tarot/fontes.css">
+  <link rel="stylesheet" href="assets/login-tarot/estilo.css">
+  <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
+  <a class="saltar" href="#formulario-login">Saltar para o login</a>
+  <div class="fundo-estrelas" aria-hidden="true"></div>
 
-    <header class="login-header">
-        <h1>🌱 HealthyTrack</h1>
-        <p>Pequenos hábitos, grandes aventuras.</p>
-    </header>
+  <header class="topo">
+    <a class="marca" href="#entrar" aria-label="WaterKraft — início">
+      <span class="marca-selo"><img src="assets/login-tarot/sapo.png" alt=""></span>
+      <span><strong>WATERKRAFT</strong><small>A TUA JORNADA DE HIDRATAÇÃO</small></span>
+    </a>
+    <nav aria-label="Navegação principal">
+      <a href="#experiencia">Descobrir</a>
+      <a class="nav-entrar" href="#formulario-login">Entrar <span aria-hidden="true">→</span></a>
+    </nav>
+  </header>
 
-    <main class="login-layout">
+  <main>
+    <section class="hero" id="entrar" aria-labelledby="hero-titulo">
+      <div class="hero-conteudo">
+        <div class="hero-texto">
+          <p class="sobrelinha"><span>✦</span> O TEU CORPO. A TUA AVENTURA. <span>✦</span></p>
+          <h1 id="hero-titulo">Cada gole conta.<br><em>Cada dia conquista.</em></h1>
+          <p class="hero-intro">Cuida da tua hidratação, acompanha o teu progresso e deixa o Guerreiro Sapo revelar o que os arcanos têm para ti.</p>
 
-        <div class="mascotes-login">
-            <img
-                src="assets/mascotes/Winking Frog Adventurer with Water Bottle.png"
-                alt="Sapo aventureiro com mapa"
-                class="mascote mascote-aventureiro"
-            >
-        </div>
-
-        <div class="card">
-
-            <div class="login-tabs">
-                <button
-                    type="button"
-                    id="tabEntrar"
-                    class="tab-ativa"
-                >
-                    Entrar
-                </button>
-
-                <button
-                    type="button"
-                    id="tabCriarConta"
-                >
-                    Criar conta
-                </button>
+          <div class="login-moldura">
+            <div class="login-cabecalho">
+              <span class="mini-ornamento" aria-hidden="true">✦</span>
+              <div><h2>Bem-vindo de volta</h2><p>A tua lagoa esperou por ti.</p></div>
+              <span class="mini-ornamento" aria-hidden="true">✦</span>
             </div>
-
-            <div id="painelLogin" class="painel-autenticacao">
-
-                <h2>Bem-vindo de volta!</h2>
-                <p>Continua a tua aventura.</p>
-
-             <form id="formLogin">   
-                <label for="emailLogin">Email</label>
-                <input
-                    id="emailLogin"
-                    type="email"
-                    placeholder="O teu email"
-                >
-
-                <label for="senhaLogin">Senha</label>
-                <input
-                    id="senhaLogin"
-                    type="password"
-                    placeholder="A tua senha"
-                >
-
-                <button id="botaoLogin" type="submit">Entrar</button>
+            <form id="formulario-login" novalidate>
+              <div class="campo">
+                <label for="email">Email</label>
+                <div class="input-caixa">
+                  <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>
+                  <input id="email" name="email" type="email" autocomplete="email" placeholder="oteu@email.com" required>
+                </div>
+              </div>
+              <div class="campo">
+                <div class="label-linha"><label for="senha">Palavra-passe</label><a href="#" data-recuperar hidden>Esqueceste-te?</a></div>
+                <div class="input-caixa">
+                  <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
+                  <input id="senha" name="senha" type="password" autocomplete="current-password" placeholder="A tua palavra-passe" required>
+                  <button class="mostrar-senha" type="button" aria-label="Mostrar palavra-passe" aria-pressed="false">
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                  </button>
+                </div>
+              </div>
+              <p class="form-erro" id="erro-login" role="alert" hidden></p>
+              <button class="botao botao-ouro botao-login" type="submit"><span>Entrar na minha jornada</span><span aria-hidden="true">→</span></button>
+              <p class="criar-conta">Ainda não tens conta? <a href="#criar-conta" data-mostrar-registo>Cria a tua aqui</a></p>
             </form>
-            </div>
-
-            <div
-                id="painelRegisto"
-                class="painel-autenticacao"
-                hidden
-            >
-
-                <h2>Nova aventura!</h2>
-                <p>Cria a tua conta HealthyTrack.</p>
-
-                <label for="nomeRegisto">Nome</label>
-                <input
-                    id="nomeRegisto"
-                    type="text"
-                    placeholder="O teu nome"
-                >
-
-                <label for="emailRegisto">Email</label>
-                <input
-                    id="emailRegisto"
-                    type="email"
-                    placeholder="O teu email"
-                >
-
-                <label for="senhaRegisto">Senha</label>
-                <input
-                    id="senhaRegisto"
-                    type="password"
-                    placeholder="Cria uma senha"
-                >
-
-                <button id="botaoRegisto">Criar conta</button>
-
-            </div>
-
-            <p id="mensagemAutenticacao"></p>
-
+            <form id="formulario-registo" novalidate hidden>
+              <div class="campo">
+                <label for="nome-registo">Nome</label>
+                <div class="input-caixa"><input id="nome-registo" name="nome" type="text" autocomplete="name" placeholder="O teu nome" required></div>
+              </div>
+              <div class="campo">
+                <label for="email-registo">Email</label>
+                <div class="input-caixa"><input id="email-registo" name="email" type="email" autocomplete="email" placeholder="oteu@email.com" required></div>
+              </div>
+              <div class="campo">
+                <label for="senha-registo">Palavra-passe</label>
+                <div class="input-caixa"><input id="senha-registo" name="senha" type="password" autocomplete="new-password" placeholder="Cria uma palavra-passe" required></div>
+              </div>
+              <p class="form-erro" id="erro-registo" role="alert" hidden></p>
+              <button class="botao botao-ouro botao-login" type="submit"><span>Criar a minha conta</span><span aria-hidden="true">→</span></button>
+              <p class="criar-conta">Já tens conta? <a href="#entrar" data-mostrar-login>Entra aqui</a></p>
+            </form>
+          </div>
         </div>
 
-    </main>
+        <div class="hero-arte" aria-label="Três cartas ilustradas do Tarot do Guerreiro Sapo">
+          <div class="aurora" aria-hidden="true"></div>
+          <img class="carta-hero carta-hero-esquerda" src="assets/login-tarot/a-lua.jpg" alt="Carta A Lua">
+          <img class="carta-hero carta-hero-direita" src="assets/login-tarot/o-sol.jpg" alt="Carta O Sol">
+          <img class="carta-hero carta-hero-centro" src="assets/login-tarot/a-estrela.jpg" alt="Carta A Estrela">
+          <div class="selo-guerreiro"><img src="assets/login-tarot/sapo.png" alt="Guerreiro Sapo com uma garrafa de água"><span>O TEU GUIA</span></div>
+          <p class="arte-legenda"><span>✦</span> HIDRATAÇÃO &nbsp;•&nbsp; PROGRESSO &nbsp;•&nbsp; TAROT <span>✦</span></p>
+        </div>
+      </div>
+      <a class="scroll-convite" href="#experiencia"><span>Desce para descobrir a jornada</span><i aria-hidden="true"></i></a>
+    </section>
 
-    <script src="login.js"></script>
+    <div id="experiencia" class="experiencia-intro reveal">
+      <p class="sobrelinha">✦ O QUE TE ESPERA ✦</p>
+      <h2>Uma pequena pausa para ti.<br><em>Uma grande aventura todos os dias.</em></h2>
+      <p>Quatro formas de transformar um hábito simples numa jornada que apetece continuar.</p>
+    </div>
 
+    <section class="capitulo reveal" id="hidratacao" aria-labelledby="hidratacao-titulo">
+      <div class="capitulo-texto">
+        <p class="capitulo-numero">I <span>OS TEUS GOLES</span></p>
+        <h2 id="hidratacao-titulo">A tua meta.<br><em>No teu ritmo.</em></h2>
+        <p>Regista a água que bebes ao longo do dia e vê o quão perto estás da tua meta. Sem contas complicadas: só tu, um copo e mais um passo na aventura.</p>
+        <ul class="lista-beneficios">
+          <li>Regista pequenas quantidades em segundos</li>
+          <li>Acompanha o progresso do dia</li>
+          <li>Define uma meta adequada ao teu ritmo</li>
+        </ul>
+        <span class="nota-demo">Experimenta a demonstração ao lado</span>
+      </div>
+      <div class="painel-app hidratacao-painel">
+        <div class="painel-topo"><span class="painel-marca">✦ WATERKRAFT</span><span class="etiqueta-demo">PRÉVIA</span></div>
+        <p class="painel-saudacao">Olá, Guerreiro <span aria-hidden="true">✦</span></p>
+        <h3>A tua jornada de hoje</h3>
+        <div class="anel-progresso" role="img" aria-label="Progresso de demonstração: 1,75 de 2,50 litros">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="anel-fundo" cx="60" cy="60" r="52"/><circle id="anel-valor" class="anel-valor" cx="60" cy="60" r="52"/></svg>
+          <div><strong id="total-agua">1,75 <small>L</small></strong><span>de <b id="meta-agua">2,50 L</b></span></div>
+        </div>
+        <div class="barra-agua" aria-hidden="true"><span id="barra-valor"></span></div>
+        <p id="mensagem-agua" class="mensagem-agua" aria-live="polite">Faltam 750 ml para completares a missão.</p>
+        <div class="botoes-agua" aria-label="Adicionar água ao exemplo">
+          <button type="button" data-agua="0.25"><span aria-hidden="true">+</span> 250 ml</button>
+          <button type="button" data-agua="0.5"><span aria-hidden="true">+</span> 500 ml</button>
+        </div>
+        <button type="button" class="repot-demo" id="repor-agua">Repor exemplo</button>
+        <p class="rodape-demo">Dados fictícios — apenas para experimentar.</p>
+      </div>
+    </section>
+
+    <section class="capitulo capitulo-inverso reveal" id="calendario" aria-labelledby="calendario-titulo">
+      <div class="painel-app calendario-painel">
+        <div class="painel-topo"><span class="painel-marca">✦ O TEU CAMINHO</span><span class="etiqueta-demo">PRÉVIA</span></div>
+        <div class="calendario-cabecalho"><h3 id="mes-demo">O teu mês</h3><span class="calendario-icone" aria-hidden="true">✦</span></div>
+        <div class="semana" aria-hidden="true"><span>SEG</span><span>TER</span><span>QUA</span><span>QUI</span><span>SEX</span><span>SÁB</span><span>DOM</span></div>
+        <div id="grelha-calendario" class="grelha-calendario" role="img" aria-label="Calendário mensal de demonstração"></div>
+        <div class="legenda-calendario"><span><i class="gota-mini cheia"></i> Meta</span><span><i class="gota-mini parcial"></i> Parcial</span><span><i class="lua-mini"></i> Sem registo</span></div>
+        <p class="rodape-demo">Dados fictícios — apenas para ilustrar.</p>
+      </div>
+      <div class="capitulo-texto">
+        <p class="capitulo-numero">II <span>O TEU PROGRESSO</span></p>
+        <h2 id="calendario-titulo">Cada dia deixa<br><em>a sua marca.</em></h2>
+        <p>O calendário transforma os teus registos numa história visual. As gotas mostram os dias de meta cumprida e ajudam-te a perceber o teu ritmo ao longo do mês.</p>
+        <div class="frase-destaque"><span aria-hidden="true">✦</span><p>Não procuramos dias perfeitos.<br><strong>Celebramos cada regresso à lagoa.</strong></p></div>
+      </div>
+    </section>
+
+    <section class="capitulo reveal" id="selos" aria-labelledby="selos-titulo">
+      <div class="capitulo-texto">
+        <p class="capitulo-numero">III <span>AS TUAS CONQUISTAS</span></p>
+        <h2 id="selos-titulo">Constância que<br><em>merece um selo.</em></h2>
+        <p>Mantém a tua sequência de dias hidratados e desbloqueia conquistas. O recorde guarda os selos que já conquistaste, mesmo quando precisares de recomeçar.</p>
+        <div class="estatisticas-demo"><div><strong>3</strong><span>dias seguidos</span></div><i></i><div><strong>7</strong><span>recorde pessoal</span></div></div>
+      </div>
+      <div class="painel-app selos-painel">
+        <div class="painel-topo"><span class="painel-marca">✦ SELOS DE SEQUÊNCIA</span><span class="etiqueta-demo">PRÉVIA</span></div>
+        <div class="guerreiro-selo"><span class="raios" aria-hidden="true"></span><img src="assets/login-tarot/sapo.png" alt="Guerreiro Sapo"><div><strong>A tua sequência</strong><span>3 dias de aventura</span></div></div>
+        <div class="grelha-selos">
+          <div class="selo conquistado"><span class="romano">III</span><i class="medalha"><b class="gota-selo"></b></i><strong>A Gota</strong><small>CONQUISTADO</small></div>
+          <div class="selo conquistado"><span class="romano">VII</span><i class="medalha"><b class="lagoa-selo"></b></i><strong>A Lagoa</strong><small>CONQUISTADO</small></div>
+          <div class="selo bloqueado"><span class="romano">XIV</span><i class="medalha"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="6" y="10" width="12" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></i><strong>A Temperança</strong><small>14 DIAS</small></div>
+          <div class="selo bloqueado"><span class="romano">XXI</span><i class="medalha"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="6" y="10" width="12" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></i><strong>O Rio</strong><small>21 DIAS</small></div>
+        </div>
+        <p class="rodape-demo">Nomes e valores ilustrativos; substituir pelos selos reais do app.</p>
+      </div>
+    </section>
+
+    <section class="capitulo-tarot reveal" id="tarot" aria-labelledby="tarot-titulo">
+      <div class="tarot-texto">
+        <p class="capitulo-numero">IV <span>A TUA DESCOBERTA</span></p>
+        <h2 id="tarot-titulo">E quando o dia pede magia,<br><em>o Guerreiro responde.</em></h2>
+        <p>Baralha os arcanos e recebe uma leitura divertida de três cartas: passado, presente e futuro. Um momento leve para refletires — sempre com a companhia do nosso sapo.</p>
+        <span class="nota-demo">Toca nas cartas para espreitar a experiência</span>
+      </div>
+      <div class="cartas-demo">
+        <div class="carta-demo-item"><span class="posicao-carta">PASSADO</span><button class="carta-tarot" type="button" data-nome="A Estrela" aria-label="Revelar carta do passado" aria-pressed="false"><span class="carta-tarot-inner"><img class="face verso" src="assets/login-tarot/verso.jpg" alt=""><span class="face frente"><img src="assets/login-tarot/a-estrela.jpg" alt="A Estrela"></span></span></button><p>TOCA PARA REVELAR</p></div>
+        <div class="carta-demo-item"><span class="posicao-carta">PRESENTE</span><button class="carta-tarot" type="button" data-nome="O Mundo" aria-label="Revelar carta do presente" aria-pressed="false"><span class="carta-tarot-inner"><img class="face verso" src="assets/login-tarot/verso.jpg" alt=""><span class="face frente"><img src="assets/login-tarot/o-mundo.jpg" alt="O Mundo"></span></span></button><p>TOCA PARA REVELAR</p></div>
+        <div class="carta-demo-item"><span class="posicao-carta">FUTURO</span><button class="carta-tarot" type="button" data-nome="O Sol" aria-label="Revelar carta do futuro" aria-pressed="false"><span class="carta-tarot-inner"><img class="face verso" src="assets/login-tarot/verso.jpg" alt=""><span class="face frente"><img src="assets/login-tarot/o-sol.jpg" alt="O Sol"></span></span></button><p>TOCA PARA REVELAR</p></div>
+      </div>
+    </section>
+
+    <section class="final reveal" aria-labelledby="final-titulo">
+      <div class="final-ornamento" aria-hidden="true">✦ &nbsp; ☾ &nbsp; ✦</div>
+      <img src="assets/login-tarot/sapo.png" alt="Guerreiro Sapo pronto para uma nova aventura">
+      <p class="sobrelinha">A LAGOA ESTÁ À TUA ESPERA</p>
+      <h2 id="final-titulo">O próximo capítulo<br><em>começa contigo.</em></h2>
+      <p>Um gole de cada vez. Um dia de cada vez.</p>
+      <div class="final-acoes"><a class="botao botao-ouro" href="#formulario-login">Entrar na minha conta <span aria-hidden="true">→</span></a><a class="botao botao-contorno" href="#criar-conta" data-mostrar-registo>Criar uma conta</a></div>
+    </section>
+  </main>
+
+  <footer><a class="marca marca-rodape" href="#entrar"><span class="marca-selo"><img src="assets/login-tarot/sapo.png" alt=""></span><span><strong>WATERKRAFT</strong><small>A TUA JORNADA DE HIDRATAÇÃO</small></span></a><p>Pequenos hábitos. Grandes aventuras.</p><span>✦</span></footer>
+
+  <script>window.WATERKRAFT_LOGIN = { endpoint: "http://localhost:3000/api/login", registerEndpoint: "http://localhost:3000/api/usuarios", redirectAfterLogin: "index.html", tokenStorageKey: "token" };</script>
+  <script src="assets/login-tarot/login-experiencia.js"></script>
 </body>
 </html>
-

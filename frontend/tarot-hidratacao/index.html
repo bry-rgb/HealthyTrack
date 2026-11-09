@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tarot da Hidratação | WaterKraft</title>
+  <meta name="description" content="Tira três cartas do tarot do Guerreiro Sapo: passado, presente e futuro." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Nunito:wght@400;600&display=swap" />
+  <link rel="stylesheet" href="tarot.css" />
+</head>
+<body>
+  <main class="tarot-app">
+    <header class="tarot-header">
+      <a id="tarot-back" class="tarot-back" href="../index.html">← Voltar ao WaterKraft</a>
+      <p id="tarot-kicker" class="tarot-kicker">✦ ARCANOS DO PÂNTANO ✦</p>
+      <h1 id="tarot-title" class="tarot-title">Tarot da Hidratação</h1>
+      <p id="tarot-sub" class="tarot-sub">Concentra-te na tua pergunta, baralha as cartas e vira-as uma a uma.</p>
+      <button id="tarot-shuffle" class="tarot-btn">Baralhar e tirar 3 cartas</button>
+    </header>
+    <section id="tarot-spread" class="tarot-spread" aria-live="polite"></section>
+    <p id="tarot-final" class="tarot-final" hidden>O guerreiro sapo bebe um gole de água e sorri: o teu caminho está traçado. ✦</p>
+  </main>
+  <script src="../preferencias.js"></script>
+  <script src="tarot-data.js"></script>
+  <script src="tarot.js"></script>
+</body>
+</html>

@@ -124,7 +124,7 @@
     function mostrarBoasVindas() {
         ecra({
             mascote: MASCOTE_BOAS_VINDAS,
-            titulo: "Bem-vindo ao HealthyTrack! 👋",
+            titulo: "Bem-vindo ao WaterKraft! 👋",
             texto: "Que bom ter-te por cá! Vamos fazer algumas perguntas rápidas para criar uma meta de hidratação à tua medida. Demora menos de um minuto."
         });
         el.botoes.append(criarBotao("Começar", () => mostrarPergunta(0)));

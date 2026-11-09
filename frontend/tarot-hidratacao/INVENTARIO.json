@@ -1,0 +1,558 @@
+{
+  "title": "Tarot da Hidratação — baralho consolidado",
+  "card_faces": 78,
+  "major_arcana": 22,
+  "minor_arcana": 56,
+  "card_back": "cartas/verso.jpg",
+  "duplicate_ids": [],
+  "duplicate_images": [],
+  "notes": "Uma única versão final por carta. Versões antigas e folhas de trabalho não incluídas.",
+  "cards": [
+    {
+      "id": "louco",
+      "name": "O Louco",
+      "numeral": "0",
+      "image": "cartas/o-louco.jpg",
+      "sha256": "6ef52807db38364019bbc07720f1c98ac8be9f8d8b52a87ed2a682dc91767b80"
+    },
+    {
+      "id": "mago",
+      "name": "O Mago",
+      "numeral": "I",
+      "image": "cartas/o-mago.jpg",
+      "sha256": "2f5d1eb08655937a035f95c772b75c0be1d3084613ec8c42e18abb04422bc2eb"
+    },
+    {
+      "id": "enamorados",
+      "name": "Os Enamorados",
+      "numeral": "VI",
+      "image": "cartas/os-enamorados.jpg",
+      "sha256": "f84755b2627bd758c7de1efe4cde0755458a5997ed97c4f70e648c4e36551b5b"
+    },
+    {
+      "id": "forca",
+      "name": "A Força",
+      "numeral": "VIII",
+      "image": "cartas/a-forca.jpg",
+      "sha256": "a09752562aa5282a3842413407c1d7eeb8d25871f7844b391fd535b97c136c19"
+    },
+    {
+      "id": "eremita",
+      "name": "O Eremita",
+      "numeral": "IX",
+      "image": "cartas/o-eremita.jpg",
+      "sha256": "62dcf26db4b72085e99c40dcb5a6fcc2fe8419def4924f918508c41682ee56a3"
+    },
+    {
+      "id": "roda",
+      "name": "A Roda da Fortuna",
+      "numeral": "X",
+      "image": "cartas/a-roda-da-fortuna.jpg",
+      "sha256": "b74d69a698e40dc562b2c9a8179e8ad3cbf90a97d739a91e410b6061bd9550ad"
+    },
+    {
+      "id": "estrela",
+      "name": "A Estrela",
+      "numeral": "XVII",
+      "image": "cartas/a-estrela.jpg",
+      "sha256": "67393222cb882daf7f7d7ba90cd9500c94579d40be9077dbea6730eee421bee5"
+    },
+    {
+      "id": "lua",
+      "name": "A Lua",
+      "numeral": "XVIII",
+      "image": "cartas/a-lua.jpg",
+      "sha256": "be59e943f33260d8bceeffe33fec9b25aabac0eea3ae98d985d8c9cc9d62a7d5"
+    },
+    {
+      "id": "sol",
+      "name": "O Sol",
+      "numeral": "XIX",
+      "image": "cartas/o-sol.jpg",
+      "sha256": "dfb78c22ba4dffbfd2c2dd62b63cb8b3e0822ec5a3ec03716d6e5c341b1cf294"
+    },
+    {
+      "id": "mundo",
+      "name": "O Mundo",
+      "numeral": "XXI",
+      "image": "cartas/o-mundo.jpg",
+      "sha256": "11ff1a08ed5553e04e4f0b95b1f7f69a3f309230a2e258c3a6f5400c625a3687"
+    },
+    {
+      "id": "sacerdotisa",
+      "name": "A Sacerdotisa",
+      "numeral": "II",
+      "image": "cartas/a-sacerdotisa.jpg",
+      "sha256": "7b3100e6901a79f206cf122988b4093a0bd005011cfb3d2544c6750ddbfdec13"
+    },
+    {
+      "id": "imperatriz",
+      "name": "A Imperatriz",
+      "numeral": "III",
+      "image": "cartas/a-imperatriz.jpg",
+      "sha256": "5bdf3da310924d3dfec6c20bfbb1eebc365707f70b1e768c82519268d976c3d4"
+    },
+    {
+      "id": "imperador",
+      "name": "O Imperador",
+      "numeral": "IV",
+      "image": "cartas/o-imperador.jpg",
+      "sha256": "4a11f9e400c4751900826d7f746b4ae2791c1fefff30a3aba6826e1809bc39b9"
+    },
+    {
+      "id": "hierofante",
+      "name": "O Hierofante",
+      "numeral": "V",
+      "image": "cartas/o-hierofante.jpg",
+      "sha256": "2bdaef7e73decbedb84212e0b45fd1e99f17a56357fe417697d2e3c45388fe58"
+    },
+    {
+      "id": "carro",
+      "name": "O Carro",
+      "numeral": "VII",
+      "image": "cartas/o-carro.jpg",
+      "sha256": "9fc2e33e2abbd3417f00fccfb1a74237ba665f0684c56aec0428d63de87d1683"
+    },
+    {
+      "id": "justica",
+      "name": "A Justiça",
+      "numeral": "XI",
+      "image": "cartas/a-justica.jpg",
+      "sha256": "43da80a7a32cb46cc0ec5d67430b94ca2bfbc144e918b6e1a3d03222705038bb"
+    },
+    {
+      "id": "mergulho",
+      "name": "O Mergulho",
+      "numeral": "XII",
+      "image": "cartas/o-mergulho.jpg",
+      "sha256": "391f481da6f7ced806e7a8bf12de393a486527a78d63565d9a109e2d18e0d162"
+    },
+    {
+      "id": "morte",
+      "name": "A Morte",
+      "numeral": "XIII",
+      "image": "cartas/a-morte.jpg",
+      "sha256": "6724c631a25270c0af49dbc5776dd89df18a217e651c7d62abfe92973650a7ac"
+    },
+    {
+      "id": "temperanca",
+      "name": "A Temperança",
+      "numeral": "XIV",
+      "image": "cartas/a-temperanca.jpg",
+      "sha256": "005943cfbd44839072db562960d5859dbed01b810285320d428d7bbabb204e95"
+    },
+    {
+      "id": "diabo",
+      "name": "O Diabo",
+      "numeral": "XV",
+      "image": "cartas/o-diabo.jpg",
+      "sha256": "d0ab64bc4031d52a7d544689963fa362d25246adcbfe1c93caa95690bce26c95"
+    },
+    {
+      "id": "torre",
+      "name": "A Torre",
+      "numeral": "XVI",
+      "image": "cartas/a-torre.jpg",
+      "sha256": "53fd03b86de4b9bdeb0ef0f45dba0d55779751d67f42776717f3cf900693c011"
+    },
+    {
+      "id": "julgamento",
+      "name": "O Julgamento",
+      "numeral": "XX",
+      "image": "cartas/o-julgamento.jpg",
+      "sha256": "4305e3aab19b38ad0560b56fbf2e83ee80df567cf9a2fe3fa7da54a761f3221a"
+    },
+    {
+      "id": "copas-ás",
+      "name": "Ás de Copas",
+      "numeral": "Ás",
+      "image": "cartas/naipe-copas.jpg",
+      "sha256": "a0ed1964041a34dea9a5c7da2465dea2adacbfdd9cf5403a8701a07e05f75dbe"
+    },
+    {
+      "id": "copas-dois",
+      "name": "Dois de Copas",
+      "numeral": "2",
+      "image": "cartas/copas-2.jpg",
+      "sha256": "55cc6a7d78d7bb448697a28f20d858e145b217e227948ff753b251522def18a7"
+    },
+    {
+      "id": "copas-três",
+      "name": "Três de Copas",
+      "numeral": "3",
+      "image": "cartas/copas-3.jpg",
+      "sha256": "2c5c78754d45b9c1248fe8fa94531b6472338d4d3115a981b87310c2989f42c6"
+    },
+    {
+      "id": "copas-quatro",
+      "name": "Quatro de Copas",
+      "numeral": "4",
+      "image": "cartas/copas-4.jpg",
+      "sha256": "6d34716a64e99a7fdab9a44384575550b7ff7bb523697040b59bf2a7acaba7da"
+    },
+    {
+      "id": "copas-cinco",
+      "name": "Cinco de Copas",
+      "numeral": "5",
+      "image": "cartas/copas-5.jpg",
+      "sha256": "b555138a7bbaf9b721870b228befa0e07a09a7dbae21a2e0f445cb14b292ef9a"
+    },
+    {
+      "id": "copas-seis",
+      "name": "Seis de Copas",
+      "numeral": "6",
+      "image": "cartas/copas-6.jpg",
+      "sha256": "918871f0a8002122e0c9bf9de12b0f183283d6dee2c94e07a9466b4cf9e52763"
+    },
+    {
+      "id": "copas-sete",
+      "name": "Sete de Copas",
+      "numeral": "7",
+      "image": "cartas/copas-7.jpg",
+      "sha256": "001021cd59f94d7497fd90256284394624a3f0f50dff556dffb7fe7ed597f546"
+    },
+    {
+      "id": "copas-oito",
+      "name": "Oito de Copas",
+      "numeral": "8",
+      "image": "cartas/copas-8.jpg",
+      "sha256": "7092d9b19e9150e989ff82021c3ad40790d5849355e890ecb98758f882a749b6"
+    },
+    {
+      "id": "copas-nove",
+      "name": "Nove de Copas",
+      "numeral": "9",
+      "image": "cartas/copas-9.jpg",
+      "sha256": "f2a58a7c36d69170a611d833e2cb108b9c74f7390b9614e919c63b858994f7eb"
+    },
+    {
+      "id": "copas-dez",
+      "name": "Dez de Copas",
+      "numeral": "10",
+      "image": "cartas/copas-10.jpg",
+      "sha256": "aeed770d8aaa8c69c7e9708d40efabe61894fe05d6b2009d2010e62d29941842"
+    },
+    {
+      "id": "copas-valete",
+      "name": "Valete de Copas",
+      "numeral": "V",
+      "image": "cartas/copas-pajem.jpg",
+      "sha256": "17069d3364390bbb41a9dcd1d849af2b7ff724b0c08cc83be00ca2e329c1a720"
+    },
+    {
+      "id": "copas-cavaleiro",
+      "name": "Cavaleiro de Copas",
+      "numeral": "C",
+      "image": "cartas/copas-cavaleiro.jpg",
+      "sha256": "73a98b28b05e79a15b2b2f3d98b4a4821eb42fec276ffa069205f31bd530a555"
+    },
+    {
+      "id": "copas-rainha",
+      "name": "Rainha de Copas",
+      "numeral": "R",
+      "image": "cartas/copas-rainha.jpg",
+      "sha256": "aa7c08977343ae9c228d084d66c2ed2303544770d54fea384503686ab50fd0ed"
+    },
+    {
+      "id": "copas-rei",
+      "name": "Rei de Copas",
+      "numeral": "K",
+      "image": "cartas/copas-rei.jpg",
+      "sha256": "8a6bfba2d1ccaee845dae536a6dc0bde3875736ca70d0050a00671967605f625"
+    },
+    {
+      "id": "espadas-ás",
+      "name": "Ás de Espadas",
+      "numeral": "Ás",
+      "image": "cartas/naipe-espadas.jpg",
+      "sha256": "c9d5b1ae215c59f2308879ff513580674ef8274d974a82576378baa8ef22de2e"
+    },
+    {
+      "id": "espadas-dois",
+      "name": "Dois de Espadas",
+      "numeral": "2",
+      "image": "cartas/espadas-2.jpg",
+      "sha256": "1a5deeebff0d300c15118a67e420c4a2f3358a9fd9211b7a05b5c61655deecb5"
+    },
+    {
+      "id": "espadas-três",
+      "name": "Três de Espadas",
+      "numeral": "3",
+      "image": "cartas/espadas-3.jpg",
+      "sha256": "d0c7661a83ccb61bb89b49cd82c1f80056aa8bbfaf4856824b956a4a4ba05586"
+    },
+    {
+      "id": "espadas-quatro",
+      "name": "Quatro de Espadas",
+      "numeral": "4",
+      "image": "cartas/espadas-4.jpg",
+      "sha256": "351c894bf0cfa9bfbd825d7179f5ec98bee6a9bc589e975e1d755283fff3adee"
+    },
+    {
+      "id": "espadas-cinco",
+      "name": "Cinco de Espadas",
+      "numeral": "5",
+      "image": "cartas/espadas-5.jpg",
+      "sha256": "ea9999b58d190e7ae08c6f0bb485a22e13f35eca00513343796abcfda0209d87"
+    },
+    {
+      "id": "espadas-seis",
+      "name": "Seis de Espadas",
+      "numeral": "6",
+      "image": "cartas/espadas-6.jpg",
+      "sha256": "de3bcf73282645e0224303d19703b9913ef704f94162f199f68d54d22bf58b8e"
+    },
+    {
+      "id": "espadas-sete",
+      "name": "Sete de Espadas",
+      "numeral": "7",
+      "image": "cartas/espadas-7.jpg",
+      "sha256": "bafa1e6273fd461ac1b16d254eb5959f1e9d8592db67b009c505639578b807a9"
+    },
+    {
+      "id": "espadas-oito",
+      "name": "Oito de Espadas",
+      "numeral": "8",
+      "image": "cartas/espadas-8.jpg",
+      "sha256": "04728c63ae672d1517addcb4f890be789086a14b9c8342048ca7a79f19b776c6"
+    },
+    {
+      "id": "espadas-nove",
+      "name": "Nove de Espadas",
+      "numeral": "9",
+      "image": "cartas/espadas-9.jpg",
+      "sha256": "0d15cba8ac7768d688fd7177b6d8ec26d240f0c47086960bb9a6e334dceffa5c"
+    },
+    {
+      "id": "espadas-dez",
+      "name": "Dez de Espadas",
+      "numeral": "10",
+      "image": "cartas/espadas-10.jpg",
+      "sha256": "fea3c207508f42963c3aac2cfbea975f897fad5fe8d62b9617ca587c6b134f22"
+    },
+    {
+      "id": "espadas-valete",
+      "name": "Valete de Espadas",
+      "numeral": "V",
+      "image": "cartas/espadas-pajem.jpg",
+      "sha256": "f186c255b0f799ae16240be2b95cb2fa103c738af4d037f0d5ca601ffa144d30"
+    },
+    {
+      "id": "espadas-cavaleiro",
+      "name": "Cavaleiro de Espadas",
+      "numeral": "C",
+      "image": "cartas/espadas-cavaleiro.jpg",
+      "sha256": "f69e5d523027d93046a2cddf96ac1058fe30e47d2d38efa76a6f0fb90a63c039"
+    },
+    {
+      "id": "espadas-rainha",
+      "name": "Rainha de Espadas",
+      "numeral": "R",
+      "image": "cartas/espadas-rainha.jpg",
+      "sha256": "b33f171b287336f0c5885c539e133c7f123db988a5640b0c19bb8e009c53ad15"
+    },
+    {
+      "id": "espadas-rei",
+      "name": "Rei de Espadas",
+      "numeral": "K",
+      "image": "cartas/espadas-rei.jpg",
+      "sha256": "43f8f1334a2a88ec1471a7213138a5699c09ff43b8d5f2a45e0c5eab55ab3e01"
+    },
+    {
+      "id": "ouros-ás",
+      "name": "Ás de Ouros",
+      "numeral": "Ás",
+      "image": "cartas/naipe-ouros.jpg",
+      "sha256": "66d8e1debaf81e9a551d38dad7608d8e78263e4fa2a5716697886c4050c77ce6"
+    },
+    {
+      "id": "ouros-dois",
+      "name": "Dois de Ouros",
+      "numeral": "2",
+      "image": "cartas/ouros-2.jpg",
+      "sha256": "3e05efd82cc6490e20f7c18ea4fc4d9746f5a055bbdc4ea2b185e2feeec555bd"
+    },
+    {
+      "id": "ouros-três",
+      "name": "Três de Ouros",
+      "numeral": "3",
+      "image": "cartas/ouros-3.jpg",
+      "sha256": "666ea68bea0ccfe6f826bbd17bfdf473204834d311b2e34f0cfecc633758a431"
+    },
+    {
+      "id": "ouros-quatro",
+      "name": "Quatro de Ouros",
+      "numeral": "4",
+      "image": "cartas/ouros-4.jpg",
+      "sha256": "722e75868ee05e96d82505e8e6e9d0c8397a2b95451bf60ad66511e846b8a540"
+    },
+    {
+      "id": "ouros-cinco",
+      "name": "Cinco de Ouros",
+      "numeral": "5",
+      "image": "cartas/ouros-5.jpg",
+      "sha256": "f435522d74e2e18ba84d774303944413425a32dfb74ca252d7be8a5f828dcd56"
+    },
+    {
+      "id": "ouros-seis",
+      "name": "Seis de Ouros",
+      "numeral": "6",
+      "image": "cartas/ouros-6.jpg",
+      "sha256": "c230a1c084649e2a19a0789d4347ebadd87f3e32aed5962b704b4bae0f144cda"
+    },
+    {
+      "id": "ouros-sete",
+      "name": "Sete de Ouros",
+      "numeral": "7",
+      "image": "cartas/ouros-7.jpg",
+      "sha256": "62210ba991794e80c47018453613412037df2dbd305e4f91029e516a293237f1"
+    },
+    {
+      "id": "ouros-oito",
+      "name": "Oito de Ouros",
+      "numeral": "8",
+      "image": "cartas/ouros-8.jpg",
+      "sha256": "3da5b3e4c369dc84a51c5a4175f7e6bc2a3bd6fdd9d595da256c26b121895666"
+    },
+    {
+      "id": "ouros-nove",
+      "name": "Nove de Ouros",
+      "numeral": "9",
+      "image": "cartas/ouros-9.jpg",
+      "sha256": "a7ef2dd910f00db6e30a18de5e75200c9d3b0cdd438122d52878d518234c1c0c"
+    },
+    {
+      "id": "ouros-dez",
+      "name": "Dez de Ouros",
+      "numeral": "10",
+      "image": "cartas/ouros-10.jpg",
+      "sha256": "79bce6f40a876b5b39243c8c9363ef3a091312430878f1786aae16494ef16892"
+    },
+    {
+      "id": "ouros-valete",
+      "name": "Valete de Ouros",
+      "numeral": "V",
+      "image": "cartas/ouros-pajem.jpg",
+      "sha256": "8c9ad03ecc9f5646ada503850ec738c9dd1356442854e9c19dff35abfcb10c28"
+    },
+    {
+      "id": "ouros-cavaleiro",
+      "name": "Cavaleiro de Ouros",
+      "numeral": "C",
+      "image": "cartas/ouros-cavaleiro.jpg",
+      "sha256": "226f9b14ec2c52b82a61aadc97695bbc1bfa8cf15b4e58eb2d589dda58db4881"
+    },
+    {
+      "id": "ouros-rainha",
+      "name": "Rainha de Ouros",
+      "numeral": "R",
+      "image": "cartas/ouros-rainha.jpg",
+      "sha256": "1aad260ea115043c62838bf43ae86bf896e42815b631373ae78a86659d7b7e5f"
+    },
+    {
+      "id": "ouros-rei",
+      "name": "Rei de Ouros",
+      "numeral": "K",
+      "image": "cartas/ouros-rei.jpg",
+      "sha256": "582890525a08daa4eb59587003b7438dbf8dc7b99caed0ed52d6bb59607a5f1b"
+    },
+    {
+      "id": "paus-ás",
+      "name": "Ás de Paus",
+      "numeral": "Ás",
+      "image": "cartas/naipe-paus.jpg",
+      "sha256": "a5e0ab183668fc3c031f05116ad1725249483cfb77621071f605c590bb960ee0"
+    },
+    {
+      "id": "paus-dois",
+      "name": "Dois de Paus",
+      "numeral": "2",
+      "image": "cartas/paus-2.jpg",
+      "sha256": "a9036f8ded6d7eceae4e1425c81131f2893d05cfc950b1a8bccb502822be8ee7"
+    },
+    {
+      "id": "paus-três",
+      "name": "Três de Paus",
+      "numeral": "3",
+      "image": "cartas/paus-3.jpg",
+      "sha256": "573692ee9e5ac01033d52e7d0512c2f5710260789a3af75d9c31e12ecd11e942"
+    },
+    {
+      "id": "paus-quatro",
+      "name": "Quatro de Paus",
+      "numeral": "4",
+      "image": "cartas/paus-4.jpg",
+      "sha256": "d37cc3ee1307200a5e6e1274982a23ceca9f173cfe3e178c1a7eacdf6ac7a227"
+    },
+    {
+      "id": "paus-cinco",
+      "name": "Cinco de Paus",
+      "numeral": "5",
+      "image": "cartas/paus-5.jpg",
+      "sha256": "cf59f841997790159320c048ee660cce98794b517bbfe4015cbae362ed17a7f4"
+    },
+    {
+      "id": "paus-seis",
+      "name": "Seis de Paus",
+      "numeral": "6",
+      "image": "cartas/paus-6.jpg",
+      "sha256": "ac0bf67a9a6e787a96122cf244ab0d3a4f722f1f4928fcbedf202d1aa99ef79f"
+    },
+    {
+      "id": "paus-sete",
+      "name": "Sete de Paus",
+      "numeral": "7",
+      "image": "cartas/paus-7.jpg",
+      "sha256": "659b04966404129a993ee409789f854373f22c61298214a90b904c37fd72ab22"
+    },
+    {
+      "id": "paus-oito",
+      "name": "Oito de Paus",
+      "numeral": "8",
+      "image": "cartas/paus-8.jpg",
+      "sha256": "100b95bcb7476d08205d4e024569ea0cbeab7201ab90a49a943ebabc4e3818cc"
+    },
+    {
+      "id": "paus-nove",
+      "name": "Nove de Paus",
+      "numeral": "9",
+      "image": "cartas/paus-9.jpg",
+      "sha256": "e1327ee152b167b72b791ea05d0ca69a640a152661b6984c864b52c20ca5de7b"
+    },
+    {
+      "id": "paus-dez",
+      "name": "Dez de Paus",
+      "numeral": "10",
+      "image": "cartas/paus-10.jpg",
+      "sha256": "d387c07f0c71baf0309b6f75097a52b323841dd98f7241dcd10860baea161b73"
+    },
+    {
+      "id": "paus-valete",
+      "name": "Valete de Paus",
+      "numeral": "V",
+      "image": "cartas/paus-pajem.jpg",
+      "sha256": "d9c63c7b940c13934c8c51e25114d4735dc1796fab25f56e5835fab3017463e6"
+    },
+    {
+      "id": "paus-cavaleiro",
+      "name": "Cavaleiro de Paus",
+      "numeral": "C",
+      "image": "cartas/paus-cavaleiro.jpg",
+      "sha256": "4da89a1c109e40c2ced3bfaec77343d06170da7e1045ef72a43d743e23d15150"
+    },
+    {
+      "id": "paus-rainha",
+      "name": "Rainha de Paus",
+      "numeral": "R",
+      "image": "cartas/paus-rainha.jpg",
+      "sha256": "db7c66cc308de1b06bba7d172f923eea3e73b44e693064d733cd8dffc48d6202"
+    },
+    {
+      "id": "paus-rei",
+      "name": "Rei de Paus",
+      "numeral": "K",
+      "image": "cartas/paus-rei.jpg",
+      "sha256": "dfff912e6a114337df2e48614276157024c8eeae12fec4083059f12ee36c94ae"
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações | WaterKraft</title>
+    <script src="tema.js"></script>
+    <script src="preferencias.js"></script>
+    <script src="idiomas.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="tema.css">
+    <link rel="stylesheet" href="dashboard-waterkraft.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body class="dashboard pagina-configuracoes">
+    <header class="topo">
+        <div class="marca">
+            <span class="marca-icone" aria-hidden="true">🌱</span>
+            <div><h1>WaterKraft</h1><p class="marca-sub">Água é vida · Mantenha-se hidratado!</p></div>
+        </div>
+        <a class="botao-configuracoes" href="index.html">← Voltar ao painel</a>
+    </header>
+    <main class="config-conteudo">
+        <section class="card config-cartao" aria-labelledby="tituloConfiguracoes">
+            <h2 id="tituloConfiguracoes">⚙️ Configurações</h2>
+            <p class="config-descricao">Personaliza a aparência do teu WaterKraft.</p>
+            <div class="configuracao-opcao">
+                <div>
+                    <strong id="rotuloModoEscuro">🌙 Modo escuro</strong>
+                    <p id="descricaoModoEscuro" class="configuracao-nota">Usa tons escuros mantendo as cores e o estilo da aplicação.</p>
+                </div>
+                <input id="alternarTema" class="interruptor-tema" type="checkbox" role="switch" aria-labelledby="rotuloModoEscuro" aria-describedby="descricaoModoEscuro">
+            </div>
+            <p id="estadoTema" class="config-estado" aria-live="polite"></p>
+            <div class="configuracao-opcao">
+                <div><label for="seletorIdioma"><strong>🌐 Idioma</strong></label><p class="configuracao-nota">Escolhe o idioma da aplicação.</p></div>
+                <select id="seletorIdioma" aria-label="Idioma da aplicação">
+                    <option value="pt">Português</option>
+                    <option value="en">English</option>
+                    <option value="de">Deutsch</option>
+                    <option value="it">Italiano</option>
+                    <option value="fr">Français</option>
+                    <option value="es">Español</option>
+                </select>
+            </div>
+            <div class="configuracao-opcao">
+                <div><label for="seletorUnidade"><strong>💧 Medida de água</strong></label><p class="configuracao-nota">A quantidade guardada continua em litros; esta opção altera apenas a apresentação.</p></div>
+                <select id="seletorUnidade" aria-label="Unidade de medida da água">
+                    <option value="L">Litros (L)</option>
+                    <option value="mL">Mililitros (mL)</option>
+                </select>
+            </div>
+        </section>
+    </main>
+    <script src="configuracoes.js"></script>
+</body>
+</html>

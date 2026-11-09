@@ -1,12 +1,12 @@
-# 🐸 HealthyTrack
+# 🐸 WaterKraft
 
-O **HealthyTrack** é uma aplicação web focada no acompanhamento de hábitos relacionados com a saúde e o bem-estar, começando pelo registo e acompanhamento do consumo diário de água.
+O **WaterKraft** é uma aplicação web focada no acompanhamento de hábitos relacionados com a saúde e o bem-estar, começando pelo registo e acompanhamento do consumo diário de água.
 
 O projeto está a ser desenvolvido como forma de aprendizagem prática de desenvolvimento web Full Stack, desde a criação da interface até à implementação de uma API, autenticação de utilizadores e persistência de dados numa base de dados.
 
 ## 🎯 Objetivo
 
-O objetivo do HealthyTrack é permitir que os utilizadores acompanhem os seus hábitos diários de forma simples e intuitiva, começando pela hidratação e criando uma base para futuras funcionalidades relacionadas com o bem-estar.
+O objetivo do WaterKraft é permitir que os utilizadores acompanhem os seus hábitos diários de forma simples e intuitiva, começando pela hidratação e criando uma base para futuras funcionalidades relacionadas com o bem-estar.
 
 ## ✨ Funcionalidades
 
@@ -16,6 +16,7 @@ O objetivo do HealthyTrack é permitir que os utilizadores acompanhem os seus h�
 - Definição de uma meta diária de água.
 - Consulta de estatísticas diárias de consumo.
 - Acompanhamento do progresso em relação à meta estabelecida.
+- Tarot da Hidratação com tiragem de três cartas, significados e cartas invertidas.
 
 ### Utilizadores e autenticação
 - Criação de contas de utilizador.
@@ -104,10 +105,11 @@ Para executar os testes do front-end, a partir da pasta principal:
 
 ```bash
 npm --prefix frontend test
+```
 
 ## 🚀 Estado do projeto
 
-O HealthyTrack encontra-se em desenvolvimento, com funcionalidades de hidratação, autenticação, persistência de dados e testes automatizados já implementadas.
+O WaterKraft encontra-se em desenvolvimento, com funcionalidades de hidratação, autenticação, persistência de dados e testes automatizados já implementadas.
 
 O projeto continua a evoluir à medida que são consolidados os conhecimentos de desenvolvimento Full Stack.
 
