@@ -1,1 +1,1 @@
-window.WATERKRAFT_API_BASE_URL = window.WATERKRAFT_API_BASE_URL || "https://healthy-track-7cb5b512q-rgb-7e12.vercel.app";
+window.WATERKRAFT_API_BASE_URL = window.WATERKRAFT_API_BASE_URL || "https://healthy-track-one.vercel.app";
