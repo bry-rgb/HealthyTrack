@@ -1,0 +1,124 @@
+/* Adaptação do kit Tarot ao dashboard WaterKraft e aos dez selos oficiais. */
+.dashboard .tarot-card {
+    margin-top: 18px;
+    padding: 12px;
+    border: 1px solid #c9932c;
+    border-radius: 18px;
+    background: #141a33;
+    box-shadow: inset 0 0 0 3px rgba(233,196,90,.13), 0 5px 16px rgba(25,24,46,.2);
+    color: #f5efe0;
+}
+.dashboard .calendario-hidratacao.tarot-card { padding: 10px; }
+.dashboard .tarot-card .tt-frame {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 18px 14px;
+    border: 1px solid #e9c45a;
+    border-radius: 14px;
+    background: radial-gradient(ellipse at top, rgba(42,52,102,.7), transparent 62%), linear-gradient(180deg,#1b2245,#141a33);
+    box-shadow: inset 0 0 0 3px rgba(233,196,90,.08);
+}
+.dashboard .tarot-card .tt-title { font-size: 1.35rem; }
+.dashboard .tarot-card .tt-month { margin: 0 auto 12px; max-width: 340px; }
+.dashboard .tarot-card .tt-month button { margin: 0; padding: 0 8px; box-shadow: none; }
+.dashboard .tarot-card .tt-month button:disabled { opacity: .35; cursor: not-allowed; }
+.dashboard .tarot-card .tt-grid { gap: 5px; }
+.dashboard .tarot-card .tt-day { min-width: 0; }
+.dashboard .tarot-card .tt-day.tt-empty:has(.tt-n) { opacity: .4; }
+.dashboard .tarot-card .tt-day:has(.tt-n):not(.tt-empty) { cursor: default; }
+.dashboard .tarot-card .tt-day .tt-n { font-size: .68rem; }
+.dashboard .tarot-card .tt-drop { width: 36%; min-width: 13px; }
+.dashboard .tarot-card .tt-moon { min-width: 13px; }
+.dashboard .tarot-card .tt-legend { justify-content: center; column-gap: 14px; font-size: .72rem; }
+.dashboard .tarot-card .tt-hero { background: #1b2245; }
+.dashboard .tarot-card .tt-hero img { width: 78px; image-rendering: pixelated; }
+.dashboard .tarot-card .tt-hero-copy { flex: 1; min-width: 0; }
+.dashboard .tarot-card .tt-hero h3 { color: #f5efe0; }
+.dashboard .tarot-card .tt-error { color: #ffd5c9; text-align: center; }
+.dashboard .selos-sequencia.tarot-card { padding: 10px; }
+.dashboard .lista-selos .tt-seals {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 20px 8px;
+    margin-top: 8px;
+}
+.dashboard .tt-seal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+    margin: 0;
+    padding: 4px 2px 3px;
+    color: #f5efe0;
+    background: transparent;
+    border: 0;
+    border-radius: 12px;
+    box-shadow: none;
+    cursor: pointer;
+    transition: transform .2s ease, filter .2s ease;
+}
+.dashboard .tt-seal:hover { transform: translateY(-3px); filter: drop-shadow(0 4px 8px rgba(233,196,90,.35)); }
+.dashboard .tt-seal.tt-current .tt-medal { box-shadow: 0 0 22px #f6dc8acc, inset 0 0 0 3px rgba(255,244,213,.2); }
+.dashboard .tt-seal:focus-visible { outline: 3px solid #f6dc8a; outline-offset: 2px; }
+.dashboard .tt-medal {
+    width: min(100%, 66px);
+    aspect-ratio: 1;
+    flex: none;
+    font-size: 1.8rem;
+    border-width: 2px;
+    background: radial-gradient(circle,#24306a,#121835);
+}
+.dashboard .tt-ico-imagem {
+    display: block;
+    width: 76%;
+    height: 76%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+.dashboard .tt-seal.tt-locked .tt-medal { border-color: #7d6b48; filter: saturate(.38) brightness(.66); }
+.dashboard .tt-seal.tt-locked .tt-ico-imagem { opacity: .24; filter: grayscale(1); }
+.dashboard .tt-lock {
+    display: grid;
+    place-items: center;
+    inset: 0;
+    font-size: 1.35rem;
+    text-shadow: 0 2px 5px #000;
+}
+.dashboard .tt-roman { z-index: 1; font-size: .62rem; }
+.dashboard .tt-label {
+    max-width: 100%;
+    margin-top: 7px;
+    padding: 3px 5px;
+    overflow-wrap: anywhere;
+    font-family: "Nunito", sans-serif;
+    font-size: .65rem;
+    line-height: 1.2;
+    border-radius: 6px;
+}
+.dashboard .tt-days { margin-top: 3px; color: #d7c797; font-size: .6rem; font-weight: 800; }
+.dashboard .tt-seal.tt-locked .tt-label { opacity: .48; }
+.dashboard .tt-sun { padding: 8px 10px 0; }
+.dashboard .tt-sun img { width: 100px; image-rendering: pixelated; }
+.dashboard .tt-streak { margin-top: -2px; padding: 7px 10px; }
+.dashboard .tt-streak b { font-size: 1.65rem; }
+html[data-tema="escuro"] .dashboard .tarot-card { background: #11172d; }
+@media (max-width: 560px) {
+    .dashboard .tarot-card { padding: 7px; }
+    .dashboard .tarot-card .tt-frame { padding: 15px 8px; }
+    .dashboard .tarot-card .tt-grid { gap: 3px; }
+    .dashboard .tarot-card .tt-day { border-radius: 6px; }
+    .dashboard .tarot-card .tt-day .tt-n { top: 2px; left: 3px; font-size: .59rem; }
+    .dashboard .tarot-card .tt-hero img { width: 58px; }
+    .dashboard .lista-selos .tt-seals { gap: 14px 3px; }
+    .dashboard .tt-medal { width: min(100%, 54px); }
+    .dashboard .tt-label { font-size: .58rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .dashboard .tt-seal { transition: none; }
+}
+/* O contentor recebe título, mascote, sequência e grelha; só os emblemas ficam em colunas. */
+.dashboard .selos-sequencia .lista-selos {
+    display: block;
+    grid-template-columns: none;
+}

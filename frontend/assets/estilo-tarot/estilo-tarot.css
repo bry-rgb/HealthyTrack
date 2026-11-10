@@ -1,0 +1,38 @@
+/* Estilo Tarot — calendário e selos. Todas as classes começam por "tt-". */
+:root{--tt-bg:#141a33;--tt-panel:#1b2245;--tt-fg:#f5efe0;--tt-gold:#e9c45a;--tt-gold2:#c9932c;--tt-muted:#b9ae96;--tt-water:#4fb3ff;--tt-dim:#2a3157}
+.tt-page{min-height:100vh;margin:0;padding:24px 14px;background:radial-gradient(ellipse at top,#2a3466b3,transparent 60%),var(--tt-bg);color:var(--tt-fg);font-family:Nunito,sans-serif}
+.tt-frame{max-width:440px;margin:0 auto;padding:22px 16px;border:2px solid var(--tt-gold);border-radius:22px;box-shadow:inset 0 0 0 5px var(--tt-bg),inset 0 0 0 6px #e9c45a66,0 0 40px -10px #e9c45a80;background:linear-gradient(180deg,#1d2550,#141a33)}
+.tt-title{font-family:Cinzel,serif;text-align:center;font-size:1.7rem;margin:0 0 14px;background:linear-gradient(135deg,#f6dc8a,var(--tt-gold2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tt-orn{text-align:center;color:var(--tt-gold);letter-spacing:.5em;font-size:.8rem;margin-bottom:6px}
+/* Calendário */
+.tt-month{display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--tt-gold);border-radius:999px;padding:6px 14px;font-family:Cinzel,serif;color:var(--tt-gold);margin-bottom:14px}
+.tt-month button{background:none;border:0;color:var(--tt-gold);font-size:1.3rem;cursor:pointer}
+.tt-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.tt-wd{text-align:center;font-family:Cinzel,serif;color:var(--tt-gold);font-size:.85rem}
+.tt-day{position:relative;aspect-ratio:1/1.1;border:1px solid #e9c45a99;border-radius:8px;background:#121835;display:flex;align-items:center;justify-content:center}
+.tt-day.tt-empty{border-color:#e9c45a33;background:transparent}
+.tt-day .tt-n{position:absolute;top:3px;left:5px;font-family:Cinzel,serif;font-size:.7rem;color:var(--tt-fg)}
+.tt-day.tt-today{border:2px solid var(--tt-gold);box-shadow:0 0 14px #e9c45acc}
+.tt-drop{width:44%;aspect-ratio:3/4;background:linear-gradient(var(--tt-dim) calc(100% - var(--fill,100%)),var(--tt-water) 0);clip-path:path("M50% 0%");-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 40'%3E%3Cpath d='M15 0C15 0 0 18 0 26a15 14 0 0 0 30 0C30 18 15 0 15 0z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 40'%3E%3Cpath d='M15 0C15 0 0 18 0 26a15 14 0 0 0 30 0C30 18 15 0 15 0z'/%3E%3C/svg%3E") center/contain no-repeat;clip-path:none;filter:drop-shadow(0 0 6px #4fb3ffaa)}
+.tt-moon{width:40%;aspect-ratio:1;border-radius:50%;box-shadow:inset -6px 3px 0 0 #3a4270;transform:rotate(-20deg);opacity:.8}
+.tt-legend{display:flex;flex-wrap:wrap;justify-content:space-around;gap:8px;margin-top:14px;font-size:.78rem;color:var(--tt-muted)}
+.tt-legend span{display:flex;align-items:center;gap:5px}.tt-legend .tt-drop{width:12px}.tt-legend .tt-moon{width:12px;box-shadow:inset -3px 1px 0 0 #3a4270}
+.tt-hero{display:flex;gap:12px;align-items:center;margin-top:18px;padding:12px;border:1.5px solid var(--tt-gold);border-radius:16px;background:var(--tt-panel)}
+.tt-hero img{width:96px;flex:none}
+.tt-hero h3{font-family:Cinzel,serif;margin:0 0 8px;font-size:1.05rem}
+.tt-bar{height:14px;border:1.5px solid var(--tt-gold);border-radius:999px;overflow:hidden;background:#0f1430}
+.tt-bar i{display:block;height:100%;background:linear-gradient(90deg,#7fd0ff,var(--tt-water))}
+/* Selos */
+.tt-sun{text-align:center;padding:16px;border-radius:20px;background:radial-gradient(circle,#f6dc8a 0 38%,transparent 39%),radial-gradient(circle,#e9c45a55,transparent 70%)}
+.tt-sun img{width:150px}
+.tt-streak{margin:-6px auto 0;max-width:280px;padding:10px;border:2px solid var(--tt-gold2);border-radius:14px;background:#f7e7b8;color:#1b2245;text-align:center}
+.tt-streak b{display:block;font-family:Cinzel,serif;font-size:2rem}
+.tt-streak small{font-family:Cinzel,serif}
+.tt-seals{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+.tt-seal{text-align:center}
+.tt-medal{position:relative;aspect-ratio:1;border-radius:50%;border:3px solid var(--tt-gold);display:flex;align-items:center;justify-content:center;font-size:2.2rem;background:radial-gradient(circle,#24306a,#121835);box-shadow:0 0 18px #e9c45a99}
+.tt-roman{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--tt-bg);border:1.5px solid var(--tt-gold);border-radius:6px;padding:0 6px;font-family:Cinzel,serif;font-size:.75rem;color:var(--tt-gold)}
+.tt-label{margin-top:8px;display:inline-block;padding:3px 10px;border:1.5px solid var(--tt-gold);border-radius:8px;background:#f7e7b8;color:#1b2245;font-family:Cinzel,serif;font-size:.78rem}
+.tt-seal.tt-locked .tt-medal{box-shadow:none;border-color:#e9c45a66;background:#121835}.tt-seal.tt-locked .tt-ico{opacity:.25;filter:grayscale(1)}
+.tt-seal.tt-locked .tt-label{opacity:.55}
+.tt-lock{position:absolute;font-size:1.3rem;filter:none}

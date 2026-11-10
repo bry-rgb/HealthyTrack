@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1c12">
+  <meta name="description" content="Volta a entrar no WaterKraft para continuares a tua aventura.">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Sessão expirada | WaterKraft</title>
+  <link rel="icon" href="assets/login-tarot/sapo.png" type="image/png">
+  <link rel="stylesheet" href="sessao-expirada/styles.css">
+</head>
+<body class="session-page">
+  <header class="session-header">
+    <span class="session-brand">WATERKRAFT</span>
+    <span class="session-context">ACESSO À CONTA</span>
+  </header>
+  <main class="session-main">
+    <h1 class="session-title">Alto lá, aventureiro!</h1>
+    <p class="session-intro">O fiscal de tokens não te deixa passar.</p>
+    <img class="session-scene" src="sessao-expirada/assets/ilustracao-fiscal-sessao.png" width="1536" height="1024" alt="O guerreiro sapo procura na bolsa enquanto o fiscal sapo guarda a passagem com um cadeado." fetchpriority="high">
+    <h2 class="session-status">A tua sessão expirou</h2>
+    <p class="session-description"><span>Nem uma espada lendária te safa desta.</span><span>Volta a entrar para continuar a tua aventura.</span></p>
+    <a class="session-login" href="login.html" id="botaoLogin"><span>Voltar ao login</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></a>
+  </main>
+  <script>
+    document.getElementById("botaoLogin").addEventListener("click", function () {
+      try { sessionStorage.removeItem("token"); } catch (_) {}
+    });
+  </script>
+</body>
+</html>

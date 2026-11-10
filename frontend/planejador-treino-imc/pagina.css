@@ -1,0 +1,11 @@
+/* Página autónoma do Planejador, com cabeçalho e paleta WaterKraft. */
+body.dashboard.pagina-planejador { max-width:1240px; padding-bottom:42px; }
+.pagina-planejador .topo { margin-bottom:20px; }
+.pagina-planejador .planejador-main { width:100%; }
+.pagina-planejador .card-planejador-pagina { padding:clamp(18px,3vw,32px); }
+@media(max-width:560px) {
+    body.dashboard.pagina-planejador { padding:18px 14px 34px; }
+    .pagina-planejador .topo { align-items:flex-start; }
+    .pagina-planejador .topo .marca-sub { white-space:normal; }
+    .pagina-planejador .card-planejador-pagina { padding:16px; }
+}

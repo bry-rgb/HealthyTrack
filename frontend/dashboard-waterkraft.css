@@ -1,0 +1,315 @@
+/* Paleta WaterKraft do login aplicada ao dashboard; mantém claro/escuro nas superfícies. */
+body.dashboard {
+    --verde-escuro: #172035;
+    --verde: #e9c45a;
+    --verde-claro: #56c9f4;
+    --creme: #fbf7e9;
+    --creme-escuro: #e9e3d2;
+    --castanho: #c9932c;
+    --castanho-claro: #ddc980;
+    --texto: #172035;
+    --fundo: #e8edf6;
+    --branco: #fffdf5;
+    --sombra: #c6cedd;
+    background-color: var(--fundo);
+    background-image:
+        radial-gradient(circle at 12% 0%, rgba(86,201,244,.14), transparent 38%),
+        radial-gradient(circle at 100% 25%, rgba(233,196,90,.15), transparent 42%),
+        radial-gradient(circle at 50% 100%, rgba(35,62,120,.08), transparent 48%);
+    color: var(--texto);
+}
+body.dashboard h1,
+body.dashboard h2,
+body.dashboard h3 { color: var(--verde-escuro); }
+body.dashboard .marca-icone,
+body.dashboard .data-hora {
+    color: var(--ouro-claro, #ffe6a0);
+    background: linear-gradient(145deg,#172447,#0e1831);
+    border-color: #e9c45a;
+    box-shadow: 0 0 18px rgba(233,196,90,.2), 4px 4px 0 rgba(23,32,53,.16);
+}
+body.dashboard .marca-sub { color: var(--texto); }
+body.dashboard .card {
+    color: var(--texto);
+    background: linear-gradient(155deg, var(--branco), var(--creme));
+    border-color: var(--castanho);
+    box-shadow: 5px 5px 0 var(--sombra), 0 12px 30px rgba(23,32,53,.08);
+}
+body.dashboard .card-titulo h2,
+body.dashboard .boas-vindas,
+body.dashboard .perfil-linha strong,
+body.dashboard .card .dia-rotulo { color: #172b4d; }
+body.dashboard .selo,
+body.dashboard .perfil-avatar {
+    color: #172035;
+    background: linear-gradient(135deg,#fff2bf,#e9c45a);
+    border-color: #c9932c;
+}
+body.dashboard .heroi {
+    background: radial-gradient(ellipse at 50% 0%, rgba(86,201,244,.17), transparent 60%), linear-gradient(160deg,#f5f1e5,#fffdf5);
+    border-color: #c9932c;
+}
+body.dashboard .mascote-palco::before { background: radial-gradient(circle,#bfeafa 0%,rgba(86,201,244,0) 72%); }
+body.dashboard #agua,
+body.dashboard .progresso-texto,
+body.dashboard #diasHidratado,
+body.dashboard .calendario-streak strong { color: #218fd2; }
+body.dashboard .barra-meta { background: #d8e3ee; border-color: #b9c6d5; }
+body.dashboard .preenchimento-meta { background: linear-gradient(90deg,#56c9f4,#218fd2); }
+body.dashboard button {
+    color: #172035;
+    background: linear-gradient(115deg,#ffe6a0,#e9c45a 55%,#c9932c);
+    border-color: #b77a24;
+    box-shadow: 0 4px 0 rgba(119,83,28,.32);
+}
+body.dashboard button:hover { background: linear-gradient(115deg,#fff0bd,#f0d16d 55%,#dba73a); }
+body.dashboard button:focus-visible,
+body.dashboard a:focus-visible,
+body.dashboard input:focus-visible,
+body.dashboard select:focus-visible { outline-color: #218fd2; }
+body.dashboard #botaoAgua { color: #10243b; background: linear-gradient(115deg,#9be8ff,#56c9f4 55%,#218fd2); border-color: #1976ad; box-shadow: 0 5px 0 #15577f; }
+body.dashboard #salvarMeta,
+body.dashboard .botao-secundario,
+body.dashboard .botao-configuracoes { color: #172035; background: linear-gradient(115deg,#ffe6a0,#e9c45a 55%,#c9932c); border-color: #b77a24; }
+body.dashboard .botao-perigo { color: #7e2f37; background: #fff0e8; border-color: #c77a63; box-shadow: 0 4px 0 rgba(119,53,40,.2); }
+body.dashboard .botao-perigo:hover { background: #ffe1d4; }
+body.dashboard input,
+body.dashboard select { color: #172035; background: #fffdf5; border-color: #c9932c; }
+body.dashboard #graficoEstatisticas {
+    background: repeating-linear-gradient(to top,transparent 0 43px,rgba(233,196,90,.2) 43px 44px),linear-gradient(160deg,#172447,#0e1831);
+}
+body.dashboard .barra-grafico { background: linear-gradient(180deg,#9be8ff,#56c9f4 55%,#218fd2); }
+body.dashboard .coluna-grafico p,
+body.dashboard .coluna-grafico span { color: #f7f0de; }
+body.dashboard .card-dia .dia-bloco { background: #f4edda; border-color: #c9932c; }
+body.dashboard .botao-tarot { color: #172035; background: linear-gradient(115deg,#ffe6a0,#e9c45a 55%,#c9932c); border-color: #b77a24; }
+body.dashboard .modal-selo-conteudo {
+    color: #f7f0de;
+    background: radial-gradient(circle at 50% 0,#172447,#0b142b 72%,#080f24);
+    border-color: #e9c45a;
+    box-shadow: 0 18px 55px rgba(8,15,36,.55), inset 0 0 0 3px rgba(255,230,160,.16);
+}
+body.dashboard .modal-selo-conteudo h2 { color: #ffe6a0; }
+body.dashboard .modal-selo-fechar { color: #172035; background: #ffe6a0; border-color: #c9932c; }
+body.dashboard .modal-selo-marco { color: #e9c45a; }
+body.dashboard .modal-selo-titulo { color: #172035; background: #ffe6a0; border-color: #c9932c; }
+body.dashboard .modal-selo-descricao,
+body.dashboard .modal-selo-estado { color: #f7f0de; }
+
+/* O modo escuro segue a combinação original do login: azul-noite, dourado e água. */
+html[data-tema="escuro"] body.dashboard {
+    --verde-escuro: #ffe6a0;
+    --verde: #e9c45a;
+    --verde-claro: #56c9f4;
+    --creme: #111c39;
+    --creme-escuro: #172447;
+    --castanho: #e9c45a;
+    --castanho-claro: #8e7640;
+    --texto: #f7f0de;
+    --fundo: #080f24;
+    --branco: #111c39;
+    --sombra: #050a17;
+    background-color: var(--fundo);
+    background-image:
+        radial-gradient(ellipse at 65% -20%,rgba(35,62,120,.55),transparent 55%),
+        radial-gradient(circle at 12% 16%,rgba(255,230,160,.1) 0 1px,transparent 1.5px),
+        radial-gradient(circle at 76% 9%,rgba(255,255,255,.12) 0 1px,transparent 1.5px),
+        radial-gradient(circle at 85% 45%,rgba(233,196,90,.13) 0 1px,transparent 1.5px),
+        #080f24;
+    background-size: auto,240px 240px,310px 310px,370px 370px,auto;
+    color: var(--texto);
+}
+html[data-tema="escuro"] body.dashboard .card {
+    background: linear-gradient(155deg,#172447,#0e1831);
+    border-color: #e9c45a;
+    box-shadow: 0 18px 45px rgba(0,0,0,.24),inset 0 0 0 4px rgba(10,19,42,.8),inset 0 0 0 5px rgba(233,196,90,.1);
+}
+html[data-tema="escuro"] body.dashboard .card-titulo h2,
+html[data-tema="escuro"] body.dashboard .boas-vindas,
+html[data-tema="escuro"] body.dashboard .perfil-linha strong,
+html[data-tema="escuro"] body.dashboard .card .dia-rotulo { color: #ffe6a0; }
+html[data-tema="escuro"] body.dashboard .heroi { background: radial-gradient(ellipse at 50% 0%,rgba(86,201,244,.15),transparent 60%),linear-gradient(160deg,#172447,#0e1831); border-color: #e9c45a; }
+html[data-tema="escuro"] body.dashboard input,
+html[data-tema="escuro"] body.dashboard select { color: #f7f0de; background: #0b142b; border-color: #8e7640; }
+html[data-tema="escuro"] body.dashboard .card-dia .dia-bloco { background: #172447; border-color: #8e7640; }
+html[data-tema="escuro"] body.dashboard .data-hoje { color: #c4cbe0; }
+html[data-tema="escuro"] body.dashboard .modal-selo-conteudo { background: radial-gradient(circle at 50% 0,#172447,#0b142b 72%,#080f24); }
+
+/* No modo claro, suaviza o azul dos painéis de selos e calendário. */
+html[data-tema="claro"] body.dashboard .tarot-card {
+    background: linear-gradient(145deg,#2c3f60,#253653);
+    box-shadow: inset 0 0 0 3px rgba(233,196,90,.12), 0 5px 16px rgba(25,24,46,.12);
+}
+/* The hydration calendar is its own dashboard card with a softer light surface. */
+html[data-tema="claro"] body.dashboard .calendario-hidratacao.tarot-card {
+    color: #172035;
+    background: linear-gradient(150deg,#fffdf5,#edf4fa);
+    border-color: #c9932c;
+    box-shadow: 5px 5px 0 #c6cedd, 0 12px 30px rgba(23,32,53,.08);
+}
+html[data-tema="claro"] body.dashboard .tarot-card .tt-frame {
+    background: radial-gradient(ellipse at top,rgba(93,121,157,.48),transparent 62%),linear-gradient(180deg,#344b6e,#2a3d5d);
+}
+html[data-tema="claro"] body.dashboard .tarot-card .tt-day {
+    background: #263a57;
+}
+html[data-tema="claro"] body.dashboard .tarot-card .tt-day.tt-empty {
+    background: rgba(219,231,243,.08);
+}
+html[data-tema="claro"] body.dashboard .tt-medal {
+    background: radial-gradient(circle,#405b82,#2a3e5d);
+}
+html[data-tema="claro"] body.dashboard .tt-seal.tt-locked .tt-medal {
+    background: radial-gradient(circle,#34445e,#26364f);
+}
+
+/* Settings use the same WaterKraft adventure finish as the dashboard. */
+body.dashboard.pagina-configuracoes { min-height: 100vh; }
+body.dashboard.pagina-configuracoes .topo {
+    padding-bottom: 18px;
+    border-bottom: 2px solid rgba(201,147,44,.48);
+}
+body.dashboard.pagina-configuracoes .config-conteudo { padding-top: 26px; }
+body.dashboard.pagina-configuracoes .config-cartao {
+    padding: clamp(22px,4vw,38px);
+    border-radius: 22px;
+}
+body.dashboard.pagina-configuracoes .config-cartao h2 {
+    font-family: "Fredoka", sans-serif;
+    font-size: clamp(1.55rem,3vw,2rem);
+}
+body.dashboard.pagina-configuracoes .config-descricao { margin-bottom: 24px; }
+body.dashboard.pagina-configuracoes .configuracao-opcao {
+    margin-top: 14px;
+    background: linear-gradient(125deg,#fffdf5,#f1f5f7);
+    border-color: #ddc980;
+    border-radius: 15px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 3px 0 rgba(23,32,53,.06);
+}
+body.dashboard.pagina-configuracoes .configuracao-opcao strong { color: #172b4d; }
+body.dashboard.pagina-configuracoes .configuracao-nota { color: #5b6372; }
+body.dashboard.pagina-configuracoes .configuracao-opcao select {
+    color: #172035;
+    background: #fffdf5;
+    border-color: #c9932c;
+    border-radius: 10px;
+}
+body.dashboard.pagina-configuracoes .interruptor-tema { border-color: #c9932c; }
+html[data-tema="escuro"] body.dashboard.pagina-configuracoes .topo { border-bottom-color: rgba(233,196,90,.35); }
+html[data-tema="escuro"] body.dashboard.pagina-configuracoes .configuracao-opcao {
+    background: linear-gradient(135deg,#172447,#111c39);
+    border-color: #8e7640;
+    box-shadow: inset 0 1px 0 rgba(255,230,160,.05), 0 4px 0 rgba(0,0,0,.18);
+}
+html[data-tema="escuro"] body.dashboard.pagina-configuracoes .configuracao-opcao strong { color: #ffe6a0; }
+html[data-tema="escuro"] body.dashboard.pagina-configuracoes .configuracao-nota { color: #c4cbe0; }
+html[data-tema="escuro"] body.dashboard.pagina-configuracoes .configuracao-opcao select {
+    color: #f7f0de;
+    background: #0b142b;
+    border-color: #8e7640;
+}
+
+/* Superfícies bem mais claras para o tema claro do dashboard. */
+html[data-tema="claro"] body.dashboard .marca-icone,
+html[data-tema="claro"] body.dashboard .data-hora {
+    color: #172b4d;
+    background: linear-gradient(145deg,#fffdf5,#e7f2fa);
+    border-color: #c9932c;
+    box-shadow: 4px 4px 0 rgba(110,132,158,.22);
+}
+html[data-tema="claro"] body.dashboard .tarot-card {
+    --tt-bg: #eef4f8;
+    --tt-panel: #fff9e9;
+    --tt-fg: #172b4d;
+    --tt-gold: #bd8c2c;
+    --tt-gold2: #a8751e;
+    --tt-muted: #596b81;
+    --tt-dim: #c8dced;
+    color: #172b4d;
+    background: linear-gradient(145deg,#f7fbfd,#e6f0f7);
+    border-color: #c9932c;
+    box-shadow: inset 0 0 0 3px rgba(255,255,255,.7), 0 5px 16px rgba(46,68,94,.1);
+}
+html[data-tema="claro"] body.dashboard .tarot-card .tt-frame {
+    color: #172b4d;
+    background: linear-gradient(160deg,#fffdf6,#edf5fa);
+    border-color: #c9932c;
+    box-shadow: inset 0 0 0 3px rgba(255,255,255,.72), 0 3px 10px rgba(46,68,94,.08);
+}
+html[data-tema="claro"] body.dashboard .tarot-card .tt-title {
+    color: #20395f;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+}
+html[data-tema="claro"] body.dashboard .tarot-card .tt-month {
+    color: #20395f;
+    background: #f6f8f5;
+    border-color: #c9932c;
+}
+html[data-tema="claro"] body.dashboard .tarot-card .tt-month button,
+html[data-tema="claro"] body.dashboard .tarot-card .tt-wd { color: #456185; }
+html[data-tema="claro"] body.dashboard .tarot-card .tt-day {
+    color: #20395f;
+    background: #e5eff6;
+    border-color: #c6ad70;
+}
+html[data-tema="claro"] body.dashboard .tarot-card .tt-day.tt-empty {
+    background: rgba(255,255,255,.55);
+    border-color: #d7dfdf;
+}
+html[data-tema="claro"] body.dashboard .tarot-card .tt-day .tt-n { color: #263d5d; }
+html[data-tema="claro"] body.dashboard .tarot-card .tt-day.tt-today {
+    background: #fff4d1;
+    border-color: #d9a932;
+    box-shadow: 0 0 0 2px rgba(217,169,50,.2);
+}
+html[data-tema="claro"] body.dashboard .tarot-card .tt-legend { color: #52647a; }
+html[data-tema="claro"] body.dashboard .tarot-card .tt-hero {
+    color: #20395f;
+    background: linear-gradient(120deg,#e2f2fa,#fff6dc);
+}
+html[data-tema="claro"] body.dashboard .tarot-card .tt-hero h3 { color: #20395f; }
+html[data-tema="claro"] body.dashboard .tarot-card .tt-bar { background: #d8e8f2; }
+html[data-tema="claro"] body.dashboard .tt-seal { color: #20395f; }
+html[data-tema="claro"] body.dashboard .tt-medal {
+    color: #20395f;
+    background: radial-gradient(circle at 35% 28%,#fffdf2,#dcecf5 75%);
+    border-color: #c9932c;
+    box-shadow: 0 3px 10px rgba(46,68,94,.12);
+}
+html[data-tema="claro"] body.dashboard .tt-seal.tt-locked .tt-medal {
+    background: radial-gradient(circle at 35% 28%,#e5e9e9,#cbd5dc);
+    border-color: #aeb9bc;
+    filter: saturate(.55) brightness(.96);
+}
+html[data-tema="claro"] body.dashboard .tt-roman {
+    color: #7d5c1e;
+    background: #fff8e4;
+    border-color: #c9932c;
+}
+html[data-tema="claro"] body.dashboard .tt-label {
+    color: #20395f;
+    background: #fff7dc;
+    border-color: #d3b362;
+}
+html[data-tema="claro"] body.dashboard .tt-days { color: #536983; }
+html[data-tema="claro"] body.dashboard .tt-seal.tt-locked .tt-label { opacity: .72; }
+html[data-tema="claro"] body.dashboard .tt-lock { text-shadow: 0 1px 3px rgba(255,255,255,.9); }
+html[data-tema="claro"] body.dashboard #graficoEstatisticas {
+    background: repeating-linear-gradient(to top,transparent 0 43px,rgba(153,126,72,.16) 43px 44px),linear-gradient(160deg,#edf5fa,#fffaf0);
+    border-color: #d8c99f;
+}
+html[data-tema="claro"] body.dashboard .coluna-grafico p,
+html[data-tema="claro"] body.dashboard .coluna-grafico span { color: #263d5d; }
+
+/* Keep the logout label legible on its gold button in dark mode. */
+html[data-tema="escuro"] body.dashboard #botaoLogout {
+    color: #101a33;
+    background: linear-gradient(115deg,#ffe9a8,#e9c45a 58%,#c9932c);
+    border-color: #f3d478;
+    box-shadow: 0 4px 0 #76551d;
+}
+html[data-tema="escuro"] body.dashboard #botaoLogout:hover {
+    color: #101a33;
+    background: linear-gradient(115deg,#fff2c5,#f3d578 58%,#d9a83c);
+}

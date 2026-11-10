@@ -1,0 +1,972 @@
+/* ========================================
+   HEALTHYTRACK — ESTILO RPG / AVENTURA
+   ======================================== */
+
+:root {
+    --verde-escuro: #426b3c;
+    --verde: #5d874b;
+    --verde-claro: #82a96b;
+    --creme: #fffaf0;
+    --creme-escuro: #f0e7d6;
+    --castanho: #b99a70;
+    --castanho-claro: #d9c8a9;
+    --texto: #66523c;
+    --fundo: #f4f0e6;
+    --branco: #ffffff;
+    --sombra: #e6d6bd;
+}
+
+/* ===== BASE ===== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 24px 20px 40px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--texto);
+    background-color: var(--fundo);
+    text-align: center;
+    line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+    color: var(--verde-escuro);
+}
+
+h1 {
+    margin: 10px 0;
+    font-size: 2.4rem;
+    letter-spacing: 1px;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+p {
+    margin: 10px 0;
+}
+
+/* ===== BOTÕES ===== */
+
+button {
+    padding: 11px 16px;
+    color: var(--branco);
+    background-color: var(--verde);
+    border: 2px solid var(--verde-escuro);
+    border-radius: 7px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--sombra);
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+button:hover {
+    background-color: var(--verde-escuro);
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translate(2px, 2px);
+}
+
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid var(--verde-claro);
+    outline-offset: 3px;
+}
+
+#botaoLogout {
+    display: block;
+    margin: 12px auto 20px;
+    background-color: var(--creme);
+    color: var(--verde-escuro);
+    border-color: var(--castanho);
+}
+
+#botaoLogout:hover {
+    background-color: var(--creme-escuro);
+}
+
+/* ========================================
+   DASHBOARD — ÁGUA E ESTATÍSTICAS LADO A LADO
+   ======================================== */
+
+/*
+   O HTML atual não tem um contentor comum
+   para o cartão e as estatísticas.
+   Por isso, usamos um layout com CSS Grid
+   no body e posicionamos as secções existentes.
+*/
+
+body {
+    display: grid;
+    grid-template-columns: minmax(280px, 420px) minmax(0, 700px);
+    grid-template-areas:
+        "titulo titulo"
+        "logout logout"
+        "intro intro"
+        "subintro subintro"
+        "agua estatisticas"
+        "historico historico"
+        "apagar apagar"
+        "mensagem mensagem"
+        "falta falta";
+    column-gap: 28px;
+    align-items: start;
+    justify-content: center;
+}
+
+/* Posicionamento dos elementos do dashboard */
+
+body > h1 {
+    grid-area: titulo;
+}
+
+body > #botaoLogout {
+    grid-area: logout;
+}
+
+body > #botaoLogout + p {
+    grid-area: intro;
+}
+
+body > #botaoLogout + p + p {
+    grid-area: subintro;
+}
+
+body > .card {
+    grid-area: agua;
+    width: 100%;
+    max-width: 420px;
+    margin: 28px 0;
+}
+
+body > .estatisticas {
+    grid-area: estatisticas;
+    width: 100%;
+    max-width: 700px;
+    margin: 28px 0;
+}
+
+body > .historico {
+    grid-area: historico;
+    width: 100%;
+    max-width: 700px;
+    justify-self: center;
+    margin: 28px 0;
+}
+
+body > button[onclick="limparHistorico()"] {
+    grid-area: apagar;
+    justify-self: center;
+    margin: 8px auto 20px;
+}
+
+body > #mensagemMeta {
+    grid-area: mensagem;
+}
+
+body > #mensagemFalta {
+    grid-area: falta;
+}
+
+/* ===== CARTÕES ===== */
+
+.card,
+.estatisticas,
+.historico {
+    padding: 26px;
+    background-color: var(--creme);
+    border: 3px solid var(--castanho);
+    border-radius: 12px;
+    box-shadow: 5px 5px 0 var(--sombra);
+}
+
+.card h2,
+.estatisticas h2,
+.historico h2 {
+    margin-bottom: 18px;
+}
+
+/* ===== CARTÃO DA ÁGUA ===== */
+
+#agua {
+    display: inline-block;
+    margin: 8px 0 18px;
+    color: var(--verde-escuro);
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+#meta {
+    display: block;
+    width: 100%;
+    max-width: 180px;
+    margin: 8px auto 14px;
+    padding: 10px;
+    color: var(--texto);
+    background-color: var(--branco);
+    border: 2px solid var(--castanho-claro);
+    border-radius: 7px;
+    font-size: 1rem;
+    text-align: center;
+}
+
+#salvarMeta {
+    margin-bottom: 14px;
+}
+
+#botaoAgua {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    font-size: 1.05rem;
+}
+
+/* ===== MENSAGENS DA META ===== */
+
+#mensagemMeta,
+#mensagemFalta {
+    width: 100%;
+    max-width: 700px;
+    margin: 12px auto;
+    font-weight: bold;
+}
+
+#mensagemMeta {
+    color: var(--verde-escuro);
+}
+
+#mensagemFalta {
+    color: var(--texto);
+}
+
+/* ===== ESTATÍSTICAS ===== */
+
+.resumo-diario {
+    padding: 20px;
+    margin-bottom: 28px;
+    background-color: var(--creme-escuro);
+    border: 2px solid var(--castanho-claro);
+    border-radius: 10px;
+}
+
+.resumo-diario h3,
+.grafico-diario h3 {
+    margin-top: 0;
+    color: var(--verde-escuro);
+}
+
+#consumoHoje {
+    margin: 8px 0;
+    color: var(--verde-escuro);
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+#progressoMeta {
+    color: var(--texto);
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+/* ========================================
+   BARRA DE HIDRATAÇÃO — ÁGUA RPG
+   ======================================== */
+
+.barra-meta {
+    width: 100%;
+    height: 28px;
+    background: #c5d8d9;
+    border: 2px solid #8c704e;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow:
+        inset 0 2px 4px rgba(50, 70, 70, 0.22),
+        0 2px 0 #d9c8a9;
+}
+
+/* A água enche de acordo com a percentagem calculada em JavaScript. */
+.preenchimento-meta {
+    display: block;
+    width: 0%;
+    max-width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        #72c9dc 0%,
+        #42b3d0 45%,
+        #258eaf 100%
+    );
+    border-radius: 10px;
+    border-right: 1px solid #176b87;
+    box-shadow:
+        inset 0 2px 3px rgba(255, 255, 255, 0.45),
+        inset 0 -2px 3px rgba(15, 83, 105, 0.25);
+    transition: width 0.6s ease;
+}
+
+/* Respeitar utilizadores que preferem menos animações. */
+@media (prefers-reduced-motion: reduce) {
+    .preenchimento-meta {
+        transition: none;
+    }
+}
+
+/* ===== GRÁFICO DOS ÚLTIMOS 7 DIAS ===== */
+
+#graficoEstatisticas {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    gap: 10px;
+    min-height: 190px;
+    padding: 20px 8px 0;
+    border-bottom: 3px solid var(--castanho-claro);
+    background-color: rgba(240, 231, 214, 0.35);
+    border-radius: 8px 8px 0 0;
+}
+
+.coluna-grafico {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 0;
+    height: 190px;
+}
+
+.barra-grafico {
+    width: 100%;
+    max-width: 48px;
+    min-height: 4px;
+    background-color: var(--verde);
+    border: 2px solid var(--verde-escuro);
+    border-bottom: 0;
+    border-radius: 7px 7px 0 0;
+    transition: height 0.3s ease;
+}
+
+.barra-grafico:hover {
+    background-color: var(--verde-claro);
+}
+
+.coluna-grafico p {
+    margin: 8px 0;
+    color: var(--texto);
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.coluna-grafico span {
+    margin-bottom: 5px;
+    color: var(--verde-escuro);
+    font-size: 0.8rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+/* ===== HISTÓRICO ===== */
+
+#listaAgua {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#listaAgua p {
+    margin: 0;
+    padding: 12px;
+    text-align: left;
+    background-color: var(--creme-escuro);
+    border: 1px solid var(--castanho-claro);
+    border-radius: 7px;
+}
+
+/* ========================================
+   LOGIN — MANTER O ESTILO RPG
+   ======================================== */
+
+.login-header {
+    grid-column: 1 / -1;          /* ocupa a largura toda */
+    text-align: center;
+    margin: 35px 20px 0;
+}
+
+.login-header h1 {
+    color: var(--verde-escuro);
+    font-size: 2.6rem;
+    margin-bottom: 14px;
+}
+
+.login-header p {
+    display: inline-block;
+    margin: 0;
+    padding: 8px 22px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    font-style: italic;
+    letter-spacing: 0.3px;
+    color: var(--verde-escuro);
+    background-color: var(--creme);
+    border: 2px solid var(--castanho);
+    border-radius: 999px;
+    box-shadow: 3px 3px 0 var(--sombra);
+}
+
+.login-layout {
+    grid-column: 1 / -1;          /* ocupa a largura toda */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 50px;
+    width: 100%;
+    max-width: 1000px;
+    margin: 10px auto 50px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.mascotes-login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    flex: 0 0 auto;
+    width: 300px;
+}
+
+.mascote {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    object-fit: contain;
+}
+
+
+.login-layout .card {
+    flex: 1;
+    width: 100%;
+    max-width: 420px;
+    margin: 0;
+    padding: 30px;
+    background-color: var(--creme);
+    border: 3px solid var(--castanho);
+    border-radius: 12px;
+    box-shadow: 5px 5px 0 var(--sombra);
+    text-align: left;
+}
+
+.login-layout .card h2 {
+    color: var(--verde-escuro);
+    text-align: center;
+}
+
+.login-layout .card label {
+    display: block;
+    margin: 14px 0 6px;
+    color: var(--texto);
+    font-weight: bold;
+}
+
+.login-layout .card input {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--castanho-claro);
+    border-radius: 7px;
+    background-color: var(--branco);
+    font-size: 1rem;
+}
+
+.login-layout .card input:focus {
+    outline: 2px solid var(--verde-claro);
+    border-color: var(--verde-escuro);
+}
+
+.login-layout .card button {
+    width: 100%;
+    margin-top: 18px;
+    padding: 12px;
+}
+
+.login-layout .card hr {
+    border: none;
+    border-top: 2px dashed var(--castanho-claro);
+    margin: 28px 0;
+}
+
+#mensagemAutenticacao {
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.login-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.login-layout .card .login-tabs button {
+    flex: 1;
+    width: auto;
+    margin-top: 0;
+    padding: 10px 8px;
+    background-color: var(--creme-escuro);
+    color: var(--texto);
+    border-color: var(--castanho-claro);
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+.login-layout .card .login-tabs button.tab-ativa {
+    background-color: var(--verde);
+    color: var(--branco);
+    border-color: var(--verde-escuro);
+}
+
+.painel-autenticacao[hidden] {
+    display: none;
+}
+
+/* ========================================
+   RESPONSIVIDADE
+   ======================================== */
+
+@media (max-width: 900px) {
+    body {
+        grid-template-columns: minmax(0, 700px);
+        grid-template-areas:
+            "titulo"
+            "logout"
+            "intro"
+            "subintro"
+            "agua"
+            "estatisticas"
+            "historico"
+            "apagar"
+            "mensagem"
+            "falta";
+        padding: 18px 12px 30px;
+    }
+
+    body > .card,
+    body > .estatisticas,
+    body > .historico {
+        width: 100%;
+        max-width: 700px;
+        margin: 18px 0;
+        justify-self: center;
+    }
+}
+
+@media (max-width: 750px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    .card,
+    .estatisticas,
+    .historico {
+        padding: 20px 16px;
+    }
+
+    .login-header h1 {
+        font-size: 2rem;
+    }
+
+    .login-layout {
+        flex-direction: column;
+        gap: 20px;
+        padding: 12px;
+    }
+
+    .mascotes-login {
+        flex-direction: row;
+        justify-content: center;
+        flex: 0 1 auto;
+        max-width: 100%;
+    }
+
+    .mascote {
+        width: 45%;
+        max-width: 150px;
+    }
+
+    .login-layout .card {
+        max-width: 420px;
+        padding: 22px;
+    }
+
+    #graficoEstatisticas {
+        gap: 5px;
+        padding-right: 3px;
+        padding-left: 3px;
+    }
+
+    .coluna-grafico span {
+        font-size: 0.7rem;
+    }
+
+    .coluna-grafico p {
+        font-size: 0.68rem;
+    }
+}
+
+/* ===== POP-UP DE AVISO DA META DE ÁGUA ===== */
+
+.modal-aviso[hidden] {
+    display: none;
+}
+
+.modal-aviso {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: rgba(35, 28, 20, 0.65);
+}
+
+.modal-aviso-conteudo {
+    width: 100%;
+    max-width: 420px;
+    padding: 28px;
+    background-color: var(--creme);
+    border: 3px solid var(--castanho);
+    border-radius: 12px;
+    box-shadow: 5px 5px 0 var(--sombra);
+    text-align: center;
+}
+
+.mascote-aviso {
+    display: block;
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    margin: 0 auto 12px;
+}
+
+.modal-aviso-conteudo h2 {
+    margin-bottom: 14px;
+}
+
+.modal-aviso-conteudo p {
+    text-align: left;
+}
+
+.modal-aviso-conteudo button {
+    margin-top: 12px;
+}
+
+/* Layout da página de avaliação */
+/* Layout da página de avaliação */
+.avaliacao-layout {
+    grid-column: 1 / -1;          /* ocupa a largura toda da grelha do body */
+    justify-self: center;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(24px, 4vw, 64px);
+    width: 100%;
+    max-width: 1120px;
+    margin: 32px auto;
+    padding: 0 24px;
+    box-sizing: border-box;
+}
+
+
+/* Mascote: coluna fixa, não encolhe */
+.avaliacao-layout .mascote-avaliacao {
+    flex: 0 1 380px;
+    min-width: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.avaliacao-layout .mascote-avaliacao img {
+    display: block;
+    width: 100% !important;
+    max-width: 380px;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Cartão: ocupa o resto do espaço */
+.avaliacao-layout .card {
+    flex: 1 1 560px;
+    width: 100% !important;
+    max-width: 560px !important;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 32px 36px;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.avaliacao-layout .card h1,
+.avaliacao-layout .card h2,
+.avaliacao-layout .card > p {
+    text-align: center;
+}
+
+.avaliacao-layout .card > p {
+    margin: 0 auto 20px;
+    max-width: 44ch;
+    line-height: 1.5;
+}
+
+/* Campos do formulário */
+.avaliacao-layout form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.avaliacao-layout form label {
+    display: block;
+    margin: 14px 0 6px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.avaliacao-layout form select,
+.avaliacao-layout form input:not([type="radio"]) {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 0.95rem;
+    border: 1.5px solid #c9b48f;
+    border-radius: 10px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.avaliacao-layout form select:focus,
+.avaliacao-layout form input:focus {
+    outline: none;
+    border-color: #3f7a3a;
+    box-shadow: 0 0 0 3px rgba(63, 122, 58, 0.18);
+}
+
+/* Pergunta Sim / Não / Não sei */
+.avaliacao-layout fieldset {
+    margin: 18px 0 4px;
+    padding: 12px 16px 14px;
+    border: 1.5px solid #c9b48f;
+    border-radius: 10px;
+}
+
+.avaliacao-layout fieldset legend {
+    padding: 0 6px;
+    font-weight: 600;
+    line-height: 1.35;
+    max-width: 100%;
+    white-space: normal;
+}
+
+.avaliacao-layout fieldset label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 8px 18px 0 0;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+/* Botão */
+.avaliacao-layout form button,
+.avaliacao-layout form input[type="submit"] {
+    align-self: center;
+    margin-top: 22px;
+    padding: 12px 36px;
+}
+
+/* Lado a lado até 700px; abaixo disso, empilha */
+@media (max-width: 700px) {
+    .avaliacao-layout {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .avaliacao-layout .mascote-avaliacao {
+        flex: 0 0 auto;
+        width: 180px;
+    }
+
+    .avaliacao-layout .card {
+        flex: 0 0 auto;
+        padding: 24px 20px;
+    }
+}
+
+@media (max-width: 900px) {
+    .login-layout {
+        flex-direction: column;
+        gap: 20px;
+        margin-top: 0;
+    }
+
+    .mascotes-login {
+        width: 200px;
+    }
+
+    .login-layout .card {
+        max-width: 480px;
+    }
+}
+
+
+
+.card-agua {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.mascote-agua {
+    width: 160px;
+    height: auto;
+    transition: transform .3s ease;
+}
+.mascote-agua.trocou { animation: pulo .4s ease; }
+@keyframes pulo {
+    50% { transform: scale(1.1) translateY(-6px); }
+}
+@media (max-width: 500px) {
+    .card-agua { flex-direction: column-reverse; }
+    .mascote-agua { width: 130px; }
+}
+
+
+/* ===== Pop-up de avaliação inicial (passo a passo) ===== */
+.modal-avaliacao-conteudo {
+    max-width: 460px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    animation: avaliacao-entrar 0.25s ease-out;
+}
+
+@keyframes avaliacao-entrar {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+}
+
+.avaliacao-progresso {
+    height: 8px;
+    margin-bottom: 8px;
+    background-color: var(--creme-escuro);
+    border: 2px solid var(--castanho-claro);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.avaliacao-barra {
+    height: 100%;
+    width: 0;
+    background-color: var(--verde);
+    transition: width 0.3s ease;
+}
+
+.avaliacao-passo {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--castanho);
+    text-align: center !important;
+}
+
+.mascote-avaliacao-modal {
+    display: block;
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    margin: 0 auto 10px;
+}
+
+.avaliacao-texto {
+    text-align: center !important;
+}
+
+.avaliacao-corpo {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 16px 0 4px;
+}
+
+.opcao-avaliacao {
+    width: 100%;
+    margin: 0 !important;
+    text-align: left;
+    color: var(--verde-escuro);
+    background-color: var(--branco);
+    border-color: var(--castanho-claro);
+}
+
+.opcao-avaliacao:hover,
+.opcao-avaliacao.selecionada {
+    color: var(--branco);
+    background-color: var(--verde);
+    border-color: var(--verde-escuro);
+}
+
+.avaliacao-corpo input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.avaliacao-erro {
+    min-height: 1.2em;
+    margin: 6px 0 0;
+    color: #b0412e;
+    text-align: center !important;
+}
+
+.avaliacao-botoes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.avaliacao-carregar {
+    width: 48px;
+    height: 48px;
+    margin: 8px auto;
+    border: 5px solid var(--creme-escuro);
+    border-top-color: var(--verde);
+    border-radius: 50%;
+    animation: avaliacao-girar 0.9s linear infinite;
+}
+
+@keyframes avaliacao-girar {
+    to { transform: rotate(360deg); }
+}
+
+.meta-sugerida {
+    margin: 4px auto;
+    font-size: 2.6rem;
+    font-weight: 800;
+    color: var(--verde-escuro);
+    text-align: center;
+}

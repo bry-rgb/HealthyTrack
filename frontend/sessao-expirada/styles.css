@@ -1,0 +1,23 @@
+@font-face{font-family:SessionEditorial;src:url('./assets/fonts/CrimsonPro-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:SessionSans;src:url('./assets/fonts/InstrumentSans-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:SessionSans;src:url('./assets/fonts/InstrumentSans-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
+:root{--session-background:#0b1c12;--session-foreground:#f0f3ea;--session-muted:#b6c6b8;--session-primary:#e4c277;--session-primary-hover:#f0d593;--session-border:#2e4534;--session-radius:8px}
+.session-page{margin:0;background:var(--session-background);color:var(--session-foreground);font-family:SessionSans, sans-serif;letter-spacing:0;min-height:100svh}
+.session-page *{box-sizing:border-box}
+.session-header{max-width:1440px;margin:auto;padding:34px 5.3% 26px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative}
+.session-header::after{content:'';position:absolute;bottom:0;left:5.3%;right:5.3%;height:1px;background:var(--session-border)}
+.session-brand{font-size:16px;font-weight:700;color:var(--session-primary)}
+.session-context{font-size:14px;color:var(--session-muted)}
+.session-main{width:min(100%,1100px);padding:26px 24px 42px;margin:auto;text-align:center}
+.session-title{font-family:SessionEditorial,serif;font-weight:400;font-size:56px;line-height:1.12;margin:0 0 15px;text-wrap:balance}
+.session-intro{font-size:20px;line-height:1.5;color:var(--session-muted);margin:0}
+.session-scene{width:min(100%,900px);aspect-ratio:3/2;height:auto;display:block;object-fit:contain;margin:16px auto 0;mask-image:linear-gradient(to right,transparent,black 7%,black 93%,transparent),linear-gradient(to bottom,transparent,black 8%,black 92%,transparent);mask-composite:intersect}
+.session-status{font-family:SessionEditorial,serif;font-weight:400;font-size:40px;line-height:1.15;color:var(--session-primary);margin:0 0 15px;text-wrap:balance}
+.session-description{font-size:18px;line-height:1.6;color:var(--session-muted);margin:0 0 26px}
+.session-description span{display:block}
+.session-login{min-height:58px;max-width:100%;width:288px;display:inline-flex;align-items:center;justify-content:center;gap:28px;padding:15px 24px;border:1px solid var(--session-primary);border-radius:var(--session-radius);background:var(--session-primary);color:var(--session-background);text-decoration:none;font-size:18px;font-weight:700;line-height:1.4;transition:background .15s}
+.session-login:hover{background:var(--session-primary-hover)}
+.session-login:focus-visible{outline:3px solid var(--session-foreground);outline-offset:5px}
+.session-login svg{width:22px;height:22px;flex-shrink:0}
+@media(max-width:600px){.session-header{padding-top:22px;padding-bottom:20px;gap:12px}.session-brand{font-size:14px}.session-context{font-size:11px}.session-main{padding:30px 20px 36px}.session-title{font-size:38px}.session-intro{font-size:16px}.session-scene{margin:25px auto 18px}.session-status{font-size:32px}.session-description{font-size:16px}.session-login{font-size:16px;min-height:54px}}
+@media(prefers-reduced-motion:reduce){.session-login{transition:none}}

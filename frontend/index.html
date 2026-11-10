@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WaterKraft</title>
+    <script src="tema.js"></script>
+    <script src="preferencias.js"></script>
+    <script src="idiomas.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="caixa-do-dia.css">
+    <link rel="stylesheet" href="assets/estilo-tarot/estilo-tarot.css">
+    <link rel="stylesheet" href="assets/estilo-tarot/waterkraft-overrides.css">
+    <link rel="stylesheet" href="tema.css">
+    <link rel="stylesheet" href="dashboard-waterkraft.css">
+    <link rel="stylesheet" href="planejador-treino-imc/atalho.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body class="dashboard">
+
+<header class="topo">
+    <div class="marca">
+        <span class="marca-icone" aria-hidden="true">🌱</span>
+        <div>
+            <h1>WaterKraft</h1>
+            <p class="marca-sub">
+                <span class="lema">Água é vida</span>
+                <span class="lema-sep">•</span>
+                <span>Mantenha-se hidratado!</span>
+            </p>
+
+        </div>
+    </div>
+    <div class="data-hora" aria-live="polite">
+        <span id="dataHoje" class="data-hoje">—</span>
+        <span id="horaAgora" class="hora-agora">--:--:--</span>
+    </div>
+    <div class="acoes-topo">
+        <a class="botao-configuracoes" href="configuracoes.html"><span aria-hidden="true">⚙️</span> Configurações</a>
+        <button id="botaoLogout" type="button">Terminar sessão</button>
+    </div>
+</header>
+
+<main class="painel">
+
+    <!-- BOAS-VINDAS + MINI PERFIL -->
+    <section class="card mini-perfil" aria-label="O teu perfil">
+      <div class="perfil-cabecalho">
+        <div class="perfil-avatar" aria-hidden="true"><img src="assets/mascotes/avatar-sapo-livro-do-dia.png" alt=""></div>
+        <div class="perfil-info">
+            <h2 id="boasVindas" class="boas-vindas">Bem-vindo(a)! :)</h2>
+            <p class="perfil-linha"><strong id="perfilNome">—</strong></p>
+            <p class="perfil-linha">💧 Dias hidratado(a): <strong id="diasHidratado">0</strong></p>
+            <p class="perfil-linha">🔥 Sequência atual: <strong id="sequenciaAtual">0</strong> dias</p>
+        </div>
+      </div>
+        <section class="selos-sequencia tarot-card" aria-label="Selos de hidratação. Clica num selo para veres os detalhes.">
+            <div id="listaSelos" class="lista-selos"></div>
+        </section>
+    </section>
+
+    <!-- CALENDÁRIO DE HIDRATAÇÃO: bloco independente do perfil e dos selos -->
+    <section class="card calendario-hidratacao tarot-card" aria-label="Calendário de hidratação">
+        <div id="calendarioTarot" class="tt-frame"></div>
+    </section>
+
+    <!-- CARTÃO HERÓI: água + mascote + meta atingida -->
+    <section class="card card-agua">
+        <div class="card-titulo">
+            <h2>💧 Água de hoje</h2>
+            <span class="selo" id="seloHoje">Hoje</span>
+        </div>
+
+        <div class="heroi">
+            <div class="mascote-palco">
+                <img id="mascoteAgua" class="mascote-agua"
+     src="assets/mascotes/hidratacao-15/sapo-00-sedento.png"
+     alt="Guerreiro Sapo sedento, sentado com a garrafa vazia">
+            </div>
+
+            <div class="heroi-dados">
+                <p class="rotulo">Você bebeu</p>
+                <strong id="agua">0 L</strong>
+                <p id="progressoMeta" class="progresso-texto"></p>
+                <div class="barra-meta" role="progressbar"
+                     aria-label="Progresso da meta diária de água"
+                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div id="preenchimentoMeta" class="preenchimento-meta"></div>
+                </div>
+                <p id="consumoHoje" class="consumo-hoje">A carregar...</p>
+            </div>
+        </div>
+
+        <button id="botaoAgua" type="button">➕ Registrar água</button>
+
+        <div class="meta-linha">
+            <label for="meta">Meta diária (L)</label>
+            <div class="meta-campo">
+                <input id="meta" type="number" step="0.1" min="0">
+                <button id="salvarMeta" type="button">Salvar</button>
+            </div>
+        </div>
+
+        <p id="mensagemMeta" class="mensagem"></p>
+        <p id="mensagemFalta" class="mensagem mensagem-falta"></p>
+    </section>
+
+    <div class="painel-lateral">
+    <!-- ESTATÍSTICAS -->
+    <section class="card estatisticas">
+        <div class="card-titulo">
+            <h2>📊 Últimos 7 dias</h2>
+        </div>
+        <div class="grafico-diario">
+            <div id="graficoEstatisticas"></div>
+        </div>
+    </section>
+<section class="card card-planejador-atalho">
+        <a class="atalho-treino-link" href="planejador-treino-imc/index.html" aria-label="Abrir Planejador de treino e monitoramento de IMC">
+            <h2>Planejador de treino e monitoramento de IMC</h2>
+            <div class="treino-animacao" aria-hidden="true">
+                <img class="sapo-treino" src="assets/mascotes/Winking Frog Adventurer with Water Bottle.png" alt="">
+                <img class="equipamento-treino" src="planejador-treino-imc/assets/equipamentos-treino.png" alt="">
+            </div>
+        </a>
+    </section>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <section class="card historico">
+        <div class="historico-acoes">
+            <button id="botaoHistorico" type="button" class="botao-secundario">📜 Ver histórico</button>
+            <button type="button" class="botao-perigo" onclick="limparHistorico()">🗑️ Apagar histórico</button>
+        </div>
+        <div id="conteudoHistorico" hidden>
+            <h2>💾 Histórico de água</h2>
+            <div id="listaAgua"></div>
+        </div>
+    </section>
+
+    <!-- ORÁCULO DAS ÁGUAS: bloco independente entre o histórico e o Livro do dia -->
+    <section class="card card-oraculo" aria-labelledby="tituloOraculo">
+        <div class="card-titulo">
+            <h2 id="tituloOraculo">🔮 Oráculo das Águas</h2>
+        </div>
+        <p class="oraculo-descricao">Consulta as cartas do Guerreiro Sapo e descobre a mensagem que acompanha a tua jornada.</p>
+        <a class="botao-tarot" href="tarot-hidratacao/index.html" aria-label="Abrir o Tarot da Hidratação">
+            ✨ Consultar Tarot da Hidratação
+        </a>
+    </section>
+
+    <!-- LIVRO DO DIA -->
+    <section class="card card-dia">
+        <div class="card-titulo">
+            <h2>📖 Livro do dia</h2>
+            <span class="selo">Hoje</span>
+        </div>
+        <div class="dia-corpo">
+            <img class="livro-dia" src="assets/mascotes/livro-do-dia.png"
+                 alt="Livro mágico do sapinho aventureiro">
+            <div>
+                <div class="dia-bloco">
+                    <p class="dia-rotulo">🌿 Dica de saúde</p>
+                    <p id="dicaDoDia">A carregar...</p>
+                </div>
+                <div class="dia-bloco">
+                    <p class="dia-rotulo">✨ Frase do dia</p>
+                    <p id="fraseDoDia"></p>
+                    <p class="dia-autora">— <span id="autoraDoDia"></span>, <span id="papelDoDia"></span></p>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div id="modalSelo" class="modal-selo" hidden>
+    <button class="modal-selo-fundo" type="button" aria-label="Fechar detalhes do selo" data-fechar-selo></button>
+    <section class="modal-selo-conteudo" role="dialog" aria-modal="true" aria-labelledby="modalSeloNome">
+        <button id="fecharModalSelo" class="modal-selo-fechar" type="button" aria-label="Fechar">×</button>
+        <div id="modalSeloEmblema" class="modal-selo-emblema" aria-hidden="true"></div>
+        <p id="modalSeloMarco" class="modal-selo-marco"></p>
+        <h2 id="modalSeloNome"></h2>
+        <span id="modalSeloTitulo" class="modal-selo-titulo"></span>
+        <p id="modalSeloDescricao" class="modal-selo-descricao"></p>
+        <p id="modalSeloEstado" class="modal-selo-estado" aria-live="polite"></p>
+    </section>
+</div>
+
+<!-- POP-UP DE AVALIAÇÃO INICIAL (uma pergunta de cada vez) -->
+<div id="modalAvaliacao" class="modal-aviso modal-avaliacao" hidden>
+    <div class="modal-aviso-conteudo modal-avaliacao-conteudo" role="dialog" aria-modal="true" aria-labelledby="tituloAvaliacao">
+        <div class="avaliacao-progresso" aria-hidden="true"><div id="avaliacaoBarra" class="avaliacao-barra"></div></div>
+        <p id="avaliacaoPasso" class="avaliacao-passo"></p>
+        <img id="avaliacaoMascote" src="assets/mascotes/Winking Frog Adventurer with Water Bottle.png" alt="Sapinho com uma garrafa de água" class="mascote-avaliacao-modal">
+        <h2 id="tituloAvaliacao"></h2>
+        <p id="avaliacaoTexto" class="avaliacao-texto"></p>
+        <div id="avaliacaoCorpo" class="avaliacao-corpo"></div>
+        <p id="avaliacaoErro" class="avaliacao-erro" role="alert"></p>
+        <div id="avaliacaoBotoes" class="aviso-botoes avaliacao-botoes"></div>
+    </div>
+</div>
+
+<div id="avisoMetaMedica" class="modal-aviso" hidden>
+    <div class="modal-aviso-conteudo" role="dialog" aria-modal="true" aria-labelledby="tituloAvisoMeta">
+        <img src="assets/mascotes/Pixel Frog Nurse Pop-Up Icon.png"
+             alt="Sapinho médico com uma exclamação" class="mascote-aviso">
+        <h2 id="tituloAvisoMeta">Atenção à tua meta de água</h2>
+        <p>Como indicaste que tens — ou não sabes se tens — uma limitação de líquidos,
+           consulta um profissional de saúde para definir uma meta adequada.</p>
+        <p>A meta atual é a predefinida e pode não ser adequada ao teu caso.</p>
+        <div class="aviso-botoes">
+            <button id="fecharAvisoMeta" type="button">Entendi</button>
+             <button id="naoMostrarAvisoMeta" type="button" class="botao-secundario">
+        Não mostrar novamente
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+(function () {
+    function atualizarRelogioTopo() {
+        var agora = new Date();
+        var elData = document.getElementById("dataHoje");
+        var elHora = document.getElementById("horaAgora");
+        if (!elData || !elHora) return;
+
+        var texto = agora.toLocaleDateString(window.WaterKraftPreferencias.locale, {
+            weekday: "long", day: "numeric", month: "long", year: "numeric"
+        });
+        elData.textContent = texto.charAt(0).toUpperCase() + texto.slice(1);
+        elHora.textContent = agora.toLocaleTimeString(window.WaterKraftPreferencias.locale, {
+            hour: "2-digit", minute: "2-digit", second: "2-digit"
+        });
+    }
+    atualizarRelogioTopo();
+    setInterval(atualizarRelogioTopo, 1000);
+})();
+</script>
+
+
+<script src="api-config.js"></script>
+<script src="assets/estilo-tarot/estilo-tarot.js"></script>
+<script src="avaliacao-inicial.js"></script>
+<script src="script.js"></script>
+<script src="caixa-do-dia.js"></script>
+</body>
+</html>

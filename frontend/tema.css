@@ -1,0 +1,92 @@
+:root { color-scheme: light; }
+html[data-tema="escuro"] {
+    color-scheme: dark;
+    --verde-escuro: #b7d79e;
+    --verde: #82b46c;
+    --verde-claro: #a0c987;
+    --creme: #242d24;
+    --creme-escuro: #303a30;
+    --castanho: #b99a70;
+    --castanho-claro: #756449;
+    --texto: #f0eadc;
+    --fundo: #171d18;
+    --sombra: #0d120e;
+}
+html[data-tema="escuro"] body {
+    background-color: var(--fundo);
+    background-image: radial-gradient(circle at 12% 0%, rgba(94, 137, 80, .12), transparent 40%),
+        radial-gradient(circle at 100% 30%, rgba(151, 119, 72, .08), transparent 45%);
+    color: var(--texto);
+}
+html[data-tema="escuro"] input,
+html[data-tema="escuro"] select,
+html[data-tema="escuro"] textarea {
+    color: var(--texto);
+    background-color: var(--creme-escuro);
+    border-color: var(--castanho-claro);
+}
+html[data-tema="escuro"] .dashboard .selos-sequencia { background: var(--creme-escuro); border-color: var(--castanho-claro); }
+html[data-tema="escuro"] .dashboard .calendario-hidratacao { background: var(--creme-escuro); }
+html[data-tema="escuro"] .dashboard .dia-calendario.sem-registo { color: var(--texto); background: #3b4036; }
+html[data-tema="escuro"] .dashboard .dia-calendario.consumo-parcial { color: #e5f5f5; background: #35616b; }
+html[data-tema="escuro"] .dashboard .dia-calendario.meta-cumprida { color: #f8fff4; background: #477a45; }
+html[data-tema="escuro"] .dashboard .legenda-cor.sem-registo { background: #74705f; }
+html[data-tema="escuro"] .dashboard .legenda-cor.parcial { background: #68a6b1; }
+html[data-tema="escuro"] .dashboard .legenda-cor.meta { background: #6ca45f; }
+html[data-tema="escuro"] .card-dia .dia-bloco { background: var(--creme-escuro); }
+html[data-tema="escuro"] .dashboard .botao-perigo { color: #ffd3c2; background: #49312b; border-color: #a16e58; }
+html[data-tema="escuro"] .dashboard .botao-perigo:hover { background: #5b3a30; }
+html[data-tema="escuro"] .avaliacao-layout form select,
+html[data-tema="escuro"] .avaliacao-layout form input:not([type="radio"]),
+html[data-tema="escuro"] .login-layout .card input { color: var(--texto); background: var(--creme-escuro); border-color: var(--castanho-claro); }
+html[data-tema="escuro"] .opcao-avaliacao { color: var(--texto); background: var(--creme-escuro); }
+html[data-tema="escuro"] .modal-selo-conteudo { color: var(--texto); background: radial-gradient(circle at 50% 0, #354034, #242c24 72%, #20271f); border-color: var(--castanho); }
+html[data-tema="escuro"] .modal-selo-fechar { color: var(--texto); background: var(--creme-escuro); border-color: var(--castanho); }
+html[data-tema="escuro"] .modal-selo-marco { color: #d6bd8f; }
+html[data-tema="escuro"] .modal-selo-titulo { color: #d8edc6; background: #374936; border-color: #637853; }
+html[data-tema="escuro"] .modal-selo-estado { color: var(--texto); background: rgba(80, 72, 55, .55); }
+html[data-tema="escuro"] .configuracao-opcao { background: var(--creme-escuro); }
+html[data-tema="escuro"] .configuracao-nota { color: #d5c8af; }
+html[data-tema="escuro"] .interruptor-tema:not(:checked) { background: #655f50; }
+
+.dashboard .acoes-topo { display: flex; align-items: center; gap: 9px; }
+.dashboard .botao-configuracoes {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    min-height: 44px; margin: 0; padding: 9px 13px;
+    color: var(--verde-escuro); background: var(--creme); border: 2px solid var(--castanho);
+    border-radius: 9px; box-shadow: 3px 3px 0 var(--sombra); font-weight: 800; text-decoration: none;
+}
+.dashboard .botao-configuracoes:hover { background: var(--creme-escuro); transform: translateY(-1px); }
+.config-conteudo { width: 100%; max-width: 760px; margin: 0 auto; }
+.config-cartao { width: 100%; text-align: left; }
+.config-cartao h2 { margin: 0 0 8px; color: var(--verde-escuro); }
+.config-descricao { margin: 0 0 18px; color: var(--texto); }
+.configuracao-opcao { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px; background: var(--creme-escuro); border: 2px solid var(--castanho-claro); border-radius: 12px; }
+.configuracao-opcao strong { display: block; color: var(--verde-escuro); }
+.configuracao-nota { margin: 5px 0 0; color: #75644c; font-size: .9rem; }
+.interruptor-tema { position: relative; flex: 0 0 auto; width: 56px; height: 32px; margin: 0; appearance: none; background: #9a927f; border: 2px solid var(--castanho); border-radius: 999px; cursor: pointer; transition: background .2s ease; }
+.interruptor-tema::before { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; background: #fffaf0; border-radius: 50%; box-shadow: 1px 1px 2px rgba(0,0,0,.25); transition: transform .2s ease; }
+.interruptor-tema:checked { background: var(--verde); }
+.interruptor-tema:checked::before { transform: translateX(24px); }
+.interruptor-tema:focus-visible { outline: 3px solid var(--verde-claro); outline-offset: 3px; }
+.config-estado { min-height: 1.5em; margin: 12px 2px 0; color: var(--verde-escuro); font-weight: 800; }
+@media (max-width: 560px) {
+    .dashboard .acoes-topo { align-self: stretch; }
+    .dashboard .acoes-topo > * { flex: 1 1 0; }
+    .dashboard .botao-configuracoes { padding-inline: 8px; }
+    .configuracao-opcao { padding: 13px; }
+}
+
+
+/* Tema escuro da autenticação, mantendo o visual RPG da marca. */
+html[data-tema="escuro"] .login-header p { color: var(--verde-escuro); background: var(--creme); border-color: var(--castanho); box-shadow: 3px 3px 0 var(--sombra); }
+html[data-tema="escuro"] .login-layout .card { color: var(--texto); background: var(--creme); border-color: var(--castanho); box-shadow: 5px 5px 0 var(--sombra); }
+html[data-tema="escuro"] .login-layout .card h2,
+html[data-tema="escuro"] .login-layout .card label { color: var(--texto); }
+html[data-tema="escuro"] .login-layout .card input { color: var(--texto); background: var(--creme-escuro); border-color: var(--castanho-claro); }
+html[data-tema="escuro"] .login-layout .card input::placeholder { color: #c3b9a5; }
+html[data-tema="escuro"] .login-layout .card .login-tabs button:not(.tab-ativa) { color: var(--texto); background: #394238; border-color: var(--castanho-claro); }
+html[data-tema="escuro"] #mensagemAutenticacao { color: var(--texto); }
+
+.configuracao-opcao select { min-width: 190px; min-height: 44px; padding: 8px 12px; color: var(--texto); background: var(--creme); border: 2px solid var(--castanho); border-radius: 8px; font: inherit; font-weight: 700; }
+@media (max-width: 560px) { .configuracao-opcao select { min-width: 0; max-width: 46%; } }

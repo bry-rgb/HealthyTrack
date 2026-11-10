@@ -1,0 +1,17 @@
+const { senhaValida } = require("./validacoes");
+
+test("rejeita senhas com menos de 8 caracteres", function () {
+    expect(senhaValida("abc123")).toBe(false);
+});
+
+test("aceita senhas com pelo menos 8 caracteres", function () {
+    expect(senhaValida("Aventura123")).toBe(true);
+});
+test("rejeita valores que não são texto", function () {
+    expect(senhaValida(12345678)).toBe(false);
+});
+
+
+test("aceita senha com exatamente 8 caracteres", function () {
+    expect(senhaValida("abc12345")).toBe(true);
+});

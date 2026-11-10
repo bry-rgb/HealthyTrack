@@ -1,0 +1,40 @@
+
+name: Backend Checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Obter código do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar testes
+        run: npm test
+        env:
+          JWT_SECRET: test-secret-for-ci-only
+
+      - name: Analisar código com ESLint
+        run: npm run lint
+
+      - name: Executar testes do front-end
+        run: npm test
+        working-directory: frontend
