@@ -6,7 +6,12 @@ require("dotenv").config();
 
 const tokenTeste = jwt.sign(
     { id: 1, email: "teste@example.com" },
-    process.env.JWT_SECRET
+    process.env.JWT_SECRET,
+    {
+        algorithm: "HS256",
+        issuer: "healthytrack",
+        audience: "healthytrack-api"
+    }
 );
 
 test("GET /api devolve uma mensagem de sucesso", async function () {
@@ -881,6 +886,42 @@ test("GET /api/registros-agua rejeita Bearer sem token", async function () {
     expect(resposta.body.mensagem).toBe(
         "Token não fornecido ou formato inválido"
     );
+});
+
+test("GET /api/meta-diaria rejeita token com emissor incorreto", async function () {
+    const token = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        { algorithm: "HS256", issuer: "outro-emissor", audience: "healthytrack-api" }
+    );
+    const resposta = await request(app)
+        .get("/api/meta-diaria")
+        .set("Authorization", `Bearer ${token}`);
+    expect(resposta.status).toBe(401);
+});
+
+test("GET /api/meta-diaria rejeita token com destinatário incorreto", async function () {
+    const token = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        { algorithm: "HS256", issuer: "healthytrack", audience: "outra-api" }
+    );
+    const resposta = await request(app)
+        .get("/api/meta-diaria")
+        .set("Authorization", `Bearer ${token}`);
+    expect(resposta.status).toBe(401);
+});
+
+test("GET /api/meta-diaria rejeita token assinado com algoritmo diferente", async function () {
+    const token = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        { algorithm: "HS384", issuer: "healthytrack", audience: "healthytrack-api" }
+    );
+    const resposta = await request(app)
+        .get("/api/meta-diaria")
+        .set("Authorization", `Bearer ${token}`);
+    expect(resposta.status).toBe(401);
 });
 
 test("POST /api/login bloqueia a sexta tentativa falhada no mesmo IP", async function () {
