@@ -21,6 +21,16 @@ test("GET /api devolve uma mensagem de sucesso", async function () {
     expect(resposta.body.mensagem).toBe("WaterKraft API está funcionando!");
 });
 
+test("GET /api inclui cabeçalhos HTTP de segurança", async function () {
+    const resposta = await request(app).get("/api");
+
+    expect(resposta.status).toBe(200);
+    expect(resposta.headers["x-content-type-options"]).toBe("nosniff");
+    expect(resposta.headers["x-frame-options"]).toBe("SAMEORIGIN");
+    expect(resposta.headers["referrer-policy"]).toBeDefined();
+    expect(resposta.headers["x-powered-by"]).toBeUndefined();
+});
+
 //teste se o login sem email e senha é rejeitado
 test("POST /api/login rejeita campos vazios", async function () {
     const resposta = await request(app)
