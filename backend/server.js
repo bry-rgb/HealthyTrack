@@ -9,6 +9,8 @@ const jwt = require("jsonwebtoken");
 const { senhaValida } = require("./validacoes");
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_ISSUER = "healthytrack";
+const JWT_AUDIENCE = "healthytrack-api";
 
 if (!JWT_SECRET) {
     console.error("Erro: JWT_SECRET não está definido no ficheiro .env");
@@ -146,7 +148,11 @@ if (!token) {
 }
 
     try {
-    const usuario = jwt.verify(token, JWT_SECRET);
+    const usuario = jwt.verify(token, JWT_SECRET, {
+        algorithms: ["HS256"],
+        issuer: JWT_ISSUER,
+        audience: JWT_AUDIENCE
+    });
     
     req.usuario = usuario;
     
@@ -603,7 +609,10 @@ try {
     },
     JWT_SECRET,
     {
-        expiresIn: "1h"
+        algorithm: "HS256",
+        expiresIn: "1h",
+        issuer: JWT_ISSUER,
+        audience: JWT_AUDIENCE
     }
 );
     res.json({
