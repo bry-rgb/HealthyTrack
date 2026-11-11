@@ -64,6 +64,65 @@ app.use(cors({
     }
 }));
 
+// O Render encaminha os pedidos através de um proxy. Confiamos num único salto
+// para obter o IP real do cliente em req.ip, usado pelo limitador abaixo.
+app.set("trust proxy", 1);
+
+// Limita tentativas de autenticação falhadas por endereço IP.
+// O contador só aumenta em respostas 401; erros de validação (400) não contam.
+const tentativasLogin = new Map();
+const JANELA_LOGIN_MS = 15 * 60 * 1000;
+const MAX_TENTATIVAS_LOGIN = 5;
+
+function limitarTentativasLogin(req, res, next) {
+    const ip = req.ip || req.socket.remoteAddress || "desconhecido";
+    const agora = Date.now();
+    let registo = tentativasLogin.get(ip);
+
+    if (registo && agora - registo.inicio >= JANELA_LOGIN_MS) {
+        tentativasLogin.delete(ip);
+        registo = undefined;
+    }
+
+    if (registo && registo.quantidade >= MAX_TENTATIVAS_LOGIN) {
+        const segundosRestantes = Math.ceil(
+            (JANELA_LOGIN_MS - (agora - registo.inicio)) / 1000
+        );
+        res.set("Retry-After", String(segundosRestantes));
+        res.status(429).json({
+            mensagem: "Demasiadas tentativas de login. Tenta novamente dentro de alguns minutos."
+        });
+        return;
+    }
+
+    const enviarJson = res.json.bind(res);
+    res.json = function (dados) {
+        if (res.statusCode === 401) {
+            const atual = tentativasLogin.get(ip);
+            const contador = atual && agora - atual.inicio < JANELA_LOGIN_MS
+                ? atual
+                : { inicio: agora, quantidade: 0 };
+            contador.quantidade += 1;
+            tentativasLogin.set(ip, contador);
+        } else if (res.statusCode >= 200 && res.statusCode < 300) {
+            tentativasLogin.delete(ip);
+        }
+
+        // Limpeza oportunista para evitar guardar IPs antigos indefinidamente.
+        if (tentativasLogin.size > 10000) {
+            for (const [chave, valor] of tentativasLogin) {
+                if (agora - valor.inicio >= JANELA_LOGIN_MS) {
+                    tentativasLogin.delete(chave);
+                }
+            }
+        }
+
+        return enviarJson(dados);
+    };
+
+    next();
+}
+
 const PORT = Number(process.env.PORT || 3000);
 
 // Função para verificar o token JWT
@@ -496,7 +555,7 @@ await pool.query(
 });
 
 // POST - login de usuário
-    app.post("/api/login", async function (req, res) { 
+    app.post("/api/login", limitarTentativasLogin, async function (req, res) { 
 
         const { email, senha } = req.body;
 
