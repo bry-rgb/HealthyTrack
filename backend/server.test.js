@@ -883,6 +883,59 @@ test("GET /api/registros-agua rejeita Bearer sem token", async function () {
     );
 });
 
+test("POST /api/login bloqueia a sexta tentativa falhada no mesmo IP", async function () {
+    const consultaOriginal = pool.query;
+    const ipTeste = "192.0.2.77";
+    pool.query = jest.fn().mockResolvedValue({ rows: [] });
+
+    try {
+        for (let tentativa = 0; tentativa < 5; tentativa++) {
+            const resposta = await request(app)
+                .post("/api/login")
+                .set("X-Forwarded-For", ipTeste)
+                .send({ email: "nao-existe@example.com", senha: "Aventura123" });
+            expect(resposta.status).toBe(401);
+        }
+
+        const bloqueada = await request(app)
+            .post("/api/login")
+            .set("X-Forwarded-For", ipTeste)
+            .send({ email: "nao-existe@example.com", senha: "Aventura123" });
+
+        expect(bloqueada.status).toBe(429);
+        expect(bloqueada.headers["retry-after"]).toBeDefined();
+        expect(pool.query).toHaveBeenCalledTimes(5);
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
+test("POST /api/login não conta erros de validação como tentativas falhadas", async function () {
+    const consultaOriginal = pool.query;
+    const ipTeste = "192.0.2.78";
+    pool.query = jest.fn().mockResolvedValue({ rows: [] });
+
+    try {
+        for (let tentativa = 0; tentativa < 6; tentativa++) {
+            const resposta = await request(app)
+                .post("/api/login")
+                .set("X-Forwarded-For", ipTeste)
+                .send({ email: "email-invalido", senha: "Aventura123" });
+            expect(resposta.status).toBe(400);
+        }
+
+        const resposta = await request(app)
+            .post("/api/login")
+            .set("X-Forwarded-For", ipTeste)
+            .send({ email: "nao-existe@example.com", senha: "Aventura123" });
+
+        expect(resposta.status).toBe(401);
+        expect(pool.query).toHaveBeenCalledTimes(1);
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
 afterAll(async function () {
     await pool.end();
 });
