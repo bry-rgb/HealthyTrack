@@ -3,6 +3,7 @@ require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const { Pool } = require("pg");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -69,6 +70,10 @@ app.use(cors({
 // O Render encaminha os pedidos através de um proxy. Confiamos num único salto
 // para obter o IP real do cliente em req.ip, usado pelo limitador abaixo.
 app.set("trust proxy", 1);
+
+// Adiciona cabeçalhos HTTP de segurança às respostas da API.
+// O HSTS é aplicado pelo Helmet apenas em ligações HTTPS.
+app.use(helmet());
 
 // Limita tentativas de autenticação falhadas por endereço IP.
 // O contador só aumenta em respostas 401; erros de validação (400) não contam.
