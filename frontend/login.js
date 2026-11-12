@@ -43,6 +43,7 @@ formLogin.addEventListener("submit", function (evento) {
 
     fetch(`${API_BASE_URL}/api/login`, {
         method: "POST",
+        credentials: "same-origin",
         headers: {
             "Content-Type": "application/json"
         },
@@ -63,8 +64,6 @@ formLogin.addEventListener("submit", function (evento) {
         });
     })
     .then(function (dados) {
-        sessionStorage.setItem("token", dados.token);
-
       console.log("Avaliação concluída no servidor:", dados.usuario.avaliacao_inicial_concluida);
         // A avaliação inicial agora abre como pop-up no painel (index.html)
         window.location.href = "index.html";
