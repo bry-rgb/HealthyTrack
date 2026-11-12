@@ -813,30 +813,6 @@ app.get("/api/perfil", verificarToken, function (req, res) {
 });
 
 
-// Diagnóstico temporário do proxy: esta rota só é registada em deployments Preview da Vercel.
-// Devolve apenas comparações booleanas; nunca expõe os endereços IP nem os cabeçalhos.
-if (process.env.VERCEL_ENV === "preview") {
-    app.get("/api/_diagnostico-proxy", function (req, res) {
-        const ipExpress = typeof req.ip === "string" ? req.ip.trim() : "";
-        const ipReal = typeof req.get("X-Real-IP") === "string"
-            ? req.get("X-Real-IP").trim()
-            : "";
-        const encaminhado = typeof req.get("X-Forwarded-For") === "string"
-            ? req.get("X-Forwarded-For").trim()
-            : "";
-
-        res.set("Cache-Control", "no-store");
-        res.json({
-            ambiente: "preview",
-            trustProxy: app.get("trust proxy"),
-            reqIpDisponivel: Boolean(ipExpress),
-            xRealIpDisponivel: Boolean(ipReal),
-            xForwardedForDisponivel: Boolean(encaminhado),
-            reqIpIgualXRealIp: Boolean(ipExpress && ipReal && ipExpress === ipReal)
-        });
-    });
-}
-
 // Rota de teste da API
 app.get("/api", function (req, res) {
     res.json({
