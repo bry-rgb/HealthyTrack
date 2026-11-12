@@ -133,7 +133,6 @@ async function verificarAvisoMetaMedica() {
 
     try {
         const resposta = await fetch(`${API_BASE_URL}/api/avaliacao-inicial`, {
-            headers: { "Authorization": `Bearer ${token}` }
         });
         verificarResposta(resposta);
 
@@ -176,7 +175,6 @@ document.addEventListener("click", async function (evento) {
         try {
             const resposta = await fetch(`${API_BASE_URL}/api/avaliacao-inicial/ocultar-aviso`, {
                 method: "PUT",
-                headers: { "Authorization": `Bearer ${token}` }
             });
             if (!resposta.ok) throw new Error("Falha ao guardar");
         } catch (erro) {
@@ -289,7 +287,6 @@ async function carregarCalendario() {
     try {
         const mes = formatarChaveMesCalendario(mesCalendarioExibido);
         const resposta = await fetch(`${API_BASE_URL}/api/calendario-hidratacao?mes=${encodeURIComponent(mes)}`, {
-            headers: { "Authorization": `Bearer ${token}` }
         });
         verificarResposta(resposta);
         const dados = await resposta.json();
@@ -819,7 +816,6 @@ document.addEventListener("keydown", function (evento) {
 async function carregarPerfil() {
     try {
         const resposta = await fetch(`${API_BASE_URL}/api/perfil`, {
-            headers: { "Authorization": `Bearer ${token}` }
         });
         verificarResposta(resposta);
         const dados = await resposta.json();
