@@ -938,6 +938,15 @@ test("POST /api/login faz login com credenciais válidas", async function () {
 });
 
 
+test("GET /api/meta-diaria rejeita um Bearer token válido", async function () {
+    const resposta = await request(app)
+        .get("/api/meta-diaria")
+        .set("Authorization", `Bearer ${tokenTeste}`);
+
+    expect(resposta.status).toBe(401);
+    expect(resposta.body.mensagem).toBe("Sessão não fornecida ou formato inválido");
+});
+
 test("GET /api/registros-agua rejeita cabeçalho Bearer sem token", async function () {
     const resposta = await request(app)
         .get("/api/registros-agua")
