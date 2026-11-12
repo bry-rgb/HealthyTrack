@@ -1020,12 +1020,15 @@ test("POST /api/login permite várias contas na mesma rede até ao limite por IP
 
 test("POST /api/login não conta erros de validação como tentativas falhadas", async function () {
     const consultaOriginal = pool.query;
-    const ipTeste = "192.0.2.78";
-    let tentativas = 0;
+    const contadores = { ip: 0, conta: 0 };
     pool.query = jest.fn().mockImplementation(async (sql) => {
+        if (sql.includes("INSERT INTO login_rate_limits_accounts")) {
+            contadores.conta += 1;
+            return { rows: [{ attempts: contadores.conta, segundos_restantes: 900 }] };
+        }
         if (sql.includes("INSERT INTO login_rate_limits")) {
-            tentativas += 1;
-            return { rows: [{ attempts: tentativas, segundos_restantes: 900 }] };
+            contadores.ip += 1;
+            return { rows: [{ attempts: contadores.ip, segundos_restantes: 900 }] };
         }
         return { rows: [] };
     });
@@ -1034,18 +1037,19 @@ test("POST /api/login não conta erros de validação como tentativas falhadas",
         for (let tentativa = 0; tentativa < 6; tentativa++) {
             const resposta = await request(app)
                 .post("/api/login")
-                .set("X-Forwarded-For", ipTeste)
+                .set("X-Forwarded-For", "192.0.2.78")
                 .send({ email: "email-invalido", senha: "Aventura123" });
             expect(resposta.status).toBe(400);
         }
 
         const resposta = await request(app)
             .post("/api/login")
-            .set("X-Forwarded-For", ipTeste)
+            .set("X-Forwarded-For", "192.0.2.78")
             .send({ email: "nao-existe@example.com", senha: "Aventura123" });
 
         expect(resposta.status).toBe(401);
-        expect(tentativas).toBe(1);
+        expect(contadores.ip).toBe(1);
+        expect(contadores.conta).toBe(1);
     } finally {
         pool.query = consultaOriginal;
     }
