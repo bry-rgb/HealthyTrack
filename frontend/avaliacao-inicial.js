@@ -193,21 +193,18 @@
         spinner.className = "avaliacao-carregar";
         el.corpo.append(spinner);
 
-        const token = sessionStorage.getItem("token");
         try {
             const [resposta] = await Promise.all([
                 fetch(`${API}/api/avaliacao-inicial`, {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
                     },
                     body: JSON.stringify(respostas)
                 }),
                 new Promise((r) => setTimeout(r, 1500))
             ]);
             if (resposta.status === 401) {
-                sessionStorage.removeItem("token");
                 window.location.href = "sessao-expirada.html";
                 return;
             }
@@ -252,7 +249,6 @@
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${sessionStorage.getItem("token")}`
                 },
                 body: JSON.stringify({ meta_diaria: meta })
             });
