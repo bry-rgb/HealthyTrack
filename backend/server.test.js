@@ -60,7 +60,13 @@ test("POST /api/login rejeita email inválido", async function () {
 test("POST /api/login rejeita um email válido que não existe", async function () {
     const consultaOriginal = pool.query;
 
-    pool.query = jest.fn().mockResolvedValue({ rows: [] });
+    pool.query = jest.fn().mockImplementation(async (sql) => {
+        if (sql.includes("INSERT INTO login_rate_limits_accounts") ||
+            sql.includes("INSERT INTO login_rate_limits")) {
+            return { rows: [{ attempts: 1, segundos_restantes: 900 }] };
+        }
+        return { rows: [] };
+    });
 
     try {
         const resposta = await request(app)
