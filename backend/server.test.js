@@ -4,13 +4,15 @@ const jwt = require("jsonwebtoken");
 
 require("dotenv").config();
 
+const jtiTeste = "11111111-1111-4111-8111-111111111111";
 const tokenTeste = jwt.sign(
     { id: 1, email: "teste@example.com" },
     process.env.JWT_SECRET,
     {
         algorithm: "HS256",
         issuer: "healthytrack",
-        audience: "healthytrack-api"
+        audience: "healthytrack-api",
+        jwtid: jtiTeste
     }
 );
 
@@ -112,7 +114,7 @@ test("POST /api/login trata erros na consulta à base de dados", async function 
 test("POST /api/registros-agua rejeita quantidade superior a 0.5 litros", async function () {
     const resposta = await request(app)
         .post("/api/registros-agua")
-        .set("Authorization", `Bearer ${tokenTeste}`)
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({
             quantidade: 1,
             horario: new Date().toISOString()
@@ -126,7 +128,7 @@ test("POST /api/registros-agua rejeita quantidade superior a 0.5 litros", async 
 test("POST /api/registros-agua rejeita quantidade igual a zero", async function () {
     const resposta = await request(app)
         .post("/api/registros-agua")
-        .set("Authorization", `Bearer ${tokenTeste}`)
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({
             quantidade: 0,
             horario: new Date().toISOString()
@@ -165,7 +167,7 @@ test("POST /api/registros-agua rejeita token JWT inválido", async function () {
 test("POST /api/registros-agua rejeita data inválida", async function () {
     const resposta = await request(app)
         .post("/api/registros-agua")
-        .set("Authorization", `Bearer ${tokenTeste}`)
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({
             quantidade: 0.5,
             horario: "data-invalida"
@@ -271,6 +273,9 @@ test("GET /api/meta-diaria devolve a meta do utilizador autenticado", async func
     const consultaOriginal = pool.query;
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         callback(null, {
             rows: [{ meta_diaria: "2.5" }]
         });
@@ -279,7 +284,7 @@ test("GET /api/meta-diaria devolve a meta do utilizador autenticado", async func
     try {
         const resposta = await request(app)
             .get("/api/meta-diaria")
-            .set("Authorization", `Bearer ${tokenTeste}`);
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(200);
         expect(resposta.body.meta_diaria).toBe(2.5);
@@ -298,6 +303,9 @@ test("PUT /api/meta-diaria atualiza a meta do utilizador autenticado", async fun
     const consultaOriginal = pool.query;
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         callback(null, {
             rows: [{ meta_diaria: parametros[0] }]
         });
@@ -306,7 +314,7 @@ test("PUT /api/meta-diaria atualiza a meta do utilizador autenticado", async fun
     try {
         const resposta = await request(app)
             .put("/api/meta-diaria")
-            .set("Authorization", `Bearer ${tokenTeste}`)
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
             .send({ meta_diaria: 3.5 });
 
         expect(resposta.status).toBe(200);
@@ -325,7 +333,7 @@ test("PUT /api/meta-diaria atualiza a meta do utilizador autenticado", async fun
 test("PUT /api/meta-diaria rejeita uma meta superior a 10 litros", async function () {
     const resposta = await request(app)
         .put("/api/meta-diaria")
-        .set("Authorization", `Bearer ${tokenTeste}`)
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({ meta_diaria: 11 });
 
     expect(resposta.status).toBe(400);
@@ -338,7 +346,7 @@ test("PUT /api/meta-diaria rejeita uma meta superior a 10 litros", async functio
 test("PUT /api/meta-diaria rejeita uma meta inferior a 0.5 litros", async function () {
     const resposta = await request(app)
         .put("/api/meta-diaria")
-        .set("Authorization", `Bearer ${tokenTeste}`)
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({ meta_diaria: 0.4 });
 
     expect(resposta.status).toBe(400);
@@ -351,7 +359,7 @@ test("PUT /api/meta-diaria rejeita uma meta inferior a 0.5 litros", async functi
 test("PUT /api/meta-diaria rejeita uma meta enviada como texto", async function () {
     const resposta = await request(app)
         .put("/api/meta-diaria")
-        .set("Authorization", `Bearer ${tokenTeste}`)
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({ meta_diaria: "3.5" });
 
     expect(resposta.status).toBe(400);
@@ -382,6 +390,9 @@ test("GET /api/estatisticas-diarias devolve sete dias para o utilizador autentic
     const consultaOriginal = pool.query;
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         callback(null, {
             rows: [
                 { data: "2026-10-16", total_litros: "0" },
@@ -398,7 +409,7 @@ test("GET /api/estatisticas-diarias devolve sete dias para o utilizador autentic
     try {
         const resposta = await request(app)
             .get("/api/estatisticas-diarias")
-            .set("Authorization", `Bearer ${tokenTeste}`);
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(200);
         expect(resposta.body).toHaveLength(7);
@@ -424,13 +435,16 @@ test("GET /api/meta-diaria devolve 404 se o utilizador não existir", async func
     const consultaOriginal = pool.query;
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         callback(null, { rows: [] });
     });
 
     try {
         const resposta = await request(app)
             .get("/api/meta-diaria")
-            .set("Authorization", `Bearer ${tokenTeste}`);
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(404);
         expect(resposta.body.mensagem).toBe("Utilizador não encontrado");
@@ -444,13 +458,16 @@ test("GET /api/estatisticas-diarias trata erros na consulta à base de dados", a
     const consultaOriginal = pool.query;
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         callback(new Error("Erro de ligação à base de dados"));
     });
 
     try {
         const resposta = await request(app)
             .get("/api/estatisticas-diarias")
-            .set("Authorization", `Bearer ${tokenTeste}`);
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(500);
         expect(resposta.body.mensagem).toBe(
@@ -465,13 +482,16 @@ test("PUT /api/meta-diaria devolve 404 se o utilizador não existir", async func
     const consultaOriginal = pool.query;
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         callback(null, { rows: [] });
     });
 
     try {
         const resposta = await request(app)
             .put("/api/meta-diaria")
-            .set("Authorization", `Bearer ${tokenTeste}`)
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
             .send({ meta_diaria: 3.5 });
 
         expect(resposta.status).toBe(404);
@@ -486,13 +506,16 @@ test("PUT /api/meta-diaria trata erros na consulta à base de dados", async func
     const consultaOriginal = pool.query;
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         callback(new Error("Erro de ligação à base de dados"));
     });
 
     try {
         const resposta = await request(app)
             .put("/api/meta-diaria")
-            .set("Authorization", `Bearer ${tokenTeste}`)
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
             .send({ meta_diaria: 3.5 });
 
         expect(resposta.status).toBe(500);
@@ -515,13 +538,16 @@ test("DELETE /api/registros-agua trata erros na consulta à base de dados", asyn
     const consultaOriginal = pool.query;
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         callback(new Error("Erro de ligação à base de dados"));
     });
 
     try {
         const resposta = await request(app)
             .delete("/api/registros-agua")
-            .set("Authorization", `Bearer ${tokenTeste}`);
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(500);
         expect(resposta.body.mensagem).toBe(
@@ -553,7 +579,7 @@ test("GET /api/registros-agua rejeita pedidos sem token", async function () {
 test("GET /api/registros-agua rejeita token inválido", async function () {
     const resposta = await request(app)
         .get("/api/registros-agua")
-        .set("Authorization", "Bearer token-invalido");
+        .set("Cookie", "waterkraft_session=token-invalido");
 
     expect(resposta.status).toBe(401);
 });
@@ -563,13 +589,16 @@ test("GET /api/registros-agua devolve 500 quando ocorre um erro na base de dados
     const queryOriginal = pool.query;
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         callback(new Error("Erro de teste"), null);
     });
 
     try {
         const resposta = await request(app)
             .get("/api/registros-agua")
-            .set("Authorization", `Bearer ${tokenTeste}`);
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(500);
     } finally {
@@ -581,7 +610,7 @@ test("GET /api/registros-agua devolve 500 quando ocorre um erro na base de dados
 test("GET /api/meta-diaria rejeita token inválido", async function () {
     const resposta = await request(app)
         .get("/api/meta-diaria")
-        .set("Authorization", "Bearer token-invalido");
+        .set("Cookie", "waterkraft_session=token-invalido");
 
     expect(resposta.status).toBe(401);
 });
@@ -590,7 +619,7 @@ test("GET /api/meta-diaria rejeita token inválido", async function () {
 test("GET /api/estatisticas-diarias rejeita token inválido", async function () {
     const resposta = await request(app)
         .get("/api/estatisticas-diarias")
-        .set("Authorization", "Bearer token-invalido");
+        .set("Cookie", "waterkraft_session=token-invalido");
 
     expect(resposta.status).toBe(401);
 });
@@ -599,7 +628,7 @@ test("GET /api/estatisticas-diarias rejeita token inválido", async function () 
 test("PUT /api/meta-diaria rejeita token inválido", async function () {
     const resposta = await request(app)
         .put("/api/meta-diaria")
-        .set("Authorization", "Bearer token-invalido")
+        .set("Cookie", "waterkraft_session=token-invalido")
         .send({ meta_diaria: 2.5 });
 
     expect(resposta.status).toBe(401);
@@ -609,7 +638,7 @@ test("PUT /api/meta-diaria rejeita token inválido", async function () {
 test("POST /api/registros-agua rejeita token inválido", async function () {
     const resposta = await request(app)
         .post("/api/registros-agua")
-        .set("Authorization", "Bearer token-invalido")
+        .set("Cookie", "waterkraft_session=token-invalido")
         .send({ quantidade: 0.5 });
 
     expect(resposta.status).toBe(401);
@@ -619,7 +648,7 @@ test("POST /api/registros-agua rejeita token inválido", async function () {
 test("DELETE /api/registros-agua rejeita token inválido", async function () {
     const resposta = await request(app)
         .delete("/api/registros-agua")
-        .set("Authorization", "Bearer token-invalido");
+        .set("Cookie", "waterkraft_session=token-invalido");
 
     expect(resposta.status).toBe(401);
 });
@@ -701,7 +730,7 @@ test("POST /api/usuarios devolve 500 quando ocorre um erro na base de dados", as
 test("POST /api/registros-agua rejeita quantidade negativa", async function () {
     const resposta = await request(app)
         .post("/api/registros-agua")
-        .set("Authorization", `Bearer ${tokenTeste}`)
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({
             quantidade: -0.5,
             horario: new Date().toISOString()
@@ -715,7 +744,7 @@ test("POST /api/registros-agua rejeita quantidade negativa", async function () {
 test("POST /api/registros-agua rejeita pedido sem quantidade", async function () {
     const resposta = await request(app)
         .post("/api/registros-agua")
-        .set("Authorization", `Bearer ${tokenTeste}`)
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({
             horario: new Date().toISOString()
         });
@@ -729,13 +758,16 @@ test("POST /api/registros-agua regista água com sucesso", async function () {
     const consultaOriginal = pool.query;
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         callback(null, { rows: [] });
     });
 
     try {
         const resposta = await request(app)
             .post("/api/registros-agua")
-            .set("Authorization", `Bearer ${tokenTeste}`)
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
             .send({
                 quantidade: 0.5,
                 horario: new Date().toISOString()
@@ -752,6 +784,9 @@ test("GET /api/registros-agua devolve os registos do utilizador autenticado", as
     const consultaOriginal = pool.query;
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         callback(null, {
             rows: [
                 { id: 1, quantidade: 0.5, horario: "2026-10-30T09:00:00.000Z" }
@@ -762,7 +797,7 @@ test("GET /api/registros-agua devolve os registos do utilizador autenticado", as
     try {
         const resposta = await request(app)
             .get("/api/registros-agua")
-            .set("Authorization", `Bearer ${tokenTeste}`);
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(200);
         expect(resposta.body).toHaveLength(1);
@@ -777,13 +812,16 @@ test("POST /api/registros-agua devolve 500 quando ocorre um erro na base de dado
     const consultaOriginal = pool.query;
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         callback(new Error("Erro de teste"), null);
     });
 
     try {
         const resposta = await request(app)
             .post("/api/registros-agua")
-            .set("Authorization", `Bearer ${tokenTeste}`)
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
             .send({
                 quantidade: 0.5,
                 horario: new Date().toISOString()
@@ -800,13 +838,16 @@ test("GET /api/meta-diaria devolve 500 quando ocorre um erro na base de dados", 
     const consultaOriginal = pool.query;
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         callback(new Error("Erro de teste"), null);
     });
 
     try {
         const resposta = await request(app)
             .get("/api/meta-diaria")
-            .set("Authorization", `Bearer ${tokenTeste}`);
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(500);
     } finally {
@@ -819,7 +860,7 @@ test("GET /api/meta-diaria devolve 500 quando ocorre um erro na base de dados", 
 test("PUT /api/meta-diaria rejeita pedido sem meta diária", async function () {
     const resposta = await request(app)
         .put("/api/meta-diaria")
-        .set("Authorization", `Bearer ${tokenTeste}`)
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({});
 
     expect(resposta.status).toBe(400);
@@ -829,7 +870,7 @@ test("PUT /api/meta-diaria rejeita pedido sem meta diária", async function () {
 test("PUT /api/meta-diaria rejeita uma meta negativa", async function () {
     const resposta = await request(app)
         .put("/api/meta-diaria")
-        .set("Authorization", `Bearer ${tokenTeste}`)
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({ meta_diaria: -1 });
 
     expect(resposta.status).toBe(400);
@@ -840,13 +881,16 @@ test("DELETE /api/registros-agua apaga os registos do utilizador autenticado", a
     const consultaOriginal = pool.query;
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         callback(null, { rows: [] });
     });
 
     try {
         const resposta = await request(app)
             .delete("/api/registros-agua")
-            .set("Authorization", `Bearer ${tokenTeste}`);
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(200);
     } finally {
@@ -924,7 +968,7 @@ test("GET /api/meta-diaria rejeita token com emissor incorreto", async function 
     );
     const resposta = await request(app)
         .get("/api/meta-diaria")
-        .set("Authorization", `Bearer ${token}`);
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
     expect(resposta.status).toBe(401);
 });
 
@@ -936,7 +980,7 @@ test("GET /api/meta-diaria rejeita token com destinatário incorreto", async fun
     );
     const resposta = await request(app)
         .get("/api/meta-diaria")
-        .set("Authorization", `Bearer ${token}`);
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
     expect(resposta.status).toBe(401);
 });
 
@@ -948,7 +992,7 @@ test("GET /api/meta-diaria rejeita token assinado com algoritmo diferente", asyn
     );
     const resposta = await request(app)
         .get("/api/meta-diaria")
-        .set("Authorization", `Bearer ${token}`);
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
     expect(resposta.status).toBe(401);
 });
 
@@ -1077,6 +1121,9 @@ test("GET /api/meta-diaria aceita cookie de sessão ativa", async function () {
     );
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         if (sql.includes("sessoes_utilizador")) {
             return Promise.resolve({ rows: [{ jti }] });
         }
