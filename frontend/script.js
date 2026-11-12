@@ -582,18 +582,32 @@ async function limparHistorico() {
     }
 }
 
-// Terminar sessão
+// Terminar sessão: só sair do painel depois de o servidor confirmar a revogação.
 botaoLogout.addEventListener("click", async function () {
     botaoLogout.disabled = true;
     try {
-        await fetch(`${API_BASE_URL}/api/logout`, {
+        const resposta = await fetch(`${API_BASE_URL}/api/logout`, {
             method: "POST",
             credentials: "same-origin"
         });
+
+        if (!resposta.ok) {
+            throw new Error("O servidor não confirmou o fim da sessão.");
+        }
+
+        window.location.replace("login.html");
     } catch (erro) {
         console.error("Não foi possível confirmar o fim da sessão:", erro);
-    } finally {
-        window.location.href = "login.html";
+        botaoLogout.disabled = false;
+        alert("Não foi possível terminar a sessão. Verifica a ligação e tenta novamente.");
+    }
+});
+
+// O Safari pode restaurar páginas antigas a partir da cache de navegação.
+// Recarregar força a interface a consultar novamente a sessão ao servidor.
+window.addEventListener("pageshow", function (evento) {
+    if (evento.persisted) {
+        window.location.reload();
     }
 });
 
