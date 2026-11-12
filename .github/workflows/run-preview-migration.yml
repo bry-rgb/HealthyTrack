@@ -82,12 +82,14 @@ jobs:
             try {
               await client.connect();
               const result = await client.query(
-                \"SELECT to_regclass('public.login_rate_limits') AS tabela\"
+                \"SELECT
+                  to_regclass('public.login_rate_limits') AS tabela_ip,
+                  to_regclass('public.login_rate_limits_accounts') AS tabela_conta\"
               );
-              if (!result.rows[0].tabela) {
-                throw new Error('A tabela login_rate_limits não foi encontrada.');
+              if (!result.rows[0].tabela_ip || !result.rows[0].tabela_conta) {
+                throw new Error('Uma ou mais tabelas do limitador não foram encontradas.');
               }
-              console.log('Tabela login_rate_limits confirmada no Preview.');
+              console.log('Tabelas login_rate_limits e login_rate_limits_accounts confirmadas no Preview.');
             } finally {
               await client.end();
             }
