@@ -1072,6 +1072,57 @@ test("POST /api/logout revoga a sessão e elimina o cookie", async function () {
     }
 });
 
+test("GET /api/meta-diaria rejeita uma sessão revogada", async function () {
+    const consultaOriginal = pool.query;
+    const jti = "ad9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f13";
+    const token = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        {
+            algorithm: "HS256",
+            issuer: "healthytrack",
+            audience: "healthytrack-api",
+            expiresIn: "1h",
+            jwtid: jti
+        }
+    );
+
+    pool.query = jest.fn().mockResolvedValue({ rows: [] });
+
+    try {
+        const resposta = await request(app)
+            .get("/api/meta-diaria")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+
+        expect(resposta.status).toBe(401);
+        expect(resposta.body.mensagem).toBe("Sessão inválida ou expirada");
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
+test("GET /api/meta-diaria rejeita um JWT expirado no cookie", async function () {
+    const jti = "bd9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f14";
+    const token = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        {
+            algorithm: "HS256",
+            issuer: "healthytrack",
+            audience: "healthytrack-api",
+            expiresIn: -1,
+            jwtid: jti
+        }
+    );
+
+    const resposta = await request(app)
+        .get("/api/meta-diaria")
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+
+    expect(resposta.status).toBe(401);
+    expect(resposta.body.mensagem).toBe("Token inválido ou expirado");
+});
+
 test("PUT autenticado por cookie rejeita origem não autorizada", async function () {
     const jti = "9d9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f12";
     const token = jwt.sign(
