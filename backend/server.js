@@ -1,4 +1,5 @@
 const path = require("path");
+const crypto = require("crypto");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const express = require("express");
@@ -49,6 +50,8 @@ const app = express();
 app.use(express.json());
 
 const origensCorsPermitidas = new Set([
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
     "http://localhost:8080",
     "http://127.0.0.1:8080",
     ...(process.env.CORS_ORIGINS || "")
@@ -132,44 +135,92 @@ function limitarTentativasLogin(req, res, next) {
 
 const PORT = Number(process.env.PORT || 3000);
 
-// Função para verificar o token JWT
-function verificarToken(req, res, next) {
-const authHeader = req.headers.authorization;
+// Cookie de sessão inacessível a JavaScript no navegador.
+const NOME_COOKIE_SESSAO = "waterkraft_session";
+const DURACAO_SESSAO_SEGUNDOS = 60 * 60;
 
-if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    res.status(401).json({
-        mensagem: "Token não fornecido ou formato inválido"
-    });
-    return;
+function obterCookie(req, nome) {
+    const cabecalho = req.headers.cookie || "";
+    const item = cabecalho.split(";").map(parte => parte.trim())
+        .find(parte => parte.startsWith(nome + "="));
+    return item ? decodeURIComponent(item.slice(nome.length + 1)) : null;
 }
 
-const token = authHeader.split(" ")[1];
-
-if (!token) {
-    res.status(401).json({
-        mensagem: "Token não fornecido ou formato inválido"
-    });
-    return;
+function definirCookieSessao(res, token) {
+    res.append("Set-Cookie",
+        NOME_COOKIE_SESSAO + "=" + encodeURIComponent(token) +
+        "; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=" + DURACAO_SESSAO_SEGUNDOS
+    );
 }
+
+function limparCookieSessao(res) {
+    res.append("Set-Cookie",
+        NOME_COOKIE_SESSAO + "=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0"
+    );
+}
+
+function origemPermitida(req) {
+    const origem = req.get("Origin");
+    return Boolean(origem && origensCorsPermitidas.has(origem));
+}
+
+// Cookie-auth exige Origin permitido nos métodos que alteram estado.
+// Bearer mantém compatibilidade transitória com clientes e testes antigos.
+async function verificarToken(req, res, next) {
+    const tokenCookie = obterCookie(req, NOME_COOKIE_SESSAO);
+    const authHeader = req.headers.authorization;
+    const tokenBearer = authHeader && authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7).trim()
+        : null;
+    const usaCookie = Boolean(tokenCookie);
+    const token = tokenCookie || tokenBearer;
+
+    if (!token) {
+        res.status(401).json({ mensagem: "Token não fornecido ou formato inválido" });
+        return;
+    }
+
+    if (usaCookie && !["GET", "HEAD", "OPTIONS"].includes(req.method) && !origemPermitida(req)) {
+        res.status(403).json({ mensagem: "Origem não autorizada" });
+        return;
+    }
 
     try {
-    const usuario = jwt.verify(token, JWT_SECRET, {
-        algorithms: ["HS256"],
-        issuer: JWT_ISSUER,
-        audience: JWT_AUDIENCE
-    });
-    
-    req.usuario = usuario;
-    
-    next();
+        const usuario = jwt.verify(token, JWT_SECRET, {
+            algorithms: ["HS256"],
+            issuer: JWT_ISSUER,
+            audience: JWT_AUDIENCE
+        });
 
-} catch {
-    res.status(401).json({
-    mensagem: "Token inválido ou expirado"
-});
-return;
+        if (usaCookie) {
+            if (!usuario.jti) {
+                res.status(401).json({ mensagem: "Sessão inválida ou expirada" });
+                return;
+            }
 
-}
+            const sessao = await pool.query(
+                "SELECT jti FROM sessoes_utilizador WHERE jti = $1 AND user_id = $2 AND revoked_at IS NULL AND expires_at > NOW()",
+                [usuario.jti, usuario.id]
+            );
+
+            if (sessao.rows.length === 0) {
+                res.status(401).json({ mensagem: "Sessão inválida ou expirada" });
+                return;
+            }
+
+            req.sessaoJti = usuario.jti;
+        }
+
+        req.usuario = usuario;
+        next();
+    } catch (erro) {
+        if (erro && erro.name !== "JsonWebTokenError" && erro.name !== "TokenExpiredError" && erro.name !== "NotBeforeError") {
+            console.error("Erro ao validar sessão:", erro);
+            res.status(503).json({ mensagem: "Não foi possível validar a sessão" });
+            return;
+        }
+        res.status(401).json({ mensagem: "Token inválido ou expirado" });
+    }
 }
 
 
@@ -607,6 +658,7 @@ try {
         return;
 }
 
+    const jti = crypto.randomUUID();
     const token = jwt.sign(
     {
         id: usuario.id,
@@ -615,14 +667,20 @@ try {
     JWT_SECRET,
     {
         algorithm: "HS256",
-        expiresIn: "1h",
+        expiresIn: DURACAO_SESSAO_SEGUNDOS,
         issuer: JWT_ISSUER,
-        audience: JWT_AUDIENCE
+        audience: JWT_AUDIENCE,
+        jwtid: jti
     }
 );
+    const expiraEm = new Date(Date.now() + DURACAO_SESSAO_SEGUNDOS * 1000);
+    await pool.query(
+        "INSERT INTO sessoes_utilizador (jti, user_id, expires_at) VALUES ($1, $2, $3)",
+        [jti, usuario.id, expiraEm]
+    );
+    definirCookieSessao(res, token);
     res.json({
     mensagem: "Login realizado com sucesso!",
-    token: token,
     usuario: {
     id: usuario.id,
     nome: usuario.nome,
@@ -637,6 +695,23 @@ try {
         mensagem: "Erro interno de servidor"
     });
 }
+});
+
+// POST - terminar sessão e invalidá-la na base de dados
+app.post("/api/logout", verificarToken, async function (req, res) {
+    try {
+        if (req.sessaoJti) {
+            await pool.query(
+                "UPDATE sessoes_utilizador SET revoked_at = NOW() WHERE jti = $1 AND revoked_at IS NULL",
+                [req.sessaoJti]
+            );
+        }
+        limparCookieSessao(res);
+        res.json({ mensagem: "Sessão terminada com sucesso" });
+    } catch (erro) {
+        console.error("Erro ao terminar sessão:", erro);
+        res.status(500).json({ mensagem: "Não foi possível terminar a sessão" });
+    }
 });
 
 // DELETE - apagar registros de água
