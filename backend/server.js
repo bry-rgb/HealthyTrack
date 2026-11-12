@@ -82,16 +82,13 @@ app.use(helmet());
 // Limita tentativas de login com armazenamento partilhado no PostgreSQL.
 // O IP é transformado num HMAC; o endereço original nunca é guardado na tabela.
 const JANELA_LOGIN_MS = 15 * 60 * 1000;
-const MAX_TENTATIVAS_CONTA = 5;
-const MAX_TENTATIVAS_IP = 30;
-const LIMPEZA_LOGIN_INTERVALO_MS = 24 * 60 * 60 * 1000;
-let ultimaLimpezaLogin = 0;
+const MAX_TENTATIVAS_LOGIN = 5;
 
 async function limitarTentativasLogin(req, res, next) {
-    // Mantém os erros de validação fora dos contadores.
+    // Mantém os erros de validação fora do contador.
     if (
         typeof req.body.email !== "string" ||
-        !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(req.body.email) ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req.body.email) ||
         typeof req.body.senha !== "string" ||
         !req.body.senha
     ) {
@@ -100,99 +97,44 @@ async function limitarTentativasLogin(req, res, next) {
     }
 
     const ip = req.ip || req.socket.remoteAddress || "desconhecido";
-    const emailNormalizado = req.body.email.trim().toLowerCase();
     const hashIp = crypto.createHmac("sha256", JWT_SECRET)
         .update(ip)
         .digest("hex");
-    const hashConta = crypto.createHmac("sha256", JWT_SECRET)
-        .update(emailNormalizado)
-        .digest("hex");
 
     try {
-        // Limpeza oportunista, no máximo uma vez por processo a cada 24 horas.
-        // A limpeza não substitui nem interfere na janela ativa de 15 minutos.
-        if (Date.now() - ultimaLimpezaLogin >= LIMPEZA_LOGIN_INTERVALO_MS) {
-            try {
-                await pool.query(
-                    "DELETE FROM login_rate_limits WHERE updated_at < NOW() - INTERVAL '24 hours'"
-                );
-                await pool.query(
-                    "DELETE FROM login_rate_limits_accounts WHERE updated_at < NOW() - INTERVAL '24 hours'"
-                );
-                ultimaLimpezaLogin = Date.now();
-            } catch (erroLimpeza) {
-                // A falha de limpeza não deve impedir a aplicação dos limites.
-                console.error("Aviso: não foi possível limpar contadores antigos:", erroLimpeza);
-            }
-        }
+        const resultado = await pool.query(
+            `INSERT INTO login_rate_limits
+                (ip_hash, window_started_at, attempts, updated_at)
+             VALUES ($1, NOW(), 1, NOW())
+             ON CONFLICT (ip_hash)
+             DO UPDATE SET
+                window_started_at = CASE
+                    WHEN login_rate_limits.window_started_at <= NOW() - ($2 * INTERVAL '1 millisecond')
+                    THEN NOW()
+                    ELSE login_rate_limits.window_started_at
+                END,
+                attempts = CASE
+                    WHEN login_rate_limits.window_started_at <= NOW() - ($2 * INTERVAL '1 millisecond')
+                    THEN 1
+                    ELSE LEAST(login_rate_limits.attempts + 1, $3 + 1)
+                END,
+                updated_at = NOW()
+             RETURNING attempts,
+                GREATEST(1, CEIL(EXTRACT(EPOCH FROM (
+                    window_started_at + ($2 * INTERVAL '1 millisecond') - NOW()
+                ))))::integer AS segundos_restantes`,
+            [hashIp, JANELA_LOGIN_MS, MAX_TENTATIVAS_LOGIN]
+        );
 
-        const [resultadoIp, resultadoConta] = await Promise.all([
-            pool.query(
-                `INSERT INTO login_rate_limits
-                    (ip_hash, window_started_at, attempts, updated_at)
-                 VALUES ($1, NOW(), 1, NOW())
-                 ON CONFLICT (ip_hash)
-                 DO UPDATE SET
-                    window_started_at = CASE
-                        WHEN login_rate_limits.window_started_at <= NOW() - ($2 * INTERVAL '1 millisecond')
-                        THEN NOW()
-                        ELSE login_rate_limits.window_started_at
-                    END,
-                    attempts = CASE
-                        WHEN login_rate_limits.window_started_at <= NOW() - ($2 * INTERVAL '1 millisecond')
-                        THEN 1
-                        ELSE LEAST(login_rate_limits.attempts + 1, $3 + 1)
-                    END,
-                    updated_at = NOW()
-                 RETURNING attempts,
-                    GREATEST(1, CEIL(EXTRACT(EPOCH FROM (
-                        window_started_at + ($2 * INTERVAL '1 millisecond') - NOW()
-                    ))))::integer AS segundos_restantes`,
-                [hashIp, JANELA_LOGIN_MS, MAX_TENTATIVAS_IP]
-            ),
-            pool.query(
-                `INSERT INTO login_rate_limits_accounts
-                    (account_hash, window_started_at, attempts, updated_at)
-                 VALUES ($1, NOW(), 1, NOW())
-                 ON CONFLICT (account_hash)
-                 DO UPDATE SET
-                    window_started_at = CASE
-                        WHEN login_rate_limits_accounts.window_started_at <= NOW() - ($2 * INTERVAL '1 millisecond')
-                        THEN NOW()
-                        ELSE login_rate_limits_accounts.window_started_at
-                    END,
-                    attempts = CASE
-                        WHEN login_rate_limits_accounts.window_started_at <= NOW() - ($2 * INTERVAL '1 millisecond')
-                        THEN 1
-                        ELSE LEAST(login_rate_limits_accounts.attempts + 1, $3 + 1)
-                    END,
-                    updated_at = NOW()
-                 RETURNING attempts,
-                    GREATEST(1, CEIL(EXTRACT(EPOCH FROM (
-                        window_started_at + ($2 * INTERVAL '1 millisecond') - NOW()
-                    ))))::integer AS segundos_restantes`,
-                [hashConta, JANELA_LOGIN_MS, MAX_TENTATIVAS_CONTA]
-            )
-        ]);
+        const estado = resultado.rows[0] || {
+            attempts: 1,
+            segundos_restantes: Math.ceil(JANELA_LOGIN_MS / 1000)
+        };
 
-        const estadoIp = resultadoIp.rows[0];
-        const estadoConta = resultadoConta.rows[0];
-        if (!estadoIp || !estadoConta) {
-            throw new Error("Não foi possível obter os contadores de tentativas.");
-        }
+        req.loginRateLimitHash = hashIp;
 
-        req.loginRateLimitHashIp = hashIp;
-        req.loginRateLimitHashConta = hashConta;
-
-        if (
-            estadoConta.attempts > MAX_TENTATIVAS_CONTA ||
-            estadoIp.attempts > MAX_TENTATIVAS_IP
-        ) {
-            const segundosRestantes = Math.max(
-                estadoConta.attempts > MAX_TENTATIVAS_CONTA ? estadoConta.segundos_restantes : 0,
-                estadoIp.attempts > MAX_TENTATIVAS_IP ? estadoIp.segundos_restantes : 0
-            );
-            res.set("Retry-After", String(segundosRestantes));
+        if (estado.attempts > MAX_TENTATIVAS_LOGIN) {
+            res.set("Retry-After", String(estado.segundos_restantes));
             res.status(429).json({
                 mensagem: "Demasiadas tentativas de login. Tenta novamente dentro de alguns minutos."
             });
