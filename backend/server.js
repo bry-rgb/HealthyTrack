@@ -71,8 +71,8 @@ app.use(cors({
     credentials: true
 }));
 
-// O Render encaminha os pedidos através de um proxy. Confiamos num único salto
-// para obter o IP real do cliente em req.ip, usado pelo limitador abaixo.
+// A Vercel encaminha os pedidos através da sua infraestrutura de proxy.
+// Mantemos um único salto de confiança para obter o IP do cliente em req.ip.
 app.set("trust proxy", 1);
 
 // Adiciona cabeçalhos HTTP de segurança às respostas da API.
