@@ -238,23 +238,16 @@ function origemPermitida(req) {
     return Boolean(origem && origensCorsPermitidas.has(origem));
 }
 
-// Cookie-auth exige Origin permitido nos métodos que alteram estado.
-// Bearer mantém compatibilidade transitória com clientes e testes antigos.
+// Todos os pedidos protegidos exigem cookie HttpOnly e sessão ativa na base de dados.
 async function verificarToken(req, res, next) {
-    const tokenCookie = obterCookie(req, NOME_COOKIE_SESSAO);
-    const authHeader = req.headers.authorization;
-    const tokenBearer = authHeader && authHeader.startsWith("Bearer ")
-        ? authHeader.slice(7).trim()
-        : null;
-    const usaCookie = Boolean(tokenCookie);
-    const token = tokenCookie || tokenBearer;
+    const token = obterCookie(req, NOME_COOKIE_SESSAO);
 
     if (!token) {
-        res.status(401).json({ mensagem: "Token não fornecido ou formato inválido" });
+        res.status(401).json({ mensagem: "Sessão não fornecida ou formato inválido" });
         return;
     }
 
-    if (usaCookie && !["GET", "HEAD", "OPTIONS"].includes(req.method) && !origemPermitida(req)) {
+    if (!["GET", "HEAD", "OPTIONS"].includes(req.method) && !origemPermitida(req)) {
         res.status(403).json({ mensagem: "Origem não autorizada" });
         return;
     }
@@ -266,25 +259,22 @@ async function verificarToken(req, res, next) {
             audience: JWT_AUDIENCE
         });
 
-        if (usaCookie) {
-            if (!usuario.jti) {
-                res.status(401).json({ mensagem: "Sessão inválida ou expirada" });
-                return;
-            }
-
-            const sessao = await pool.query(
-                "SELECT jti FROM sessoes_utilizador WHERE jti = $1 AND user_id = $2 AND revoked_at IS NULL AND expires_at > NOW()",
-                [usuario.jti, usuario.id]
-            );
-
-            if (sessao.rows.length === 0) {
-                res.status(401).json({ mensagem: "Sessão inválida ou expirada" });
-                return;
-            }
-
-            req.sessaoJti = usuario.jti;
+        if (!usuario.jti) {
+            res.status(401).json({ mensagem: "Sessão inválida ou expirada" });
+            return;
         }
 
+        const sessao = await pool.query(
+            "SELECT jti FROM sessoes_utilizador WHERE jti = $1 AND user_id = $2 AND revoked_at IS NULL AND expires_at > NOW()",
+            [usuario.jti, usuario.id]
+        );
+
+        if (sessao.rows.length === 0) {
+            res.status(401).json({ mensagem: "Sessão inválida ou expirada" });
+            return;
+        }
+
+        req.sessaoJti = usuario.jti;
         req.usuario = usuario;
         next();
     } catch (erro) {
@@ -786,12 +776,10 @@ try {
 // POST - terminar sessão e invalidá-la na base de dados
 app.post("/api/logout", verificarToken, async function (req, res) {
     try {
-        if (req.sessaoJti) {
-            await pool.query(
-                "UPDATE sessoes_utilizador SET revoked_at = NOW() WHERE jti = $1 AND revoked_at IS NULL",
-                [req.sessaoJti]
-            );
-        }
+        await pool.query(
+            "UPDATE sessoes_utilizador SET revoked_at = NOW() WHERE jti = $1 AND revoked_at IS NULL",
+            [req.sessaoJti]
+        );
         limparCookieSessao(res);
         res.json({ mensagem: "Sessão terminada com sucesso" });
     } catch (erro) {
