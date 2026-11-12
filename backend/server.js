@@ -126,10 +126,15 @@ async function limitarTentativasLogin(req, res, next) {
             [hashIp, JANELA_LOGIN_MS, MAX_TENTATIVAS_LOGIN]
         );
 
+        const estado = resultado.rows[0] || {
+            attempts: 1,
+            segundos_restantes: Math.ceil(JANELA_LOGIN_MS / 1000)
+        };
+
         req.loginRateLimitHash = hashIp;
 
-        if (resultado.rows[0].attempts > MAX_TENTATIVAS_LOGIN) {
-            res.set("Retry-After", String(resultado.rows[0].segundos_restantes));
+        if (estado.attempts > MAX_TENTATIVAS_LOGIN) {
+            res.set("Retry-After", String(estado.segundos_restantes));
             res.status(429).json({
                 mensagem: "Demasiadas tentativas de login. Tenta novamente dentro de alguns minutos."
             });
@@ -669,6 +674,12 @@ try {
         });
         return;
 }
+
+    // Um login bem-sucedido limpa o contador deste IP.
+    await pool.query(
+        "DELETE FROM login_rate_limits WHERE ip_hash = $1",
+        [req.loginRateLimitHash]
+    );
 
     const jti = crypto.randomUUID();
     const token = jwt.sign(
