@@ -114,7 +114,8 @@ test("POST /api/login trata erros na consulta à base de dados", async function 
 test("POST /api/registros-agua rejeita quantidade superior a 0.5 litros", async function () {
     const resposta = await request(app)
         .post("/api/registros-agua")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({
             quantidade: 1,
             horario: new Date().toISOString()
@@ -128,7 +129,8 @@ test("POST /api/registros-agua rejeita quantidade superior a 0.5 litros", async 
 test("POST /api/registros-agua rejeita quantidade igual a zero", async function () {
     const resposta = await request(app)
         .post("/api/registros-agua")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({
             quantidade: 0,
             horario: new Date().toISOString()
@@ -167,7 +169,8 @@ test("POST /api/registros-agua rejeita token JWT inválido", async function () {
 test("POST /api/registros-agua rejeita data inválida", async function () {
     const resposta = await request(app)
         .post("/api/registros-agua")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({
             quantidade: 0.5,
             horario: "data-invalida"
@@ -284,6 +287,7 @@ test("GET /api/meta-diaria devolve a meta do utilizador autenticado", async func
     try {
         const resposta = await request(app)
             .get("/api/meta-diaria")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(200);
@@ -314,6 +318,7 @@ test("PUT /api/meta-diaria atualiza a meta do utilizador autenticado", async fun
     try {
         const resposta = await request(app)
             .put("/api/meta-diaria")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
             .send({ meta_diaria: 3.5 });
 
@@ -333,7 +338,8 @@ test("PUT /api/meta-diaria atualiza a meta do utilizador autenticado", async fun
 test("PUT /api/meta-diaria rejeita uma meta superior a 10 litros", async function () {
     const resposta = await request(app)
         .put("/api/meta-diaria")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({ meta_diaria: 11 });
 
     expect(resposta.status).toBe(400);
@@ -346,7 +352,8 @@ test("PUT /api/meta-diaria rejeita uma meta superior a 10 litros", async functio
 test("PUT /api/meta-diaria rejeita uma meta inferior a 0.5 litros", async function () {
     const resposta = await request(app)
         .put("/api/meta-diaria")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({ meta_diaria: 0.4 });
 
     expect(resposta.status).toBe(400);
@@ -359,7 +366,8 @@ test("PUT /api/meta-diaria rejeita uma meta inferior a 0.5 litros", async functi
 test("PUT /api/meta-diaria rejeita uma meta enviada como texto", async function () {
     const resposta = await request(app)
         .put("/api/meta-diaria")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({ meta_diaria: "3.5" });
 
     expect(resposta.status).toBe(400);
@@ -409,6 +417,7 @@ test("GET /api/estatisticas-diarias devolve sete dias para o utilizador autentic
     try {
         const resposta = await request(app)
             .get("/api/estatisticas-diarias")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(200);
@@ -444,6 +453,7 @@ test("GET /api/meta-diaria devolve 404 se o utilizador não existir", async func
     try {
         const resposta = await request(app)
             .get("/api/meta-diaria")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(404);
@@ -467,6 +477,7 @@ test("GET /api/estatisticas-diarias trata erros na consulta à base de dados", a
     try {
         const resposta = await request(app)
             .get("/api/estatisticas-diarias")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(500);
@@ -491,6 +502,7 @@ test("PUT /api/meta-diaria devolve 404 se o utilizador não existir", async func
     try {
         const resposta = await request(app)
             .put("/api/meta-diaria")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
             .send({ meta_diaria: 3.5 });
 
@@ -515,6 +527,7 @@ test("PUT /api/meta-diaria trata erros na consulta à base de dados", async func
     try {
         const resposta = await request(app)
             .put("/api/meta-diaria")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
             .send({ meta_diaria: 3.5 });
 
@@ -547,6 +560,7 @@ test("DELETE /api/registros-agua trata erros na consulta à base de dados", asyn
     try {
         const resposta = await request(app)
             .delete("/api/registros-agua")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(500);
@@ -598,6 +612,7 @@ test("GET /api/registros-agua devolve 500 quando ocorre um erro na base de dados
     try {
         const resposta = await request(app)
             .get("/api/registros-agua")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(500);
@@ -730,7 +745,8 @@ test("POST /api/usuarios devolve 500 quando ocorre um erro na base de dados", as
 test("POST /api/registros-agua rejeita quantidade negativa", async function () {
     const resposta = await request(app)
         .post("/api/registros-agua")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({
             quantidade: -0.5,
             horario: new Date().toISOString()
@@ -744,7 +760,8 @@ test("POST /api/registros-agua rejeita quantidade negativa", async function () {
 test("POST /api/registros-agua rejeita pedido sem quantidade", async function () {
     const resposta = await request(app)
         .post("/api/registros-agua")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({
             horario: new Date().toISOString()
         });
@@ -767,6 +784,7 @@ test("POST /api/registros-agua regista água com sucesso", async function () {
     try {
         const resposta = await request(app)
             .post("/api/registros-agua")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
             .send({
                 quantidade: 0.5,
@@ -797,6 +815,7 @@ test("GET /api/registros-agua devolve os registos do utilizador autenticado", as
     try {
         const resposta = await request(app)
             .get("/api/registros-agua")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(200);
@@ -821,6 +840,7 @@ test("POST /api/registros-agua devolve 500 quando ocorre um erro na base de dado
     try {
         const resposta = await request(app)
             .post("/api/registros-agua")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
             .send({
                 quantidade: 0.5,
@@ -847,6 +867,7 @@ test("GET /api/meta-diaria devolve 500 quando ocorre um erro na base de dados", 
     try {
         const resposta = await request(app)
             .get("/api/meta-diaria")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(500);
@@ -860,7 +881,8 @@ test("GET /api/meta-diaria devolve 500 quando ocorre um erro na base de dados", 
 test("PUT /api/meta-diaria rejeita pedido sem meta diária", async function () {
     const resposta = await request(app)
         .put("/api/meta-diaria")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({});
 
     expect(resposta.status).toBe(400);
@@ -870,7 +892,8 @@ test("PUT /api/meta-diaria rejeita pedido sem meta diária", async function () {
 test("PUT /api/meta-diaria rejeita uma meta negativa", async function () {
     const resposta = await request(app)
         .put("/api/meta-diaria")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
         .send({ meta_diaria: -1 });
 
     expect(resposta.status).toBe(400);
@@ -890,6 +913,7 @@ test("DELETE /api/registros-agua apaga os registos do utilizador autenticado", a
     try {
         const resposta = await request(app)
             .delete("/api/registros-agua")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`);
 
         expect(resposta.status).toBe(200);
@@ -954,7 +978,7 @@ test("GET /api/registros-agua rejeita cabeçalho Bearer sem token", async functi
 
     expect(resposta.status).toBe(401);
     expect(resposta.body.mensagem).toBe(
-        "Token não fornecido ou formato inválido"
+        "Sessão não fornecida ou formato inválido"
     );
 });
 
@@ -965,7 +989,7 @@ test("GET /api/registros-agua rejeita Bearer sem token", async function () {
 
     expect(resposta.status).toBe(401);
     expect(resposta.body.mensagem).toBe(
-        "Token não fornecido ou formato inválido"
+        "Sessão não fornecida ou formato inválido"
     );
 });
 
@@ -977,7 +1001,8 @@ test("GET /api/meta-diaria rejeita token com emissor incorreto", async function 
     );
     const resposta = await request(app)
         .get("/api/meta-diaria")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
     expect(resposta.status).toBe(401);
 });
 
@@ -989,7 +1014,8 @@ test("GET /api/meta-diaria rejeita token com destinatário incorreto", async fun
     );
     const resposta = await request(app)
         .get("/api/meta-diaria")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
     expect(resposta.status).toBe(401);
 });
 
@@ -1001,7 +1027,8 @@ test("GET /api/meta-diaria rejeita token assinado com algoritmo diferente", asyn
     );
     const resposta = await request(app)
         .get("/api/meta-diaria")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
     expect(resposta.status).toBe(401);
 });
 
@@ -1142,6 +1169,7 @@ test("GET /api/meta-diaria aceita cookie de sessão ativa", async function () {
     try {
         const resposta = await request(app)
             .get("/api/meta-diaria")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
 
         expect(resposta.status).toBe(200);
@@ -1180,6 +1208,7 @@ test("POST /api/logout revoga a sessão e elimina o cookie", async function () {
         const resposta = await request(app)
             .post("/api/logout")
             .set("Origin", "http://localhost:5500")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
 
         expect(resposta.status).toBe(200);
@@ -1213,6 +1242,7 @@ test("GET /api/meta-diaria rejeita uma sessão revogada", async function () {
     try {
         const resposta = await request(app)
             .get("/api/meta-diaria")
+            .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
 
         expect(resposta.status).toBe(401);
@@ -1238,7 +1268,8 @@ test("GET /api/meta-diaria rejeita um JWT expirado no cookie", async function ()
 
     const resposta = await request(app)
         .get("/api/meta-diaria")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
 
     expect(resposta.status).toBe(401);
     expect(resposta.body.mensagem).toBe("Token inválido ou expirado");
@@ -1261,7 +1292,8 @@ test("PUT autenticado por cookie rejeita origem não autorizada", async function
     const resposta = await request(app)
         .put("/api/meta-diaria")
         .set("Origin", "https://origem-nao-autorizada.example")
-        .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`)
+        .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`)
         .send({ meta_diaria: 3 });
 
     expect(resposta.status).toBe(403);
