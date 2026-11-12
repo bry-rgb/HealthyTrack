@@ -1,0 +1,113 @@
+name: Test preview login rate limit
+
+on:
+  push:
+    branches:
+      - security/helmet-headers
+    paths:
+      - .github/workflows/test-preview-login-rate-limit.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: healthytrack-preview-login-rate-limit-test
+  cancel-in-progress: false
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Obter código da branch de segurança
+        uses: actions/checkout@v4
+        with:
+          ref: security/helmet-headers
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Testar limitador com a base de dados Preview
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL_PREVIEW }}
+          EXPECTED_HOST: ep-round-bird-badmuurl.c-8.eu-central-1.aws.neon.tech
+          JWT_SECRET: preview-integration-test-only-secret-not-for-production
+        run: |
+          node <<'NODE'
+          const crypto = require("crypto");
+          const request = require("supertest");
+
+          async function main() {
+            if (!process.env.DATABASE_URL) {
+              throw new Error("O secret NEON_DATABASE_URL_PREVIEW não está configurado.");
+            }
+
+            const actualHost = new URL(process.env.DATABASE_URL).hostname;
+            if (actualHost !== process.env.EXPECTED_HOST) {
+              throw new Error("A ligação não corresponde ao hostname Preview esperado.");
+            }
+            console.log("Ligação validada para a branch Preview.");
+
+            const { app, pool } = require("./server");
+            const bytes = crypto.randomBytes(2);
+            const testIp = `198.51.${bytes[0]}.${bytes[1]}`;
+            const testEmail = `rate-limit-${crypto.randomUUID()}@example.invalid`;
+            const ipHash = crypto.createHmac("sha256", process.env.JWT_SECRET)
+              .update(testIp)
+              .digest("hex");
+
+            try {
+              for (let attempt = 1; attempt <= 6; attempt += 1) {
+                const response = await request(app)
+                  .post("/api/login")
+                  .set("X-Forwarded-For", testIp)
+                  .send({ email: testEmail, senha: "PreviewTestPassword123" });
+
+                const expectedStatus = attempt <= 5 ? 401 : 429;
+                if (response.status !== expectedStatus) {
+                  throw new Error(
+                    `Tentativa ${attempt}: esperado HTTP ${expectedStatus}, recebido HTTP ${response.status}.`
+                  );
+                }
+                console.log(`Tentativa ${attempt}: HTTP ${response.status} confirmado.`);
+
+                if (attempt === 6 && !response.headers["retry-after"]) {
+                  throw new Error("A resposta 429 não incluiu o cabeçalho Retry-After.");
+                }
+              }
+
+              const result = await pool.query(
+                "SELECT attempts FROM login_rate_limits WHERE ip_hash = $1",
+                [ipHash]
+              );
+              if (result.rows.length !== 1 || result.rows[0].attempts !== 6) {
+                throw new Error("O contador no PostgreSQL não corresponde às seis tentativas.");
+              }
+              console.log("Contador PostgreSQL confirmado: 6 tentativas.");
+              console.log("TESTE DE INTEGRAÇÃO CONCLUÍDO COM SUCESSO.");
+            } finally {
+              await pool.query(
+                "DELETE FROM login_rate_limits WHERE ip_hash = $1",
+                [ipHash]
+              );
+              await pool.end();
+              console.log("Registo temporário do teste removido.");
+            }
+          }
+
+          main().catch((error) => {
+            console.error(error.message);
+            process.exit(1);
+          });
+          NODE
