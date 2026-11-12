@@ -88,7 +88,7 @@ async function limitarTentativasLogin(req, res, next) {
     // Mantém os erros de validação fora do contador.
     if (
         typeof req.body.email !== "string" ||
-        !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(req.body.email) ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req.body.email) ||
         typeof req.body.senha !== "string" ||
         !req.body.senha
     ) {
