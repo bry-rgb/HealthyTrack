@@ -1,14 +1,7 @@
 const API_BASE_URL = window.WATERKRAFT_API_BASE_URL || "http://localhost:3000";
 
-let token = sessionStorage.getItem("token");
-
-if (!token) {
-    window.location.href = "login.html";
-}
-
 function verificarResposta(resposta) {
     if (resposta.status === 401) {
-        sessionStorage.removeItem("token");
         window.location.href = "sessao-expirada.html";
         throw new Error("Sessão expirada. Inicia sessão novamente.");
     }
@@ -201,7 +194,6 @@ async function carregarMetaDiaria() {
             `${API_BASE_URL}/api/meta-diaria`,
             {
                 headers: {
-                    "Authorization": `Bearer ${token}`
                 }
             }
         );
@@ -242,7 +234,6 @@ async function carregarEstatisticas() {
             `${API_BASE_URL}/api/estatisticas-diarias`,
             {
                 headers: {
-                    "Authorization": `Bearer ${token}`
                 }
             }
         );
@@ -404,7 +395,6 @@ botaoMeta.addEventListener("click", async function () {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     meta_diaria: novaMeta
@@ -483,7 +473,6 @@ async function carregarRegistrosAgua() {
             `${API_BASE_URL}/api/registros-agua?${parametrosDiaAtual()}`,
             {
                 headers: {
-                    "Authorization": `Bearer ${token}`
                 }
             }
         );
@@ -525,7 +514,6 @@ async function adicionarAgua(quantidade) {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify(registro)
             }
@@ -571,7 +559,6 @@ async function limparHistorico() {
             {
                 method: "DELETE",
                 headers: {
-                    "Authorization": `Bearer ${token}`
                 }
             }
         );
@@ -599,9 +586,18 @@ async function limparHistorico() {
 }
 
 // Terminar sessão
-botaoLogout.addEventListener("click", function () {
-    sessionStorage.removeItem("token");
-    window.location.href = "login.html";
+botaoLogout.addEventListener("click", async function () {
+    botaoLogout.disabled = true;
+    try {
+        await fetch(`${API_BASE_URL}/api/logout`, {
+            method: "POST",
+            credentials: "same-origin"
+        });
+    } catch (erro) {
+        console.error("Não foi possível confirmar o fim da sessão:", erro);
+    } finally {
+        window.location.href = "login.html";
+    }
 });
 
 // ===== DATA, HORA E RECOMEÇO DIÁRIO =====
