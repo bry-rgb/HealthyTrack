@@ -869,7 +869,16 @@ test("POST /api/login faz login com credenciais válidas", async function () {
             });
 
         expect(resposta.status).toBe(200);
-        expect(resposta.body.token).toBeDefined();
+        expect(resposta.body.token).toBeUndefined();
+        expect(resposta.body.usuario.email).toBe("teste@example.com");
+        const cookie = resposta.headers["set-cookie"].find(valor => valor.startsWith("waterkraft_session="));
+        expect(cookie).toContain("HttpOnly");
+        expect(cookie).toContain("Secure");
+        expect(cookie).toContain("SameSite=Lax");
+        expect(pool.query).toHaveBeenCalledWith(
+            expect.stringContaining("INSERT INTO sessoes_utilizador"),
+            expect.arrayContaining([expect.any(String), 1, expect.any(Date)])
+        );
     } finally {
         pool.query = consultaOriginal;
     }
@@ -985,6 +994,105 @@ test("POST /api/login não conta erros de validação como tentativas falhadas",
     } finally {
         pool.query = consultaOriginal;
     }
+});
+
+test("GET /api/meta-diaria aceita cookie de sessão ativa", async function () {
+    const consultaOriginal = pool.query;
+    const jti = "7d9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f10";
+    const token = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        {
+            algorithm: "HS256",
+            issuer: "healthytrack",
+            audience: "healthytrack-api",
+            expiresIn: "1h",
+            jwtid: jti
+        }
+    );
+
+    pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti }] });
+        }
+        callback(null, { rows: [{ meta_diaria: "2.5" }] });
+    });
+
+    try {
+        const resposta = await request(app)
+            .get("/api/meta-diaria")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+
+        expect(resposta.status).toBe(200);
+        expect(resposta.body.meta_diaria).toBe(2.5);
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
+test("POST /api/logout revoga a sessão e elimina o cookie", async function () {
+    const consultaOriginal = pool.query;
+    const jti = "8d9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f11";
+    const token = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        {
+            algorithm: "HS256",
+            issuer: "healthytrack",
+            audience: "healthytrack-api",
+            expiresIn: "1h",
+            jwtid: jti
+        }
+    );
+
+    pool.query = jest.fn().mockImplementation(function (sql) {
+        if (sql.includes("SELECT jti FROM sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti }] });
+        }
+        if (sql.includes("UPDATE sessoes_utilizador")) {
+            return Promise.resolve({ rows: [] });
+        }
+        return Promise.resolve({ rows: [] });
+    });
+
+    try {
+        const resposta = await request(app)
+            .post("/api/logout")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+
+        expect(resposta.status).toBe(200);
+        expect(pool.query).toHaveBeenCalledWith(
+            expect.stringContaining("UPDATE sessoes_utilizador"),
+            [jti]
+        );
+        expect(resposta.headers["set-cookie"].join(";")).toContain("Max-Age=0");
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
+test("PUT autenticado por cookie rejeita origem não autorizada", async function () {
+    const jti = "9d9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f12";
+    const token = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        {
+            algorithm: "HS256",
+            issuer: "healthytrack",
+            audience: "healthytrack-api",
+            expiresIn: "1h",
+            jwtid: jti
+        }
+    );
+
+    const resposta = await request(app)
+        .put("/api/meta-diaria")
+        .set("Origin", "https://origem-nao-autorizada.example")
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`)
+        .send({ meta_diaria: 3 });
+
+    expect(resposta.status).toBe(403);
 });
 
 afterAll(async function () {
