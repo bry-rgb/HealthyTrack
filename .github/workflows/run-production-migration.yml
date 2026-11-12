@@ -1,0 +1,54 @@
+name: Run production database migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_production_migration:
+        description: "Confirmar a execução da migration na Neon production"
+        required: true
+        type: choice
+        options:
+          - "NO"
+          - "YES_APPLY_TO_PRODUCTION"
+        default: "NO"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: healthytrack-production-database-migration
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    if: ${{ inputs.confirm_production_migration == 'YES_APPLY_TO_PRODUCTION' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Obter código da branch de segurança
+        uses: actions/checkout@v4
+        with:
+          ref: security/helmet-headers
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependências
+        working-directory: backend
+        run: npm ci
+
+      - name: Executar migrations pendentes
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::O secret NEON_DATABASE_URL não está configurado."
+            exit 1
+          fi
+          npm run migrate:up
