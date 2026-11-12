@@ -946,7 +946,14 @@ test("GET /api/meta-diaria rejeita token assinado com algoritmo diferente", asyn
 test("POST /api/login bloqueia a sexta tentativa falhada no mesmo IP", async function () {
     const consultaOriginal = pool.query;
     const ipTeste = "192.0.2.77";
-    pool.query = jest.fn().mockResolvedValue({ rows: [] });
+    let tentativas = 0;
+    pool.query = jest.fn().mockImplementation(async (sql) => {
+        if (sql.includes("INSERT INTO login_rate_limits")) {
+            tentativas += 1;
+            return { rows: [{ attempts: tentativas, segundos_restantes: 900 }] };
+        }
+        return { rows: [] };
+    });
 
     try {
         for (let tentativa = 0; tentativa < 5; tentativa++) {
@@ -964,7 +971,7 @@ test("POST /api/login bloqueia a sexta tentativa falhada no mesmo IP", async fun
 
         expect(bloqueada.status).toBe(429);
         expect(bloqueada.headers["retry-after"]).toBeDefined();
-        expect(pool.query).toHaveBeenCalledTimes(5);
+        expect(tentativas).toBe(6);
     } finally {
         pool.query = consultaOriginal;
     }
@@ -973,7 +980,14 @@ test("POST /api/login bloqueia a sexta tentativa falhada no mesmo IP", async fun
 test("POST /api/login não conta erros de validação como tentativas falhadas", async function () {
     const consultaOriginal = pool.query;
     const ipTeste = "192.0.2.78";
-    pool.query = jest.fn().mockResolvedValue({ rows: [] });
+    let tentativas = 0;
+    pool.query = jest.fn().mockImplementation(async (sql) => {
+        if (sql.includes("INSERT INTO login_rate_limits")) {
+            tentativas += 1;
+            return { rows: [{ attempts: tentativas, segundos_restantes: 900 }] };
+        }
+        return { rows: [] };
+    });
 
     try {
         for (let tentativa = 0; tentativa < 6; tentativa++) {
@@ -990,7 +1004,7 @@ test("POST /api/login não conta erros de validação como tentativas falhadas",
             .send({ email: "nao-existe@example.com", senha: "Aventura123" });
 
         expect(resposta.status).toBe(401);
-        expect(pool.query).toHaveBeenCalledTimes(1);
+        expect(tentativas).toBe(1);
     } finally {
         pool.query = consultaOriginal;
     }
