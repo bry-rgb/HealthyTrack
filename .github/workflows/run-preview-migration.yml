@@ -1,0 +1,98 @@
+name: Run preview database migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_preview_migration:
+        description: "Confirmar a execução apenas na base de dados Neon Preview"
+        required: true
+        type: choice
+        options:
+          - "NO"
+          - "YES_APPLY_TO_PREVIEW"
+        default: "NO"
+      expected_preview_database_host:
+        description: "Hostname exato da base de dados Neon Preview (sem credenciais)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: healthytrack-preview-database-migration
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    if: ${{ inputs.confirm_preview_migration == 'YES_APPLY_TO_PREVIEW' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Obter código da branch de segurança
+        uses: actions/checkout@v4
+        with:
+          ref: security/helmet-headers
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependências
+        working-directory: backend
+        run: npm ci
+
+      - name: Validar ligação exclusiva de Preview
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL_PREVIEW }}
+          EXPECTED_HOST: ${{ inputs.expected_preview_database_host }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::O secret NEON_DATABASE_URL_PREVIEW não está configurado."
+            exit 1
+          fi
+
+          ACTUAL_HOST=$(node -e 'try { process.stdout.write(new URL(process.env.DATABASE_URL).hostname) } catch { process.exit(1) }')
+          if [ -z "$ACTUAL_HOST" ] || [ "$ACTUAL_HOST" != "$EXPECTED_HOST" ]; then
+            echo "::error::O hostname da ligação não corresponde ao hostname Preview confirmado."
+            exit 1
+          fi
+
+          echo "Ligação validada para o hostname Preview: $ACTUAL_HOST"
+
+      - name: Executar migrations pendentes no Preview
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL_PREVIEW }}
+        run: npm run migrate:up
+
+      - name: Confirmar criação da tabela do limitador
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL_PREVIEW }}
+        run: |
+          node -e "
+          const { Client } = require('pg');
+          (async () => {
+            const client = new Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+            try {
+              await client.connect();
+              const result = await client.query(
+                \"SELECT to_regclass('public.login_rate_limits') AS tabela\"
+              );
+              if (!result.rows[0].tabela) {
+                throw new Error('A tabela login_rate_limits não foi encontrada.');
+              }
+              console.log('Tabela login_rate_limits confirmada no Preview.');
+            } finally {
+              await client.end();
+            }
+          })().catch((error) => {
+            console.error(error.message);
+            process.exit(1);
+          });
+          "
