@@ -55,8 +55,6 @@
       });
       var dados = await resposta.json().catch(function () { return {}; });
       if (!resposta.ok) throw new Error(dados.mensagem || "Não foi possível entrar. Tenta novamente.");
-      if (!dados.token) throw new Error("A resposta do login não trouxe um token.");
-      sessionStorage.setItem(config.tokenStorageKey || "token", dados.token);
       window.location.assign(config.redirectAfterLogin || "index.html");
     } catch (erro) {
       erroLogin.textContent = erro.message || "Não foi possível ligar ao servidor. Tenta novamente.";
