@@ -103,14 +103,13 @@ test("alternar separadores mostra o painel de registo e limpa a mensagem", () =>
     );
 });
 
-test("login envia credenciais, guarda o token e encaminha para o painel (avaliação em pop-up)", async () => {
+test("login envia credenciais com cookie e encaminha para o painel (avaliação em pop-up)", async () => {
     let pedido;
 
     const { elementos, armazenamento, contexto } = criarAmbiente({
         fetch: async (url, opcoes) => {
             pedido = { url, opcoes };
             return respostaJson({
-                token: "token-teste",
                 usuario: { avaliacao_inicial_concluida: false }
             });
         }
@@ -129,7 +128,8 @@ test("login envia credenciais, guarda o token e encaminha para o painel (avalia�
         email: "ana@example.com",
         senha: "senha-segura"
     });
-    assert.equal(armazenamento.get("token"), "token-teste");
+    assert.equal(pedido.opcoes.credentials, "same-origin");
+    assert.equal(armazenamento.get("token"), undefined);
     assert.equal(
         contexto.window.location.href,
         "index.html"
