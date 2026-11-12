@@ -5,6 +5,21 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const jtiTeste = "11111111-1111-4111-8111-111111111111";
+const queryReal = pool.query;
+
+beforeEach(function () {
+    pool.query = function (sql, parametros, callback) {
+        if (typeof sql === "string" && sql.includes("sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
+        return queryReal.call(pool, sql, parametros, callback);
+    };
+});
+
+afterEach(function () {
+    pool.query = queryReal;
+});
+
 const tokenTeste = jwt.sign(
     { id: 1, email: "teste@example.com" },
     process.env.JWT_SECRET,
@@ -156,6 +171,7 @@ test("POST /api/registros-agua rejeita pedido sem token", async function () {
 test("POST /api/registros-agua rejeita token JWT inválido", async function () {
     const resposta = await request(app)
         .post("/api/registros-agua")
+        .set("Origin", "http://localhost:5500")
         .set("Authorization", "Bearer tokenfalso")
         .send({
             quantidade: 0.5,
@@ -576,6 +592,7 @@ test("DELETE /api/registros-agua trata erros na consulta à base de dados", asyn
 test("DELETE /api/registros-agua rejeita token JWT inválido", async function () {
     const resposta = await request(app)
         .delete("/api/registros-agua")
+        .set("Origin", "http://localhost:5500")
         .set("Authorization", "Bearer tokenfalso");
 
     expect(resposta.status).toBe(401);
@@ -643,6 +660,7 @@ test("GET /api/estatisticas-diarias rejeita token inválido", async function () 
 test("PUT /api/meta-diaria rejeita token inválido", async function () {
     const resposta = await request(app)
         .put("/api/meta-diaria")
+        .set("Origin", "http://localhost:5500")
         .set("Cookie", "waterkraft_session=token-invalido")
         .send({ meta_diaria: 2.5 });
 
@@ -653,6 +671,7 @@ test("PUT /api/meta-diaria rejeita token inválido", async function () {
 test("POST /api/registros-agua rejeita token inválido", async function () {
     const resposta = await request(app)
         .post("/api/registros-agua")
+        .set("Origin", "http://localhost:5500")
         .set("Cookie", "waterkraft_session=token-invalido")
         .send({ quantidade: 0.5 });
 
@@ -663,6 +682,7 @@ test("POST /api/registros-agua rejeita token inválido", async function () {
 test("DELETE /api/registros-agua rejeita token inválido", async function () {
     const resposta = await request(app)
         .delete("/api/registros-agua")
+        .set("Origin", "http://localhost:5500")
         .set("Cookie", "waterkraft_session=token-invalido");
 
     expect(resposta.status).toBe(401);
@@ -1292,7 +1312,6 @@ test("PUT autenticado por cookie rejeita origem não autorizada", async function
     const resposta = await request(app)
         .put("/api/meta-diaria")
         .set("Origin", "https://origem-nao-autorizada.example")
-        .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`)
         .send({ meta_diaria: 3 });
 
