@@ -946,14 +946,17 @@ test("GET /api/meta-diaria rejeita token assinado com algoritmo diferente", asyn
     expect(resposta.status).toBe(401);
 });
 
-test("POST /api/login bloqueia a sexta tentativa falhada no mesmo IP", async function () {
+test("POST /api/login bloqueia a sexta tentativa falhada da mesma conta", async function () {
     const consultaOriginal = pool.query;
-    const ipTeste = "192.0.2.77";
-    let tentativas = 0;
+    const contadores = { ip: 0, conta: 0 };
     pool.query = jest.fn().mockImplementation(async (sql) => {
+        if (sql.includes("INSERT INTO login_rate_limits_accounts")) {
+            contadores.conta += 1;
+            return { rows: [{ attempts: contadores.conta, segundos_restantes: 900 }] };
+        }
         if (sql.includes("INSERT INTO login_rate_limits")) {
-            tentativas += 1;
-            return { rows: [{ attempts: tentativas, segundos_restantes: 900 }] };
+            contadores.ip += 1;
+            return { rows: [{ attempts: contadores.ip, segundos_restantes: 900 }] };
         }
         return { rows: [] };
     });
@@ -962,19 +965,54 @@ test("POST /api/login bloqueia a sexta tentativa falhada no mesmo IP", async fun
         for (let tentativa = 0; tentativa < 5; tentativa++) {
             const resposta = await request(app)
                 .post("/api/login")
-                .set("X-Forwarded-For", ipTeste)
-                .send({ email: "nao-existe@example.com", senha: "Aventura123" });
+                .set("X-Forwarded-For", `192.0.2.${80 + tentativa}`)
+                .send({ email: "mesma-conta@example.com", senha: "Aventura123" });
             expect(resposta.status).toBe(401);
         }
 
         const bloqueada = await request(app)
             .post("/api/login")
-            .set("X-Forwarded-For", ipTeste)
-            .send({ email: "nao-existe@example.com", senha: "Aventura123" });
+            .set("X-Forwarded-For", "192.0.2.90")
+            .send({ email: "mesma-conta@example.com", senha: "Aventura123" });
 
         expect(bloqueada.status).toBe(429);
         expect(bloqueada.headers["retry-after"]).toBeDefined();
-        expect(tentativas).toBe(6);
+        expect(contadores.conta).toBe(6);
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
+test("POST /api/login permite várias contas na mesma rede até ao limite por IP", async function () {
+    const consultaOriginal = pool.query;
+    let tentativasIp = 0;
+    pool.query = jest.fn().mockImplementation(async (sql) => {
+        if (sql.includes("INSERT INTO login_rate_limits_accounts")) {
+            return { rows: [{ attempts: 1, segundos_restantes: 900 }] };
+        }
+        if (sql.includes("INSERT INTO login_rate_limits")) {
+            tentativasIp += 1;
+            return { rows: [{ attempts: tentativasIp, segundos_restantes: 900 }] };
+        }
+        return { rows: [] };
+    });
+
+    try {
+        for (let tentativa = 1; tentativa <= 30; tentativa++) {
+            const resposta = await request(app)
+                .post("/api/login")
+                .set("X-Forwarded-For", "192.0.2.100")
+                .send({ email: `conta-${tentativa}@example.com`, senha: "Aventura123" });
+            expect(resposta.status).toBe(401);
+        }
+
+        const bloqueada = await request(app)
+            .post("/api/login")
+            .set("X-Forwarded-For", "192.0.2.100")
+            .send({ email: "conta-31@example.com", senha: "Aventura123" });
+
+        expect(bloqueada.status).toBe(429);
+        expect(tentativasIp).toBe(31);
     } finally {
         pool.query = consultaOriginal;
     }
