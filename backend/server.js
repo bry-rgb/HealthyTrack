@@ -67,7 +67,8 @@ app.use(cors({
             return;
         }
         callback(null, false);
-    }
+    },
+    credentials: true
 }));
 
 // O Render encaminha os pedidos através de um proxy. Confiamos num único salto
