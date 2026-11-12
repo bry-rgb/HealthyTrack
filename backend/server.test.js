@@ -91,8 +91,11 @@ test("POST /api/login trata erros na consulta à base de dados", async function 
                 senha: "Aventura123"
             });
 
-        expect(resposta.status).toBe(500);
-        expect(resposta.body).toHaveProperty("mensagem");
+        // O limitador falha em modo fechado quando o PostgreSQL está indisponível.
+        expect(resposta.status).toBe(503);
+        expect(resposta.body.mensagem).toBe(
+            "Não foi possível validar o limite de tentativas. Tenta novamente."
+        );
     } finally {
         pool.query = consultaOriginal;
     }
