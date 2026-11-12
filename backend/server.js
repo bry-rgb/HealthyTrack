@@ -79,59 +79,70 @@ app.set("trust proxy", 1);
 // O HSTS é aplicado pelo Helmet apenas em ligações HTTPS.
 app.use(helmet());
 
-// Limita tentativas de autenticação falhadas por endereço IP.
-// O contador só aumenta em respostas 401; erros de validação (400) não contam.
-const tentativasLogin = new Map();
+// Limita tentativas de login com armazenamento partilhado no PostgreSQL.
+// O IP é transformado num HMAC; o endereço original nunca é guardado na tabela.
 const JANELA_LOGIN_MS = 15 * 60 * 1000;
 const MAX_TENTATIVAS_LOGIN = 5;
 
-function limitarTentativasLogin(req, res, next) {
-    const ip = req.ip || req.socket.remoteAddress || "desconhecido";
-    const agora = Date.now();
-    let registo = tentativasLogin.get(ip);
-
-    if (registo && agora - registo.inicio >= JANELA_LOGIN_MS) {
-        tentativasLogin.delete(ip);
-        registo = undefined;
-    }
-
-    if (registo && registo.quantidade >= MAX_TENTATIVAS_LOGIN) {
-        const segundosRestantes = Math.ceil(
-            (JANELA_LOGIN_MS - (agora - registo.inicio)) / 1000
-        );
-        res.set("Retry-After", String(segundosRestantes));
-        res.status(429).json({
-            mensagem: "Demasiadas tentativas de login. Tenta novamente dentro de alguns minutos."
-        });
+async function limitarTentativasLogin(req, res, next) {
+    // Mantém os erros de validação fora do contador.
+    if (
+        typeof req.body.email !== "string" ||
+        !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(req.body.email) ||
+        typeof req.body.senha !== "string" ||
+        !req.body.senha
+    ) {
+        next();
         return;
     }
 
-    const enviarJson = res.json.bind(res);
-    res.json = function (dados) {
-        if (res.statusCode === 401) {
-            const atual = tentativasLogin.get(ip);
-            const contador = atual && agora - atual.inicio < JANELA_LOGIN_MS
-                ? atual
-                : { inicio: agora, quantidade: 0 };
-            contador.quantidade += 1;
-            tentativasLogin.set(ip, contador);
-        } else if (res.statusCode >= 200 && res.statusCode < 300) {
-            tentativasLogin.delete(ip);
+    const ip = req.ip || req.socket.remoteAddress || "desconhecido";
+    const hashIp = crypto.createHmac("sha256", JWT_SECRET)
+        .update(ip)
+        .digest("hex");
+
+    try {
+        const resultado = await pool.query(
+            `INSERT INTO login_rate_limits
+                (ip_hash, window_started_at, attempts, updated_at)
+             VALUES ($1, NOW(), 1, NOW())
+             ON CONFLICT (ip_hash)
+             DO UPDATE SET
+                window_started_at = CASE
+                    WHEN login_rate_limits.window_started_at <= NOW() - ($2 * INTERVAL '1 millisecond')
+                    THEN NOW()
+                    ELSE login_rate_limits.window_started_at
+                END,
+                attempts = CASE
+                    WHEN login_rate_limits.window_started_at <= NOW() - ($2 * INTERVAL '1 millisecond')
+                    THEN 1
+                    ELSE LEAST(login_rate_limits.attempts + 1, $3 + 1)
+                END,
+                updated_at = NOW()
+             RETURNING attempts,
+                GREATEST(1, CEIL(EXTRACT(EPOCH FROM (
+                    window_started_at + ($2 * INTERVAL '1 millisecond') - NOW()
+                ))))::integer AS segundos_restantes`,
+            [hashIp, JANELA_LOGIN_MS, MAX_TENTATIVAS_LOGIN]
+        );
+
+        req.loginRateLimitHash = hashIp;
+
+        if (resultado.rows[0].attempts > MAX_TENTATIVAS_LOGIN) {
+            res.set("Retry-After", String(resultado.rows[0].segundos_restantes));
+            res.status(429).json({
+                mensagem: "Demasiadas tentativas de login. Tenta novamente dentro de alguns minutos."
+            });
+            return;
         }
 
-        // Limpeza oportunista para evitar guardar IPs antigos indefinidamente.
-        if (tentativasLogin.size > 10000) {
-            for (const [chave, valor] of tentativasLogin) {
-                if (agora - valor.inicio >= JANELA_LOGIN_MS) {
-                    tentativasLogin.delete(chave);
-                }
-            }
-        }
-
-        return enviarJson(dados);
-    };
-
-    next();
+        next();
+    } catch (erro) {
+        console.error("Erro ao verificar limite de tentativas de login:", erro);
+        res.status(503).json({
+            mensagem: "Não foi possível validar o limite de tentativas. Tenta novamente."
+        });
+    }
 }
 
 const PORT = Number(process.env.PORT || 3000);
