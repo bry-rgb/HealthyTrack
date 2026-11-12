@@ -79,16 +79,19 @@ app.set("trust proxy", 1);
 // O HSTS é aplicado pelo Helmet apenas em ligações HTTPS.
 app.use(helmet());
 
-// Limita tentativas de login com armazenamento partilhado no PostgreSQL.
-// O IP é transformado num HMAC; o endereço original nunca é guardado na tabela.
+// Limita tentativas por conta e por IP com armazenamento partilhado no PostgreSQL.
+// Os identificadores são HMACs: não guardamos IPs nem emails nesta tabela.
 const JANELA_LOGIN_MS = 15 * 60 * 1000;
-const MAX_TENTATIVAS_LOGIN = 5;
+const MAX_TENTATIVAS_CONTA = 5;
+const MAX_TENTATIVAS_IP = 30;
+const INTERVALO_LIMPEZA_LOGIN_MS = 24 * 60 * 60 * 1000;
+let ultimaLimpezaLogin = 0;
 
 async function limitarTentativasLogin(req, res, next) {
-    // Mantém os erros de validação fora do contador.
+    // Mantém os erros de validação fora dos contadores.
     if (
         typeof req.body.email !== "string" ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req.body.email) ||
+        !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(req.body.email) ||
         typeof req.body.senha !== "string" ||
         !req.body.senha
     ) {
@@ -97,44 +100,99 @@ async function limitarTentativasLogin(req, res, next) {
     }
 
     const ip = req.ip || req.socket.remoteAddress || "desconhecido";
+    const emailNormalizado = req.body.email.trim().toLowerCase();
     const hashIp = crypto.createHmac("sha256", JWT_SECRET)
         .update(ip)
         .digest("hex");
+    const hashConta = crypto.createHmac("sha256", JWT_SECRET)
+        .update(emailNormalizado)
+        .digest("hex");
 
     try {
-        const resultado = await pool.query(
-            `INSERT INTO login_rate_limits
-                (ip_hash, window_started_at, attempts, updated_at)
-             VALUES ($1, NOW(), 1, NOW())
-             ON CONFLICT (ip_hash)
-             DO UPDATE SET
-                window_started_at = CASE
-                    WHEN login_rate_limits.window_started_at <= NOW() - ($2 * INTERVAL '1 millisecond')
-                    THEN NOW()
-                    ELSE login_rate_limits.window_started_at
-                END,
-                attempts = CASE
-                    WHEN login_rate_limits.window_started_at <= NOW() - ($2 * INTERVAL '1 millisecond')
-                    THEN 1
-                    ELSE LEAST(login_rate_limits.attempts + 1, $3 + 1)
-                END,
-                updated_at = NOW()
-             RETURNING attempts,
-                GREATEST(1, CEIL(EXTRACT(EPOCH FROM (
-                    window_started_at + ($2 * INTERVAL '1 millisecond') - NOW()
-                ))))::integer AS segundos_restantes`,
-            [hashIp, JANELA_LOGIN_MS, MAX_TENTATIVAS_LOGIN]
-        );
+        // Remove registos inactivos há mais de 24 horas, no máximo uma vez
+        // por dia e por instância da aplicação. Os índices tornam a limpeza eficiente.
+        if (Date.now() - ultimaLimpezaLogin >= INTERVALO_LIMPEZA_LOGIN_MS) {
+            try {
+                await pool.query(
+                    "DELETE FROM login_rate_limits WHERE updated_at < NOW() - INTERVAL '24 hours'"
+                );
+                await pool.query(
+                    "DELETE FROM login_rate_limits_accounts WHERE updated_at < NOW() - INTERVAL '24 hours'"
+                );
+                ultimaLimpezaLogin = Date.now();
+            } catch (erroLimpeza) {
+                // A limpeza é manutenção: uma falha não desactiva os limites de segurança.
+                console.error("Aviso: não foi possível limpar contadores antigos:", erroLimpeza);
+            }
+        }
 
-        const estado = resultado.rows[0] || {
-            attempts: 1,
-            segundos_restantes: Math.ceil(JANELA_LOGIN_MS / 1000)
-        };
+        const [resultadoIp, resultadoConta] = await Promise.all([
+            pool.query(
+                `INSERT INTO login_rate_limits
+                    (ip_hash, window_started_at, attempts, updated_at)
+                 VALUES ($1, NOW(), 1, NOW())
+                 ON CONFLICT (ip_hash)
+                 DO UPDATE SET
+                    window_started_at = CASE
+                        WHEN login_rate_limits.window_started_at <= NOW() - ($2 * INTERVAL '1 millisecond')
+                        THEN NOW()
+                        ELSE login_rate_limits.window_started_at
+                    END,
+                    attempts = CASE
+                        WHEN login_rate_limits.window_started_at <= NOW() - ($2 * INTERVAL '1 millisecond')
+                        THEN 1
+                        ELSE LEAST(login_rate_limits.attempts + 1, $3 + 1)
+                    END,
+                    updated_at = NOW()
+                 RETURNING attempts,
+                    GREATEST(1, CEIL(EXTRACT(EPOCH FROM (
+                        window_started_at + ($2 * INTERVAL '1 millisecond') - NOW()
+                    ))))::integer AS segundos_restantes`,
+                [hashIp, JANELA_LOGIN_MS, MAX_TENTATIVAS_IP]
+            ),
+            pool.query(
+                `INSERT INTO login_rate_limits_accounts
+                    (account_hash, window_started_at, attempts, updated_at)
+                 VALUES ($1, NOW(), 1, NOW())
+                 ON CONFLICT (account_hash)
+                 DO UPDATE SET
+                    window_started_at = CASE
+                        WHEN login_rate_limits_accounts.window_started_at <= NOW() - ($2 * INTERVAL '1 millisecond')
+                        THEN NOW()
+                        ELSE login_rate_limits_accounts.window_started_at
+                    END,
+                    attempts = CASE
+                        WHEN login_rate_limits_accounts.window_started_at <= NOW() - ($2 * INTERVAL '1 millisecond')
+                        THEN 1
+                        ELSE LEAST(login_rate_limits_accounts.attempts + 1, $3 + 1)
+                    END,
+                    updated_at = NOW()
+                 RETURNING attempts,
+                    GREATEST(1, CEIL(EXTRACT(EPOCH FROM (
+                        window_started_at + ($2 * INTERVAL '1 millisecond') - NOW()
+                    ))))::integer AS segundos_restantes`,
+                [hashConta, JANELA_LOGIN_MS, MAX_TENTATIVAS_CONTA]
+            )
+        ]);
 
-        req.loginRateLimitHash = hashIp;
+        const estadoIp = resultadoIp.rows[0];
+        const estadoConta = resultadoConta.rows[0];
+        if (!estadoIp || !estadoConta) {
+            throw new Error("Não foi possível obter os contadores de tentativas.");
+        }
 
-        if (estado.attempts > MAX_TENTATIVAS_LOGIN) {
-            res.set("Retry-After", String(estado.segundos_restantes));
+        req.loginRateLimitHashIp = hashIp;
+        req.loginRateLimitHashConta = hashConta;
+
+        if (
+            estadoConta.attempts > MAX_TENTATIVAS_CONTA ||
+            estadoIp.attempts > MAX_TENTATIVAS_IP
+        ) {
+            const segundosRestantes = Math.max(
+                estadoConta.attempts > MAX_TENTATIVAS_CONTA ? estadoConta.segundos_restantes : 0,
+                estadoIp.attempts > MAX_TENTATIVAS_IP ? estadoIp.segundos_restantes : 0
+            );
+            res.set("Retry-After", String(segundosRestantes));
             res.status(429).json({
                 mensagem: "Demasiadas tentativas de login. Tenta novamente dentro de alguns minutos."
             });
@@ -149,7 +207,6 @@ async function limitarTentativasLogin(req, res, next) {
         });
     }
 }
-
 const PORT = Number(process.env.PORT || 3000);
 
 // Cookie de sessão inacessível a JavaScript no navegador.
@@ -675,11 +732,17 @@ try {
         return;
 }
 
-    // Um login bem-sucedido limpa o contador deste IP.
-    await pool.query(
-        "DELETE FROM login_rate_limits WHERE ip_hash = $1",
-        [req.loginRateLimitHash]
-    );
+    // Um login bem-sucedido limpa os contadores deste IP e desta conta.
+    await Promise.all([
+        pool.query(
+            "DELETE FROM login_rate_limits WHERE ip_hash = $1",
+            [req.loginRateLimitHashIp]
+        ),
+        pool.query(
+            "DELETE FROM login_rate_limits_accounts WHERE account_hash = $1",
+            [req.loginRateLimitHashConta]
+        )
+    ]);
 
     const jti = crypto.randomUUID();
     const token = jwt.sign(
