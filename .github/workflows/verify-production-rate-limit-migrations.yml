@@ -41,6 +41,7 @@ jobs:
       - name: Check production schema (SELECT only)
         env:
           DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          EXPECTED_DATABASE_HOST: ep-little-recipe-bax5tdit.c-8.eu-central-1.aws.neon.tech
         run: |
           node <<'NODE'
           const { Client } = require("pg");
@@ -49,6 +50,24 @@ jobs:
             if (!process.env.DATABASE_URL) {
               throw new Error("NEON_DATABASE_URL is not configured.");
             }
+
+            const expectedHost = process.env.EXPECTED_DATABASE_HOST;
+            if (!expectedHost) {
+              throw new Error("Expected database hostname is not configured.");
+            }
+
+            let actualHost;
+            try {
+              actualHost = new URL(process.env.DATABASE_URL).hostname;
+            } catch {
+              throw new Error("NEON_DATABASE_URL is not a valid database URL.");
+            }
+
+            if (actualHost.toLowerCase() !== expectedHost.toLowerCase()) {
+              throw new Error("Database hostname mismatch. Aborting before connecting; no database queries or changes were made.");
+            }
+
+            console.log("Database hostname matches the confirmed Production endpoint.");
 
             const client = new Client({
               connectionString: process.env.DATABASE_URL,
