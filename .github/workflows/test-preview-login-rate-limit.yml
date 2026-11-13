@@ -1,5 +1,6 @@
 name: Test preview login rate limit
 
+# Alteração documental para disparar a validação no HEAD atual da branch de segurança.
 on:
   workflow_dispatch:
   push:
