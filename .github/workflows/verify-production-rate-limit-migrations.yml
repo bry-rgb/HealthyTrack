@@ -1,0 +1,120 @@
+name: Verify production rate-limit migrations (read-only)
+
+on:
+  push:
+    branches:
+      - security/helmet-headers
+    paths:
+      - .github/workflows/verify-production-rate-limit-migrations.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: healthytrack-production-schema-readonly-check
+  cancel-in-progress: false
+
+jobs:
+  verify-schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout security branch
+        uses: actions/checkout@v4
+        with:
+          ref: security/helmet-headers
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check production schema (SELECT only)
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          node <<'NODE'
+          const { Client } = require("pg");
+
+          async function main() {
+            if (!process.env.DATABASE_URL) {
+              throw new Error("NEON_DATABASE_URL is not configured.");
+            }
+
+            const client = new Client({
+              connectionString: process.env.DATABASE_URL,
+              connectionTimeoutMillis: 10000,
+              statement_timeout: 10000,
+              query_timeout: 10000
+            });
+
+            try {
+              await client.connect();
+
+              const tables = await client.query(
+                "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public' AND tablename = ANY($1::text[])",
+                [["login_rate_limits", "login_rate_limits_accounts"]]
+              );
+
+              const foundTables = new Set(tables.rows.map((row) => row.tablename));
+              const expectedTables = ["login_rate_limits", "login_rate_limits_accounts"];
+              for (const table of expectedTables) {
+                console.log(`${foundTables.has(table) ? "FOUND" : "MISSING"} table: ${table}`);
+              }
+
+              const migrationTable = await client.query(
+                "SELECT to_regclass('public.pgmigrations') IS NOT NULL AS exists"
+              );
+
+              if (!migrationTable.rows[0].exists) {
+                throw new Error("The public.pgmigrations table does not exist.");
+              }
+
+              const migrations = await client.query(
+                "SELECT name FROM public.pgmigrations WHERE name = ANY($1::text[]) ORDER BY name",
+                [[
+                  "1793900000000_create-login-rate-limits",
+                  "1794000000000_create-login-rate-limits-accounts"
+                ]]
+              );
+
+              const foundMigrations = new Set(migrations.rows.map((row) => row.name));
+              for (const name of [
+                "1793900000000_create-login-rate-limits",
+                "1794000000000_create-login-rate-limits-accounts"
+              ]) {
+                console.log(`${foundMigrations.has(name) ? "APPLIED" : "NOT RECORDED"} migration: ${name}`);
+              }
+
+              const missingTables = expectedTables.filter((table) => !foundTables.has(table));
+              const expectedMigrations = [
+                "1793900000000_create-login-rate-limits",
+                "1794000000000_create-login-rate-limits-accounts"
+              ];
+              const missingMigrations = expectedMigrations.filter((name) => !foundMigrations.has(name));
+
+              if (missingTables.length || missingMigrations.length) {
+                throw new Error("Production schema verification failed. No database changes were made.");
+              }
+
+              console.log("Production rate-limit tables and migration records are present.");
+              console.log("READ-ONLY CHECK COMPLETE. No migrations or writes were executed.");
+            } finally {
+              await client.end();
+            }
+          }
+
+          main().catch((error) => {
+            console.error(error.message);
+            process.exit(1);
+          });
+          NODE
