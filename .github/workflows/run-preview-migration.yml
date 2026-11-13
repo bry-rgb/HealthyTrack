@@ -75,20 +75,28 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.NEON_DATABASE_URL_PREVIEW }}
         run: |
-          node -e "
+          node <<'NODE'
           const { Client } = require('pg');
+
           (async () => {
-            const client = new Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+            const client = new Client({
+              connectionString: process.env.DATABASE_URL,
+              ssl: { rejectUnauthorized: false }
+            });
+
             try {
               await client.connect();
-              const result = await client.query(
-                \"SELECT
+
+              const result = await client.query(`
+                SELECT
                   to_regclass('public.login_rate_limits') AS tabela_ip,
-                  to_regclass('public.login_rate_limits_accounts') AS tabela_conta\"
-              );
+                  to_regclass('public.login_rate_limits_accounts') AS tabela_conta
+              `);
+
               if (!result.rows[0].tabela_ip || !result.rows[0].tabela_conta) {
                 throw new Error('Uma ou mais tabelas do limitador não foram encontradas.');
               }
+
               console.log('Tabelas login_rate_limits e login_rate_limits_accounts confirmadas no Preview.');
             } finally {
               await client.end();
@@ -97,4 +105,4 @@ jobs:
             console.error(error.message);
             process.exit(1);
           });
-          "
+          NODE
