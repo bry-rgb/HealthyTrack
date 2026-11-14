@@ -88,19 +88,24 @@ const INTERVALO_LIMPEZA_LOGIN_MS = 24 * 60 * 60 * 1000;
 let ultimaLimpezaLogin = 0;
 
 async function limitarTentativasLogin(req, res, next) {
+    // Pedidos sem corpo JSON (ou com JSON null) não devem interromper o login.
+    const dadosLogin = req.body && typeof req.body === "object"
+        ? req.body
+        : {};
+
     // Mantém os erros de validação fora dos contadores.
     if (
-        typeof req.body.email !== "string" ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req.body.email) ||
-        typeof req.body.senha !== "string" ||
-        !req.body.senha
+        typeof dadosLogin.email !== "string" ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dadosLogin.email) ||
+        typeof dadosLogin.senha !== "string" ||
+        !dadosLogin.senha
     ) {
         next();
         return;
     }
 
     const ip = req.ip || req.socket.remoteAddress || "desconhecido";
-    const emailNormalizado = req.body.email.trim().toLowerCase();
+    const emailNormalizado = dadosLogin.email.trim().toLowerCase();
     const hashIp = crypto.createHmac("sha256", JWT_SECRET)
         .update(ip)
         .digest("hex");
@@ -681,9 +686,12 @@ await pool.query(
 });
 
 // POST - login de usuário
-    app.post("/api/login", limitarTentativasLogin, async function (req, res) { 
+    app.post("/api/login", limitarTentativasLogin, async function (req, res) {
 
-        const { email, senha } = req.body;
+        // Garante um objeto mesmo quando o pedido não contém corpo JSON.
+        const { email, senha } = req.body && typeof req.body === "object"
+            ? req.body
+            : {};
 
         if (!email || !senha) {
     res.status(400).json({
