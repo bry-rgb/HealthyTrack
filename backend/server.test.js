@@ -1434,7 +1434,7 @@ test("POST /api/logout revoga a sessão e elimina o cookie", async function () {
         expect(resposta.status).toBe(200);
         expect(pool.query).toHaveBeenCalledWith(
             expect.stringContaining("UPDATE sessoes_utilizador"),
-            [jti]
+            [jti, 1]
         );
         expect(resposta.headers["set-cookie"].join(";")).toContain("Max-Age=0");
 
@@ -1563,7 +1563,8 @@ test("Duas chamadas simultâneas de logout terminam com sucesso e revogam uma ú
             pedidoLogout()
         ]);
 
-        expect(consultasDeSessao).toBe(2);
+        // O endpoint idempotente não precisa de consultar a sessão antes do UPDATE.
+        expect(consultasDeSessao).toBe(0);
         expect(atualizacoes).toBe(2);
         expect(sessaoRevogada).toBe(true);
 
