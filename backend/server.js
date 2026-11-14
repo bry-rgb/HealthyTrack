@@ -526,6 +526,10 @@ app.put("/api/avaliacao-inicial/ocultar-aviso", verificarToken, function (req, r
 
 // PUT - marcar avaliação inicial como concluída
 app.put("/api/avaliacao-inicial", verificarToken, function (req, res) {
+    if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
+        return res.status(400).json({ mensagem: "Respostas da avaliação inválidas" });
+    }
+
     const {
         faixa_etaria,
         peso,
@@ -534,6 +538,31 @@ app.put("/api/avaliacao-inicial", verificarToken, function (req, res) {
         limite_liquidos,
         unidade
     } = req.body;
+
+    const valoresPermitidos = {
+        faixa_etaria: ["13-17", "18-64", "65+"],
+        atividade: ["baixa", "moderada", "alta"],
+        exercicio_calor: ["raramente", "algumas-vezes", "frequentemente"],
+        limite_liquidos: ["nao", "sim", "nao-sei"],
+        unidade: ["L", "mL"]
+    };
+
+    const camposValidos = Object.entries(valoresPermitidos).every(
+        ([campo, opcoes]) => opcoes.includes(req.body[campo])
+    );
+
+    const pesoValido = peso === null || peso === undefined ||
+        ((typeof peso === "number" || typeof peso === "string") &&
+            String(peso).trim() !== "" &&
+            Number.isFinite(Number(peso)) &&
+            Number(peso) > 0 &&
+            Number(peso) < 500);
+
+    if (!camposValidos || !pesoValido) {
+        return res.status(400).json({ mensagem: "Respostas da avaliação inválidas" });
+    }
+
+    const pesoNormalizado = peso === null || peso === undefined ? null : Number(peso);
 
     pool.query(
         `INSERT INTO avaliacao_inicial
@@ -550,7 +579,7 @@ app.put("/api/avaliacao-inicial", verificarToken, function (req, res) {
         [
             req.usuario.id,
             faixa_etaria,
-            peso,
+            pesoNormalizado,
             atividade,
             exercicio_calor,
             limite_liquidos,
