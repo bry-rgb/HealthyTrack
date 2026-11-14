@@ -807,7 +807,7 @@ app.post("/api/logout", async function (req, res) {
             audience: JWT_AUDIENCE,
             ignoreExpiration: true
         });
-    } catch (erro) {
+    } catch {
         // Um token inválido não pode identificar uma sessão para revogar.
         limparCookieSessao(res);
         res.json({ mensagem: "Sessão terminada com sucesso" });
