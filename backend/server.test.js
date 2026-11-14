@@ -1451,6 +1451,90 @@ test("POST /api/logout revoga a sessão e elimina o cookie", async function () {
     }
 });
 
+test("Pedido protegido já autorizado pode terminar enquanto logout revoga a sessão", async function () {
+    const consultaOriginal = pool.query;
+    const jti = "bd9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f17";
+    const token = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        {
+            algorithm: "HS256",
+            issuer: "healthytrack",
+            audience: "healthytrack-api",
+            expiresIn: "1h",
+            jwtid: jti
+        }
+    );
+
+    let sessaoRevogada = false;
+    let sinalConsultaProtegida;
+    let libertarConsultaProtegida;
+    const consultaProtegidaIniciada = new Promise(resolve => {
+        sinalConsultaProtegida = resolve;
+    });
+    const consultaProtegidaAguardar = new Promise(resolve => {
+        libertarConsultaProtegida = resolve;
+    });
+
+    pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("SELECT jti FROM sessoes_utilizador")) {
+            const ativa = parametros[0] === jti &&
+                parametros[1] === 1 &&
+                !sessaoRevogada;
+            return Promise.resolve({ rows: ativa ? [{ jti }] : [] });
+        }
+
+        if (sql.includes("UPDATE sessoes_utilizador")) {
+            sessaoRevogada = true;
+            return Promise.resolve({ rows: [{ jti }] });
+        }
+
+        if (sql.includes("SELECT meta_diaria FROM usuarios")) {
+            sinalConsultaProtegida();
+            return consultaProtegidaAguardar.then(() => {
+                callback(null, { rows: [{ meta_diaria: "2.5" }] });
+            });
+        }
+
+        return Promise.resolve({ rows: [] });
+    });
+
+    try {
+        // Este pedido passa primeiro pela validação da sessão e fica pendente no handler.
+        const pedidoEmCurso = request(app)
+            .get("/api/meta-diaria")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+
+        await consultaProtegidaIniciada;
+
+        // O logout revoga a sessão enquanto o pedido anterior ainda está em curso.
+        const respostaLogout = await request(app)
+            .post("/api/logout")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+
+        expect(respostaLogout.status).toBe(200);
+        expect(sessaoRevogada).toBe(true);
+
+        // O pedido já autorizado pode concluir; a próxima chamada deve ser recusada.
+        libertarConsultaProtegida();
+        const respostaPedidoEmCurso = await pedidoEmCurso;
+        expect(respostaPedidoEmCurso.status).toBe(200);
+
+        const pedidoNovo = await request(app)
+            .get("/api/meta-diaria")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+
+        expect(pedidoNovo.status).toBe(401);
+        expect(pedidoNovo.body.mensagem).toBe("Sessão inválida ou expirada");
+    } finally {
+        libertarConsultaProtegida();
+        pool.query = consultaOriginal;
+    }
+});
+
 test("GET /api/meta-diaria rejeita uma sessão revogada", async function () {
     const consultaOriginal = pool.query;
     const jti = "ad9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f13";
