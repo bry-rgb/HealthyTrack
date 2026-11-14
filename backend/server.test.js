@@ -1481,6 +1481,40 @@ test("GET /api/meta-diaria rejeita uma sessão revogada", async function () {
     }
 });
 
+test("GET /api/meta-diaria rejeita sessão expirada na base de dados mesmo com JWT válido", async function () {
+    const consultaOriginal = pool.query;
+    const jti = "cd9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f15";
+    const tokenAindaValido = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        {
+            algorithm: "HS256",
+            issuer: "healthytrack",
+            audience: "healthytrack-api",
+            expiresIn: "1h",
+            jwtid: jti
+        }
+    );
+
+    pool.query = jest.fn().mockResolvedValue({ rows: [] });
+
+    try {
+        const resposta = await request(app)
+            .get("/api/meta-diaria")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenAindaValido)}`);
+
+        expect(resposta.status).toBe(401);
+        expect(resposta.body.mensagem).toBe("Sessão inválida ou expirada");
+        expect(pool.query).toHaveBeenCalledWith(
+            expect.stringContaining("expires_at > NOW()"),
+            [jti, 1]
+        );
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
 test("GET /api/meta-diaria rejeita um JWT expirado no cookie", async function () {
     const jti = "bd9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f14";
     const token = jwt.sign(
