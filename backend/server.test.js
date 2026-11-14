@@ -1225,10 +1225,10 @@ test("GET /api/meta-diaria aceita cookie de sessão ativa", async function () {
 
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
         if (sql.includes("sessoes_utilizador")) {
-            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
-        }
-        if (sql.includes("sessoes_utilizador")) {
-            return Promise.resolve({ rows: [{ jti }] });
+            const sessaoCorresponde = parametros[0] === jti && parametros[1] === 1;
+            return Promise.resolve({
+                rows: sessaoCorresponde ? [{ jti }] : []
+            });
         }
         callback(null, { rows: [{ meta_diaria: "2.5" }] });
     });
@@ -1261,12 +1261,21 @@ test("POST /api/logout revoga a sessão e elimina o cookie", async function () {
         }
     );
 
-    pool.query = jest.fn().mockImplementation(function (sql) {
+    let sessaoRevogada = false;
+    pool.query = jest.fn().mockImplementation(function (sql, parametros) {
         if (sql.includes("SELECT jti FROM sessoes_utilizador")) {
-            return Promise.resolve({ rows: [{ jti }] });
+            const sessaoCorresponde =
+                parametros[0] === jti &&
+                parametros[1] === 1 &&
+                !sessaoRevogada;
+            return Promise.resolve({
+                rows: sessaoCorresponde ? [{ jti }] : []
+            });
         }
         if (sql.includes("UPDATE sessoes_utilizador")) {
-            return Promise.resolve({ rows: [] });
+            expect(parametros).toEqual([jti]);
+            sessaoRevogada = true;
+            return Promise.resolve({ rows: [{ jti }] });
         }
         return Promise.resolve({ rows: [] });
     });
@@ -1274,7 +1283,6 @@ test("POST /api/logout revoga a sessão e elimina o cookie", async function () {
     try {
         const resposta = await request(app)
             .post("/api/logout")
-            .set("Origin", "http://localhost:5500")
             .set("Origin", "http://localhost:5500")
             .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
 
@@ -1284,6 +1292,15 @@ test("POST /api/logout revoga a sessão e elimina o cookie", async function () {
             [jti]
         );
         expect(resposta.headers["set-cookie"].join(";")).toContain("Max-Age=0");
+
+        // A mesma credencial deve deixar de autorizar pedidos após o logout.
+        const pedidoDepoisDoLogout = await request(app)
+            .get("/api/meta-diaria")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+
+        expect(pedidoDepoisDoLogout.status).toBe(401);
+        expect(pedidoDepoisDoLogout.body.mensagem).toBe("Sessão inválida ou expirada");
+        expect(sessaoRevogada).toBe(true);
     } finally {
         pool.query = consultaOriginal;
     }
