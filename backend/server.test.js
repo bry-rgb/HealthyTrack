@@ -1076,8 +1076,6 @@ test("DELETE /api/registros-agua apaga os registos do utilizador autenticado", a
 });
 
 
-const bcrypt = require("bcrypt");
-
 test("POST /api/login faz login com credenciais válidas", async function () {
     const consultaOriginal = pool.query;
     const senhaHash = await bcrypt.hash("Aventura123", 10);
