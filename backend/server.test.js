@@ -75,8 +75,9 @@ test("POST /api/login rejeita corpo JSON null", async function () {
         .set("Content-Type", "application/json")
         .send("null");
 
+    // O express.json() usa strict=true por omissão e rejeita JSON null
+    // antes de a rota de login ser executada.
     expect(resposta.status).toBe(400);
-    expect(resposta.body.mensagem).toBe("Email e senha são obrigatórios");
 });
 
 // testa se o email invalido é rejeitado
