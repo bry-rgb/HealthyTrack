@@ -1970,6 +1970,85 @@ test("Os registos de água ficam isolados por utilizador em leitura, criação e
     }
 });
 
+
+test.each([
+    ["faixa etária inválida", { faixa_etaria: "0-12" }],
+    ["atividade inválida", { atividade: "extrema" }],
+    ["frequência inválida", { exercicio_calor: "sempre" }],
+    ["limite de líquidos inválido", { limite_liquidos: "talvez" }],
+    ["unidade inválida", { unidade: "cl" }],
+    ["peso abaixo do limite", { peso: 0 }],
+    ["peso acima do limite", { peso: 500 }],
+    ["peso não numérico", { peso: "desconhecido" }],
+    ["peso vazio", { peso: "" }]
+])("PUT /api/avaliacao-inicial rejeita %s", async function (_descricao, alteracao) {
+    const consultaOriginal = pool.query;
+    pool.query = jest.fn().mockResolvedValue({ rows: [] });
+
+    const respostas = {
+        faixa_etaria: "18-64",
+        peso: 70,
+        atividade: "moderada",
+        exercicio_calor: "algumas-vezes",
+        limite_liquidos: "nao",
+        unidade: "L",
+        ...alteracao
+    };
+
+    try {
+        const resposta = await request(app)
+            .put("/api/avaliacao-inicial")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
+            .send(respostas);
+
+        expect(resposta.status).toBe(400);
+        expect(resposta.body.mensagem).toBe("Respostas da avaliação inválidas");
+        expect(pool.query).not.toHaveBeenCalledWith(
+            expect.stringContaining("INSERT INTO avaliacao_inicial"),
+            expect.anything(),
+            expect.any(Function)
+        );
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
+test("PUT /api/avaliacao-inicial aceita opções válidas e peso opcional", async function () {
+    const consultaOriginal = pool.query;
+    const consultas = [];
+    pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        consultas.push({ sql, parametros });
+        if (typeof callback === "function") callback(null, { rows: [] });
+        return Promise.resolve({ rows: [] });
+    });
+
+    try {
+        const resposta = await request(app)
+            .put("/api/avaliacao-inicial")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
+            .send({
+                faixa_etaria: "13-17",
+                peso: null,
+                atividade: "baixa",
+                exercicio_calor: "raramente",
+                limite_liquidos: "nao-sei",
+                unidade: "mL"
+            });
+
+        expect(resposta.status).toBe(200);
+        expect(consultas[0].sql).toContain("INSERT INTO avaliacao_inicial");
+        expect(consultas[0].parametros).toEqual([
+            1, "13-17", null, "baixa", "raramente", "nao-sei", "mL"
+        ]);
+        expect(consultas[1].sql).toContain("UPDATE usuarios SET avaliacao_inicial_concluida = true");
+        expect(consultas[1].parametros).toEqual([1]);
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
 afterAll(async function () {
     await pool.end();
 });
