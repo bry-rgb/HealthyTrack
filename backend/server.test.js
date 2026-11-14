@@ -1451,6 +1451,64 @@ test("POST /api/logout revoga a sessão e elimina o cookie", async function () {
     }
 });
 
+test("POST /api/logout devolve sucesso ao repetir logout com sessão já revogada", async function () {
+    const consultaOriginal = pool.query;
+    const jti = "cd9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f19";
+    const token = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        {
+            algorithm: "HS256",
+            issuer: "healthytrack",
+            audience: "healthytrack-api",
+            expiresIn: "1h",
+            jwtid: jti
+        }
+    );
+
+    let atualizacoes = 0;
+    pool.query = jest.fn().mockImplementation(async function (sql, parametros) {
+        if (sql.includes("UPDATE sessoes_utilizador")) {
+            expect(parametros).toEqual([jti, 1]);
+            atualizacoes += 1;
+            return { rowCount: 0, rows: [] }; // Já estava revogada.
+        }
+        throw new Error("Consulta inesperada no teste de logout repetido: " + sql);
+    });
+
+    try {
+        const resposta = await request(app)
+            .post("/api/logout")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+
+        expect(resposta.status).toBe(200);
+        expect(resposta.body.mensagem).toBe("Sessão terminada com sucesso");
+        expect(resposta.headers["set-cookie"].join(";")).toContain("Max-Age=0");
+        expect(atualizacoes).toBe(1);
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
+test("POST /api/logout confirma sucesso sem cookie de sessão", async function () {
+    const resposta = await request(app)
+        .post("/api/logout")
+        .set("Origin", "http://localhost:5500");
+
+    expect(resposta.status).toBe(200);
+    expect(resposta.body.mensagem).toBe("Sessão terminada com sucesso");
+    expect(resposta.headers["set-cookie"].join(";")).toContain("Max-Age=0");
+});
+
+test("POST /api/logout rejeita origem não autorizada", async function () {
+    const resposta = await request(app)
+        .post("/api/logout")
+        .set("Origin", "https://site-nao-autorizado.example");
+
+    expect(resposta.status).toBe(403);
+});
+
 test("Duas chamadas simultâneas de logout terminam com sucesso e revogam uma única vez", async function () {
     const consultaOriginal = pool.query;
     const jti = "cd9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f18";
