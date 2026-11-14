@@ -1504,7 +1504,8 @@ test("Pedido protegido já autorizado pode terminar enquanto logout revoga a ses
         const pedidoEmCurso = request(app)
             .get("/api/meta-diaria")
             .set("Origin", "http://localhost:5500")
-            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`)
+            .then(resposta => resposta);
 
         await consultaProtegidaIniciada;
 
