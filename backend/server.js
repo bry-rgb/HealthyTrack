@@ -781,18 +781,56 @@ try {
 }
 });
 
-// POST - terminar sessão e invalidá-la na base de dados
-app.post("/api/logout", verificarToken, async function (req, res) {
+// POST - terminar sessão de forma idempotente, incluindo repetições após revogação.
+app.post("/api/logout", async function (req, res) {
+    if (!origemPermitida(req)) {
+        res.status(403).json({ mensagem: "Origem não autorizada" });
+        return;
+    }
+
+    const token = obterCookie(req, NOME_COOKIE_SESSAO);
+
+    // Sem cookie, não há sessão a revogar: limpar o cookie e confirmar o logout.
+    if (!token) {
+        limparCookieSessao(res);
+        res.json({ mensagem: "Sessão terminada com sucesso" });
+        return;
+    }
+
+    let usuario;
     try {
+        // Ignora apenas a expiração do JWT para permitir repetir o logout.
+        // A assinatura, algoritmo, emissor e destinatário continuam a ser validados.
+        usuario = jwt.verify(token, JWT_SECRET, {
+            algorithms: ["HS256"],
+            issuer: JWT_ISSUER,
+            audience: JWT_AUDIENCE,
+            ignoreExpiration: true
+        });
+    } catch (erro) {
+        // Um token inválido não pode identificar uma sessão para revogar.
+        limparCookieSessao(res);
+        res.json({ mensagem: "Sessão terminada com sucesso" });
+        return;
+    }
+
+    if (!usuario.jti || !usuario.id) {
+        limparCookieSessao(res);
+        res.json({ mensagem: "Sessão terminada com sucesso" });
+        return;
+    }
+
+    try {
+        // A atualização é segura para repetições: só altera sessões ainda ativas.
         await pool.query(
-            "UPDATE sessoes_utilizador SET revoked_at = NOW() WHERE jti = $1 AND revoked_at IS NULL",
-            [req.sessaoJti]
+            "UPDATE sessoes_utilizador SET revoked_at = NOW() WHERE jti = $1 AND user_id = $2 AND revoked_at IS NULL",
+            [usuario.jti, usuario.id]
         );
         limparCookieSessao(res);
         res.json({ mensagem: "Sessão terminada com sucesso" });
     } catch (erro) {
         console.error("Erro ao terminar sessão:", erro);
-        res.status(500).json({ mensagem: "Não foi possível terminar a sessão" });
+        res.status(503).json({ mensagem: "Não foi possível terminar a sessão" });
     }
 });
 
