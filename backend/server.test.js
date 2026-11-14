@@ -11,7 +11,14 @@ const queryReal = pool.query;
 beforeEach(function () {
     pool.query = function (sql, parametros, callback) {
         if (typeof sql === "string" && sql.includes("sessoes_utilizador")) {
-            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+            // Simula uma única sessão ativa e só a aceita para o JTI e utilizador esperados.
+            const sessaoCorresponde =
+                parametros[0] === jtiTeste &&
+                parametros[1] === 1;
+
+            return Promise.resolve({
+                rows: sessaoCorresponde ? [{ jti: jtiTeste }] : []
+            });
         }
         return queryReal.call(pool, sql, parametros, callback);
     };
@@ -307,6 +314,26 @@ test("POST /api/usuarios rejeita email duplicado", async function () {
     }
 });
 
+
+test("GET /api/meta-diaria rejeita sessão com JTI diferente do registo ativo", async function () {
+    const tokenComJtiDiferente = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        {
+            algorithm: "HS256",
+            issuer: "healthytrack",
+            audience: "healthytrack-api",
+            jwtid: "22222222-2222-4222-8222-222222222222"
+        }
+    );
+
+    const resposta = await request(app)
+        .get("/api/meta-diaria")
+        .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenComJtiDiferente)}`);
+
+    expect(resposta.status).toBe(401);
+    expect(resposta.body.mensagem).toBe("Sessão inválida ou expirada");
+});
 
 test("GET /api/meta-diaria devolve a meta do utilizador autenticado", async function () {
     const consultaOriginal = pool.query;
