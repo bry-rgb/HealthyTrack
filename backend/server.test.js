@@ -1481,6 +1481,42 @@ test("GET /api/meta-diaria rejeita uma sessão revogada", async function () {
     }
 });
 
+test("GET /api/meta-diaria devolve 503 quando o PostgreSQL falha ao validar a sessão", async function () {
+    const consultaOriginal = pool.query;
+    const jti = "ed9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f16";
+    const tokenAindaValido = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        {
+            algorithm: "HS256",
+            issuer: "healthytrack",
+            audience: "healthytrack-api",
+            expiresIn: "1h",
+            jwtid: jti
+        }
+    );
+
+    pool.query = jest.fn().mockRejectedValue(
+        new Error("Falha simulada de ligação ao PostgreSQL")
+    );
+
+    try {
+        const resposta = await request(app)
+            .get("/api/meta-diaria")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenAindaValido)}`);
+
+        expect(resposta.status).toBe(503);
+        expect(resposta.body.mensagem).toBe("Não foi possível validar a sessão");
+        expect(pool.query).toHaveBeenCalledWith(
+            expect.stringContaining("revoked_at IS NULL AND expires_at > NOW()"),
+            [jti, 1]
+        );
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
 test("GET /api/meta-diaria rejeita sessão expirada na base de dados mesmo com JWT válido", async function () {
     const consultaOriginal = pool.query;
     const jti = "cd9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f15";
