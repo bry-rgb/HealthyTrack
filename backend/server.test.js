@@ -61,6 +61,24 @@ test("POST /api/login rejeita campos vazios", async function () {
     expect(resposta.status).toBe(400);
 });
 
+test("POST /api/login rejeita pedido sem corpo", async function () {
+    const resposta = await request(app)
+        .post("/api/login");
+
+    expect(resposta.status).toBe(400);
+    expect(resposta.body.mensagem).toBe("Email e senha são obrigatórios");
+});
+
+test("POST /api/login rejeita corpo JSON null", async function () {
+    const resposta = await request(app)
+        .post("/api/login")
+        .set("Content-Type", "application/json")
+        .send("null");
+
+    expect(resposta.status).toBe(400);
+    expect(resposta.body.mensagem).toBe("Email e senha são obrigatórios");
+});
+
 // testa se o email invalido é rejeitado
 test("POST /api/login rejeita email inválido", async function () {
     const resposta = await request(app)
