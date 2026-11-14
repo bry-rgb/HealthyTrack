@@ -1972,6 +1972,8 @@ test("Os registos de água ficam isolados por utilizador em leitura, criação e
 
 
 test.each([
+    ["faixa etária em falta", { faixa_etaria: undefined }],
+    ["faixa etária com tipo inválido", { faixa_etaria: 13 }],
     ["faixa etária inválida", { faixa_etaria: "0-12" }],
     ["atividade inválida", { atividade: "extrema" }],
     ["frequência inválida", { exercicio_calor: "sempre" }],
@@ -1980,6 +1982,8 @@ test.each([
     ["peso abaixo do limite", { peso: 0 }],
     ["peso acima do limite", { peso: 500 }],
     ["peso não numérico", { peso: "desconhecido" }],
+    ["peso com tipo booleano", { peso: true }],
+    ["peso com tipo objeto", { peso: { valor: 70 } }],
     ["peso vazio", { peso: "" }]
 ])("PUT /api/avaliacao-inicial rejeita %s", async function (_descricao, alteracao) {
     const consultaOriginal = pool.query;
@@ -2052,6 +2056,32 @@ test("PUT /api/avaliacao-inicial aceita opções válidas e peso opcional", asyn
         ]);
         expect(consultas[1].sql).toContain("UPDATE usuarios SET avaliacao_inicial_concluida = true");
         expect(consultas[1].parametros).toEqual([1]);
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
+test.each([
+    ["null", null],
+    ["array", []]
+])("PUT /api/avaliacao-inicial rejeita corpo JSON do tipo %s", async function (_tipo, corpo) {
+    const consultaOriginal = pool.query;
+    pool.query = jest.fn().mockResolvedValue({ rows: [{ jti: jtiTeste }] });
+
+    try {
+        const resposta = await request(app)
+            .put("/api/avaliacao-inicial")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenTeste)}`)
+            .send(corpo);
+
+        expect(resposta.status).toBe(400);
+        expect(resposta.body.mensagem).toBe("Respostas da avaliação inválidas");
+        expect(pool.query).not.toHaveBeenCalledWith(
+            expect.stringContaining("INSERT INTO avaliacao_inicial"),
+            expect.anything(),
+            expect.any(Function)
+        );
     } finally {
         pool.query = consultaOriginal;
     }
