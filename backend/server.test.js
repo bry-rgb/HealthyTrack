@@ -1418,7 +1418,7 @@ test("POST /api/logout revoga a sessão e elimina o cookie", async function () {
             });
         }
         if (sql.includes("UPDATE sessoes_utilizador")) {
-            expect(parametros).toEqual([jti]);
+            expect(parametros).toEqual([jti, 1]);
             sessaoRevogada = true;
             return Promise.resolve({ rows: [{ jti }] });
         }
@@ -1538,7 +1538,7 @@ test("Duas chamadas simultâneas de logout terminam com sucesso e revogam uma ú
         }
 
         if (sql.includes("UPDATE sessoes_utilizador")) {
-            expect(parametros).toEqual([jti]);
+            expect(parametros).toEqual([jti, 1]);
             atualizacoes += 1;
 
             if (sessaoRevogada) {
