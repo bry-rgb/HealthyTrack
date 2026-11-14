@@ -1451,6 +1451,76 @@ test("POST /api/logout revoga a sessão e elimina o cookie", async function () {
     }
 });
 
+test("Duas chamadas simultâneas de logout terminam com sucesso e revogam uma única vez", async function () {
+    const consultaOriginal = pool.query;
+    const jti = "cd9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f18";
+    const token = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        {
+            algorithm: "HS256",
+            issuer: "healthytrack",
+            audience: "healthytrack-api",
+            expiresIn: "1h",
+            jwtid: jti
+        }
+    );
+
+    let consultasDeSessao = 0;
+    let atualizacoes = 0;
+    let sessaoRevogada = false;
+
+    pool.query = jest.fn().mockImplementation(async function (sql, parametros) {
+        if (sql.includes("SELECT jti FROM sessoes_utilizador")) {
+            expect(parametros).toEqual([jti, 1]);
+            consultasDeSessao += 1;
+
+            // Ambas as chamadas verificam a sessão antes de qualquer UPDATE.
+            return { rows: [{ jti }] };
+        }
+
+        if (sql.includes("UPDATE sessoes_utilizador")) {
+            expect(parametros).toEqual([jti]);
+            atualizacoes += 1;
+
+            if (sessaoRevogada) {
+                return { rowCount: 0, rows: [] };
+            }
+
+            sessaoRevogada = true;
+            return { rowCount: 1, rows: [] };
+        }
+
+        return { rows: [] };
+    });
+
+    try {
+        const pedidoLogout = () => request(app)
+            .post("/api/logout")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(token)}`);
+
+        const [primeiroLogout, segundoLogout] = await Promise.all([
+            pedidoLogout(),
+            pedidoLogout()
+        ]);
+
+        expect(consultasDeSessao).toBe(2);
+        expect(atualizacoes).toBe(2);
+        expect(sessaoRevogada).toBe(true);
+
+        // As duas chamadas que já tinham sido autenticadas recebem resposta idempotente.
+        expect(primeiroLogout.status).toBe(200);
+        expect(segundoLogout.status).toBe(200);
+        expect(primeiroLogout.body.mensagem).toBe("Sessão terminada com sucesso");
+        expect(segundoLogout.body.mensagem).toBe("Sessão terminada com sucesso");
+        expect(primeiroLogout.headers["set-cookie"].join(";")).toContain("Max-Age=0");
+        expect(segundoLogout.headers["set-cookie"].join(";")).toContain("Max-Age=0");
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
 test("Pedido protegido já autorizado pode terminar enquanto logout revoga a sessão", async function () {
     const consultaOriginal = pool.query;
     const jti = "bd9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f17";
