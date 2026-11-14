@@ -1983,7 +1983,12 @@ test.each([
     ["peso vazio", { peso: "" }]
 ])("PUT /api/avaliacao-inicial rejeita %s", async function (_descricao, alteracao) {
     const consultaOriginal = pool.query;
-    pool.query = jest.fn().mockResolvedValue({ rows: [] });
+    pool.query = jest.fn().mockImplementation(async function (sql) {
+        if (sql.includes("SELECT jti FROM sessoes_utilizador")) {
+            return { rows: [{ jti: jtiTeste }] };
+        }
+        return { rows: [] };
+    });
 
     const respostas = {
         faixa_etaria: "18-64",
@@ -2018,6 +2023,9 @@ test("PUT /api/avaliacao-inicial aceita opções válidas e peso opcional", asyn
     const consultaOriginal = pool.query;
     const consultas = [];
     pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        if (sql.includes("SELECT jti FROM sessoes_utilizador")) {
+            return Promise.resolve({ rows: [{ jti: jtiTeste }] });
+        }
         consultas.push({ sql, parametros });
         if (typeof callback === "function") callback(null, { rows: [] });
         return Promise.resolve({ rows: [] });
