@@ -1,6 +1,7 @@
 const request = require("supertest");
 const { app, pool } = require("./server");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const { beforeEach, afterEach } = require("@jest/globals");
 
 require("dotenv").config();
@@ -121,6 +122,91 @@ test("POST /api/login rejeita um email válido que não existe", async function 
             });
 
         expect(resposta.status).toBe(401);
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
+test("POST /api/login cria sessão persistente associada ao utilizador autenticado", async function () {
+    const consultaOriginal = pool.query;
+    const senha = "Aventura123";
+    const hashSenha = await bcrypt.hash(senha, 10);
+    const utilizador = {
+        id: 42,
+        nome: "Utilizador de teste",
+        email: "login.sucesso@example.com",
+        senha: hashSenha,
+        avaliacao_inicial_concluida: true
+    };
+
+    pool.query = jest.fn().mockImplementation(async (sql, parametros) => {
+        if (sql.includes("INSERT INTO login_rate_limits") ||
+            sql.includes("INSERT INTO login_rate_limits_accounts")) {
+            return { rows: [{ attempts: 1, segundos_restantes: 900 }] };
+        }
+
+        if (sql.includes("SELECT * FROM usuarios WHERE email")) {
+            expect(parametros).toEqual([utilizador.email]);
+            return { rows: [utilizador] };
+        }
+
+        if (sql.includes("DELETE FROM login_rate_limits")) {
+            return { rows: [] };
+        }
+
+        if (sql.includes("DELETE FROM login_rate_limits_accounts")) {
+            return { rows: [] };
+        }
+
+        if (sql.includes("INSERT INTO sessoes_utilizador")) {
+            return { rows: [{ jti: parametros[0], user_id: parametros[1], expires_at: parametros[2] }] };
+        }
+
+        throw new Error("Consulta inesperada no teste de login: " + sql);
+    });
+
+    try {
+        const resposta = await request(app)
+            .post("/api/login")
+            .send({ email: utilizador.email, senha });
+
+        expect(resposta.status).toBe(200);
+        expect(resposta.body.mensagem).toBe("Login realizado com sucesso!");
+        expect(resposta.body.usuario).toEqual({
+            id: utilizador.id,
+            nome: utilizador.nome,
+            email: utilizador.email,
+            avaliacao_inicial_concluida: true
+        });
+
+        const cookie = resposta.headers["set-cookie"].find(valor =>
+            valor.startsWith("waterkraft_session=")
+        );
+        expect(cookie).toBeDefined();
+        expect(cookie).toContain("HttpOnly");
+        expect(cookie).toContain("Secure");
+        expect(cookie).toContain("SameSite=Lax");
+
+        const token = decodeURIComponent(cookie.split(";")[0].split("=").slice(1).join("="));
+        const payload = jwt.verify(token, process.env.JWT_SECRET, {
+            algorithms: ["HS256"],
+            issuer: "healthytrack",
+            audience: "healthytrack-api"
+        });
+
+        expect(payload.id).toBe(utilizador.id);
+        expect(payload.email).toBe(utilizador.email);
+        expect(payload.jti).toBeTruthy();
+
+        const insercaoSessao = pool.query.mock.calls.find(([sql]) =>
+            sql.includes("INSERT INTO sessoes_utilizador")
+        );
+        expect(insercaoSessao).toBeDefined();
+        expect(insercaoSessao[1][0]).toBe(payload.jti);
+        expect(insercaoSessao[1][1]).toBe(utilizador.id);
+        expect(insercaoSessao[1][2]).toBeInstanceOf(Date);
+        expect(insercaoSessao[1][2].getTime()).toBeGreaterThan(Date.now());
+
     } finally {
         pool.query = consultaOriginal;
     }
