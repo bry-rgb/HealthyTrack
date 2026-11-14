@@ -1873,6 +1873,103 @@ test("POST /api/logout revoga uma sessão existente mesmo quando o JWT já expir
     }
 });
 
+
+test("Os registos de água ficam isolados por utilizador em leitura, criação e eliminação", async function () {
+    const consultaOriginal = pool.query;
+    const utilizadores = [
+        { id: 1, jti: "a1111111-1111-4111-8111-111111111111" },
+        { id: 2, jti: "b2222222-2222-4222-8222-222222222222" }
+    ];
+    const tokens = utilizadores.map(utilizador => jwt.sign(
+        { id: utilizador.id, email: `utilizador${utilizador.id}@example.com` },
+        process.env.JWT_SECRET,
+        {
+            algorithm: "HS256",
+            issuer: "healthytrack",
+            audience: "healthytrack-api",
+            expiresIn: "1h",
+            jwtid: utilizador.jti
+        }
+    ));
+
+    const registos = [
+        { id: 10, usuario_id: 1, quantidade: 0.5, horario: "2026-11-14T09:00:00.000Z" },
+        { id: 20, usuario_id: 2, quantidade: 0.25, horario: "2026-11-14T10:00:00.000Z" }
+    ];
+    const utilizadoresQueCriaram = [];
+    const utilizadoresQueApagaram = [];
+
+    pool.query = jest.fn().mockImplementation(async function (sql, parametros, callback) {
+        if (sql.includes("sessoes_utilizador")) {
+            const sessao = utilizadores.find(item =>
+                item.jti === parametros[0] && item.id === parametros[1]
+            );
+            return { rows: sessao ? [{ jti: sessao.jti }] : [] };
+        }
+
+        if (sql.includes("SELECT * FROM registro_agua")) {
+            const utilizadorId = parametros[0];
+            return {
+                rows: registos.filter(registo => registo.usuario_id === utilizadorId)
+            };
+        }
+
+        if (sql.includes("INSERT INTO registro_agua")) {
+            utilizadoresQueCriaram.push(parametros[2]);
+            return { rows: [] };
+        }
+
+        if (sql.includes("DELETE FROM registro_agua")) {
+            utilizadoresQueApagaram.push(parametros[0]);
+            return { rows: [] };
+        }
+
+        throw new Error("Consulta inesperada no teste de isolamento: " + sql);
+    });
+
+    try {
+        // O utilizador 1 só recebe os seus próprios registos.
+        const leituraUtilizador1 = await request(app)
+            .get("/api/registros-agua")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokens[0])}`);
+
+        expect(leituraUtilizador1.status).toBe(200);
+        expect(leituraUtilizador1.body.map(registo => registo.id)).toEqual([10]);
+        expect(leituraUtilizador1.body.some(registo => registo.usuario_id === 2)).toBe(false);
+
+        // Mesmo que envie usuario_id=2 no corpo, o servidor associa o registo ao utilizador 1 autenticado.
+        const criacaoUtilizador1 = await request(app)
+            .post("/api/registros-agua")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokens[0])}`)
+            .send({
+                quantidade: 0.5,
+                horario: new Date().toISOString(),
+                usuario_id: 2
+            });
+
+        expect(criacaoUtilizador1.status).toBe(200);
+        expect(utilizadoresQueCriaram).toEqual([1]);
+
+        // A eliminação também recebe o ID exclusivamente da sessão autenticada.
+        const eliminacaoUtilizador2 = await request(app)
+            .delete("/api/registros-agua")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokens[1])}`);
+
+        expect(eliminacaoUtilizador2.status).toBe(200);
+        expect(utilizadoresQueApagaram).toEqual([2]);
+        expect(pool.query).toHaveBeenCalledWith(
+            expect.stringContaining("DELETE FROM registro_agua WHERE usuario_id = $1"),
+            [2],
+            expect.any(Function)
+        );
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
 afterAll(async function () {
     await pool.end();
 });
