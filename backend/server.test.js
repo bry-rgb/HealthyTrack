@@ -212,6 +212,67 @@ test("POST /api/login cria sessão persistente associada ao utilizador autentica
     }
 });
 
+test("POST /api/login não autentica nem cria cookie se a sessão não puder ser guardada", async function () {
+    const consultaOriginal = pool.query;
+    const senha = "Aventura123";
+    const hashSenha = await bcrypt.hash(senha, 10);
+    const utilizador = {
+        id: 43,
+        nome: "Utilizador sem sessão",
+        email: "sessao.indisponivel@example.com",
+        senha: hashSenha,
+        avaliacao_inicial_concluida: false
+    };
+
+    pool.query = jest.fn().mockImplementation(async (sql, parametros) => {
+        if (sql.includes("INSERT INTO login_rate_limits") ||
+            sql.includes("INSERT INTO login_rate_limits_accounts")) {
+            return { rows: [{ attempts: 1, segundos_restantes: 900 }] };
+        }
+
+        if (sql.includes("SELECT * FROM usuarios WHERE email")) {
+            return { rows: [utilizador] };
+        }
+
+        if (sql.includes("DELETE FROM login_rate_limits")) {
+            return { rows: [] };
+        }
+
+        if (sql.includes("DELETE FROM login_rate_limits_accounts")) {
+            return { rows: [] };
+        }
+
+        if (sql.includes("INSERT INTO sessoes_utilizador")) {
+            expect(parametros[1]).toBe(utilizador.id);
+            throw new Error("Falha simulada ao guardar a sessão");
+        }
+
+        throw new Error("Consulta inesperada no teste de falha de sessão: " + sql);
+    });
+
+    try {
+        const resposta = await request(app)
+            .post("/api/login")
+            .send({ email: utilizador.email, senha });
+
+        expect(resposta.status).toBe(500);
+        expect(resposta.body.mensagem).toBe("Erro interno de servidor");
+        expect(resposta.body.usuario).toBeUndefined();
+        expect(resposta.headers["set-cookie"]).toBeUndefined();
+
+        expect(pool.query).toHaveBeenCalledWith(
+            expect.stringContaining("INSERT INTO sessoes_utilizador"),
+            expect.arrayContaining([
+                expect.any(String),
+                utilizador.id,
+                expect.any(Date)
+            ])
+        );
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
 test("POST /api/login trata erros na consulta à base de dados", async function () {
     const consultaOriginal = pool.query;
 
