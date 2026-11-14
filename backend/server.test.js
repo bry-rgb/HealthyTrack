@@ -1811,6 +1811,68 @@ test("PUT autenticado por cookie rejeita origem não autorizada", async function
     expect(resposta.status).toBe(403);
 });
 
+
+test("POST /api/logout revoga uma sessão existente mesmo quando o JWT já expirou", async function () {
+    const consultaOriginal = pool.query;
+    const jti = "fd9c6c1a-8d2f-4c0a-9b5a-8a0c4d8e7f20";
+    const tokenExpirado = jwt.sign(
+        { id: 1, email: "teste@example.com" },
+        process.env.JWT_SECRET,
+        {
+            algorithm: "HS256",
+            issuer: "healthytrack",
+            audience: "healthytrack-api",
+            expiresIn: -1,
+            jwtid: jti
+        }
+    );
+
+    let sessaoRevogada = false;
+    pool.query = jest.fn().mockImplementation(async function (sql, parametros) {
+        if (sql.includes("UPDATE sessoes_utilizador")) {
+            expect(parametros).toEqual([jti, 1]);
+            sessaoRevogada = true;
+            return { rowCount: 1, rows: [] };
+        }
+
+        if (sql.includes("SELECT jti FROM sessoes_utilizador")) {
+            const sessaoAtiva = !sessaoRevogada &&
+                parametros[0] === jti &&
+                parametros[1] === 1;
+            return { rows: sessaoAtiva ? [{ jti }] : [] };
+        }
+
+        throw new Error("Consulta inesperada no teste de JWT expirado: " + sql);
+    });
+
+    try {
+        const respostaLogout = await request(app)
+            .post("/api/logout")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenExpirado)}`);
+
+        expect(respostaLogout.status).toBe(200);
+        expect(respostaLogout.body.mensagem).toBe("Sessão terminada com sucesso");
+        expect(respostaLogout.headers["set-cookie"].join(";")).toContain("Max-Age=0");
+        expect(pool.query).toHaveBeenCalledWith(
+            expect.stringContaining("UPDATE sessoes_utilizador"),
+            [jti, 1]
+        );
+        expect(sessaoRevogada).toBe(true);
+
+        // Apesar de o JWT ter expirado, a sessão existente foi revogada na base de dados.
+        const pedidoDepoisDoLogout = await request(app)
+            .get("/api/meta-diaria")
+            .set("Origin", "http://localhost:5500")
+            .set("Cookie", `waterkraft_session=${encodeURIComponent(tokenExpirado)}`);
+
+        expect(pedidoDepoisDoLogout.status).toBe(401);
+        expect(pedidoDepoisDoLogout.body.mensagem).toBe("Token inválido ou expirado");
+    } finally {
+        pool.query = consultaOriginal;
+    }
+});
+
 afterAll(async function () {
     await pool.end();
 });
