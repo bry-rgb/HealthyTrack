@@ -135,3 +135,106 @@ jobs:
             process.exit(1);
           });
           NODE
+
+      - name: Teste concorrente do limite por conta no PostgreSQL Preview
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL_PREVIEW }}
+          EXPECTED_HOST: ep-round-bird-badmuurl.c-8.eu-central-1.aws.neon.tech
+          JWT_SECRET: preview-integration-test-only-secret-not-for-production
+        run: |
+          node <<'NODE'
+          const crypto = require("crypto");
+          const request = require("supertest");
+
+          async function main() {
+            if (!process.env.DATABASE_URL) {
+              throw new Error("O secret NEON_DATABASE_URL_PREVIEW não está configurado.");
+            }
+
+            const actualHost = new URL(process.env.DATABASE_URL).hostname;
+            if (actualHost !== process.env.EXPECTED_HOST) {
+              throw new Error("A ligação não corresponde ao hostname Preview esperado.");
+            }
+            console.log("Ligação validada para a branch Preview.");
+
+            const { app, pool } = require("./server");
+            const testEmail = `concurrent-rate-limit-${crypto.randomUUID()}@example.invalid`;
+            const accountHash = crypto.createHmac("sha256", process.env.JWT_SECRET)
+              .update(testEmail.trim().toLowerCase())
+              .digest("hex");
+            const requests = Array.from({ length: 10 }, (_, index) => {
+              const ip = `203.0.113.${index + 1}`;
+              const ipHash = crypto.createHmac("sha256", process.env.JWT_SECRET)
+                .update(ip)
+                .digest("hex");
+              return { ip, ipHash };
+            });
+            const ipHashes = requests.map(({ ipHash }) => ipHash);
+
+            try {
+              // Dispara os dez pedidos sem aguardar pela resposta de nenhum deles.
+              const responses = await Promise.all(requests.map(({ ip }) =>
+                request(app)
+                  .post("/api/login")
+                  .set("X-Forwarded-For", ip)
+                  .send({ email: testEmail, senha: "PreviewTestPassword123" })
+              ));
+
+              const permitidos = responses.filter((response) => response.status === 401);
+              const bloqueados = responses.filter((response) => response.status === 429);
+              if (permitidos.length !== 5 || bloqueados.length !== 5) {
+                throw new Error(
+                  `Resultados inesperados: ${permitidos.length} respostas 401 e ${bloqueados.length} respostas 429; esperavam-se cinco de cada.`
+                );
+              }
+              if (bloqueados.some((response) => !response.headers["retry-after"])) {
+                throw new Error("Pelo menos uma resposta 429 não incluiu Retry-After.");
+              }
+              console.log("Pedidos concorrentes: cinco HTTP 401 e cinco HTTP 429 confirmados.");
+
+              const accountResult = await pool.query(
+                "SELECT attempts FROM login_rate_limits_accounts WHERE account_hash = $1",
+                [accountHash]
+              );
+              if (accountResult.rows.length !== 1 || accountResult.rows[0].attempts !== 6) {
+                throw new Error("O contador concorrente da conta não ficou em seis tentativas.");
+              }
+
+              const ipResult = await pool.query(
+                "SELECT COUNT(*)::integer AS total, MIN(attempts)::integer AS min_attempts, MAX(attempts)::integer AS max_attempts FROM login_rate_limits WHERE ip_hash = ANY($1::char(64)[])",
+                [ipHashes]
+              );
+              const ipCounts = ipResult.rows[0];
+              if (
+                ipCounts.total !== 10 ||
+                ipCounts.min_attempts !== 1 ||
+                ipCounts.max_attempts !== 1
+              ) {
+                throw new Error("Os dez IPs não ficaram isolados com exatamente uma tentativa cada.");
+              }
+
+              console.log("Contador da conta confirmado no PostgreSQL: 6 tentativas.");
+              console.log("Contadores de IP confirmados no PostgreSQL: 10 IPs, uma tentativa cada.");
+              console.log("TESTE CONCORRENTE DE LIMITE POR CONTA CONCLUÍDO COM SUCESSO.");
+            } finally {
+              try {
+                await pool.query(
+                  "DELETE FROM login_rate_limits_accounts WHERE account_hash = $1",
+                  [accountHash]
+                );
+                await pool.query(
+                  "DELETE FROM login_rate_limits WHERE ip_hash = ANY($1::char(64)[])",
+                  [ipHashes]
+                );
+                console.log("Registos temporários do teste concorrente removidos.");
+              } finally {
+                await pool.end();
+              }
+            }
+          }
+
+          main().catch((error) => {
+            console.error(error.message);
+            process.exit(1);
+          });
+          NODE
