@@ -197,6 +197,7 @@
             const [resposta] = await Promise.all([
                 fetch(`${API}/api/avaliacao-inicial`, {
                     method: "PUT",
+                    credentials: "include",
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -247,6 +248,7 @@
         try {
             const resposta = await fetch(`${API}/api/meta-diaria`, {
                 method: "PUT",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
                 },

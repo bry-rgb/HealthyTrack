@@ -1,137 +1,150 @@
 # 🐸 WaterKraft
 
-O **WaterKraft** é uma aplicação web focada no acompanhamento de hábitos relacionados com a saúde e o bem-estar, começando pelo registo e acompanhamento do consumo diário de água.
+**WaterKraft** é uma aplicação web de acompanhamento da hidratação. O utilizador pode registar o consumo de água, definir uma meta diária e acompanhar o seu progresso. Este projeto académico demonstra uma aplicação full-stack com interface web, API REST, autenticação e base de dados PostgreSQL.
 
-O projeto está a ser desenvolvido como forma de aprendizagem prática de desenvolvimento web Full Stack, desde a criação da interface até à implementação de uma API, autenticação de utilizadores e persistência de dados numa base de dados.
+## Funcionalidades implementadas
 
-## 🎯 Objetivo
+### Hidratação e progresso
 
-O objetivo do WaterKraft é permitir que os utilizadores acompanhem os seus hábitos diários de forma simples e intuitiva, começando pela hidratação e criando uma base para futuras funcionalidades relacionadas com o bem-estar.
-
-## ✨ Funcionalidades
-
-### Hidratação
-- Registo do consumo de água.
-- Histórico dos registos de consumo.
-- Definição de uma meta diária de água.
-- Consulta de estatísticas diárias de consumo.
-- Acompanhamento do progresso em relação à meta estabelecida.
+- Registo e consulta do histórico de consumo de água.
+- Meta diária personalizável e avaliação inicial.
+- Estatísticas dos últimos sete dias e calendário mensal de hidratação.
+- Perfil com sequência de dias, recordes e selos de progresso.
 - Tarot da Hidratação com tiragem de três cartas, significados e cartas invertidas.
 
-### Utilizadores e autenticação
-- Criação de contas de utilizador.
-- Início de sessão com email e palavra-passe.
-- Proteção de rotas através de autenticação com tokens JWT.
-- Associação dos registos de água ao respetivo utilizador.
+### Conta e segurança
 
-### Dados e persistência
-- Armazenamento dos dados numa base de dados PostgreSQL.
-- Persistência das metas e dos registos de água.
-- Utilização de migrações para gerir a estrutura da base de dados.
+- Registo, início e término de sessão.
+- Palavras-passe guardadas com hash bcrypt.
+- Sessões autenticadas por cookie `HttpOnly`, com sessão persistida e revogação no logout.
+- Registos de água isolados por utilizador autenticado.
+- Cabeçalhos de segurança, validação da origem dos pedidos e limitação de tentativas de login por IP e conta.
 
-### Qualidade do código
-- Testes automatizados com Jest e Supertest.
-- Verificação da qualidade do código com ESLint.
-- Integração contínua através do GitHub Actions.
+### Interface
 
-## 🛠️ Tecnologias
+- Front-end responsivo feito com HTML, CSS e JavaScript.
+- Páginas de login e registo, painel de hidratação, avaliação inicial, configurações e sessão expirada.
 
-### Frontend
-- HTML5
-- CSS3
-- JavaScript
+### Desafios
 
-### Backend
-- Node.js
-- Express
-- PostgreSQL
-- `pg`
-- `bcrypt`
-- JSON Web Tokens (JWT)
+- Gestores podem criar, editar e apagar os seus desafios.
+- Utilizadores podem participar em vários desafios e sair quando quiserem.
+- Participações guardadas numa tabela de ligação com prevenção de duplicados na base de dados.
+- [Diagrama entidade-relacionamento](docs/diagrama-er.md).
 
-### Ferramentas de desenvolvimento
-- Docker e Docker Compose
-- `node-pg-migrate`
-- Jest
-- Supertest
-- ESLint
-- Git e GitHub
-- GitHub Actions
+### Manutenção
 
-## 📁 Estrutura do projeto
+- Limpeza diária de contadores de tentativas de login inativos há mais de 24 horas, com registo de execuções e erros no log. A tarefa não altera contas nem registos de hidratação.
+
+## Arquitetura
+
+O projeto separa a interface, a API e a base de dados em três serviços. Em desenvolvimento, o Docker Compose inicia os serviços e aplica migrações e dados fictícios.
+
+```mermaid
+flowchart LR
+    U[Utilizador] --> FE[Front-end HTML CSS JavaScript]
+    FE -->|Pedidos HTTP e cookie de sessão| API[API REST Node.js e Express]
+    API --> DB[(PostgreSQL)]
+```
+
+- **Front-end:** ficheiros estáticos servidos por Nginx no Docker Compose. A configuração do Render publica o front-end como site estático.
+- **Back-end:** API Node.js e Express, com consultas PostgreSQL, autenticação e validação.
+- **Base de dados:** PostgreSQL, com esquema evoluído por migrações `node-pg-migrate`.
+
+## Estrutura do repositório
 
 ```text
 healthy-track/
-├── .github/
-│   └── workflows/
+├── .github/workflows/    # CI e workflows de migrações
 ├── backend/
-│   ├── server.js
-│   ├── server.test.js
-│   ├── validacoes.test.js
-│   ├── package.json
-│   └── ...
-├── frontend/
-│   ├── index.html
-│   ├── script.js
-│   └── ...
+│   ├── db/migrations/    # Migrações e seed
+│   ├── server.js         # API REST
+│   ├── server.test.js    # Testes da API
+│   └── API.md            # Referência da API
+├── docs/
+│   └── diagrama-er.md    # Diagrama entidade-relacionamento
+├── frontend/             # Interface web e testes
+├── docker-compose.yml    # Ambiente local com três serviços
+├── render.yaml           # Blueprint de deploy no Render
 └── README.md
 ```
 
-## 🗄️ Base de dados
+## Executar localmente
 
-O projeto utiliza PostgreSQL para armazenar os dados dos utilizadores, os registos de água e as respetivas metas.
+### Requisitos
 
-A estrutura da base de dados é gerida através de migrações, permitindo acompanhar a evolução do esquema ao longo do desenvolvimento.
+- Docker Desktop com Docker Compose.
+- Git, para clonar o repositório.
 
-O ambiente de desenvolvimento utiliza Docker Compose para executar o PostgreSQL, aplicar as migrações pendentes e preparar dados de demonstração quando a base ainda não tem utilizadores. Se já existirem utilizadores, o seed é ignorado e os dados existentes são preservados.
+### Iniciar
 
-Para iniciar os serviços, configura `DB_PASSWORD` e `JWT_SECRET` no ficheiro `.env` e executa `docker compose up --build`. A conta local de demonstração é `demo@waterkraft.local`, com a palavra-passe `WaterkraftDemo2026!`. Esta conta é criada apenas numa base vazia e destina-se ao ambiente local do projeto.
+1. Cria um ficheiro `.env` na raiz do projeto com valores locais:
 
-## Deploy público
+   ```env
+   DB_PASSWORD=escolhe-uma-palavra-passe-local
+   JWT_SECRET=define-um-segredo-aleatorio-e-longo
+   ```
 
-O ficheiro `render.yaml` descreve os três serviços do deploy: site estático, API Node.js e PostgreSQL. Para criar o ambiente, liga o repositório GitHub ao Render e cria um Blueprint a partir da raiz do repositório. O Blueprint configura a ligação privada à base de dados, gera o `JWT_SECRET` e usa a URL pública da API no front-end. Se o Render atribuir um endereço diferente de `https://waterkraft-frontend.onrender.com`, atualiza `CORS_ORIGINS` no serviço da API com o endereço real do front-end. O seed de demonstração fica desativado no ambiente público; cria a conta de avaliação através do formulário de registo.
+2. Na raiz do repositório, inicia os serviços:
 
-Este Blueprint usa os planos gratuitos do Render para fins de avaliação. O PostgreSQL gratuito expira 30 dias após a criação; não importes dados pessoais reais e exporta os dados antes do fim desse período, caso precises de os conservar.
+   ```bash
+   docker compose up --build
+   ```
 
-## 🧪 Testes e qualidade do código
+3. Abre a aplicação em [http://localhost:8080](http://localhost:8080). A API fica disponível em [http://localhost:3000/api](http://localhost:3000/api).
 
-Os testes automatizados verificam o comportamento da API e as validações implementadas.
+O seed local cria uma conta fictícia apenas quando a base de dados está vazia. Se já houver utilizadores, preserva os dados existentes.
 
-Para executar os testes, abre um terminal na pasta `backend` e executa:
+**Conta de demonstração local**
+
+- Email: `demo@waterkraft.local`
+- Palavra-passe: `WaterkraftDemo2026!`
+
+O seed local também cria uma conta de gestor de desafios:
+
+- Email: `gestor@waterkraft.local`
+- Palavra-passe: `WaterkraftGestor2026!`
+
+Estas contas destinam-se apenas ao ambiente local. O seed de demonstração está desativado na configuração de deploy. Para promover uma conta já registada, executa `cd backend && npm run promover-gestor -- email@exemplo.com` com acesso autorizado à base de dados.
+
+Para parar os serviços, usa `Ctrl+C`. Para os remover, executa `docker compose down`. Os dados da base de dados ficam no volume Docker `postgres_data`.
+
+## Testes e qualidade
+
+Executa os testes do back-end e o lint a partir da pasta `backend`:
 
 ```bash
+cd backend
+npm ci
 npm test
-```
-
-Para verificar a qualidade do código, executa:
-
-```bash
 npm run lint
 ```
 
-Para executar os testes do front-end, a partir da pasta principal:
+Executa os testes do front-end a partir da raiz:
 
 ```bash
 npm --prefix frontend test
 ```
 
-## 🚀 Estado do projeto
+A verificação local mais recente passou com **102 testes do back-end** e **4 testes do front-end**. O lint terminou sem erros, com dois avisos já existentes numa migração. O workflow de GitHub Actions executa testes do back-end, lint e testes do front-end em pushes e Pull Requests.
 
-O WaterKraft encontra-se em desenvolvimento, com funcionalidades de hidratação, autenticação, persistência de dados e testes automatizados já implementadas.
+## Deploy
 
-O projeto continua a evoluir à medida que são consolidados os conhecimentos de desenvolvimento Full Stack.
+O ficheiro [`render.yaml`](render.yaml) configura um Blueprint com serviço web da API, site estático e PostgreSQL. Para publicar, liga o repositório ao Render e cria o Blueprint a partir da raiz. O deploy público deve ser verificado depois da publicação: confirma que o site carrega, que `/api` responde e que registo, login e logout funcionam.
 
-## 📌 Objetivo de aprendizagem
+O seed público está desativado. Cria uma conta de demonstração pelo formulário de registo e usa apenas dados fictícios.
 
-Este projeto tem como objetivo consolidar conhecimentos de desenvolvimento web, incluindo:
+## Gestão do projeto
 
-- Estruturação de páginas com HTML.
-- Estilização com CSS.
-- Programação com JavaScript.
-- Manipulação do DOM.
-- Desenvolvimento de APIs REST.
-- Autenticação e autorização.
-- Bases de dados relacionais e SQL.
-- Testes automatizados.
-- Controlo de versões com Git.
-- Integração contínua.
+- [Quadro Trello — HealthyTrack](https://trello.com/b/zGNzTZfd/healthytrack-projeto-final)
+
+## Estado para a entrega académica
+
+O projeto inclui os perfis de utilizador e gestor, gestão e participação em desafios, diagrama ER e limpeza diária dos contadores de login. Os critérios de aceitação foram adicionados no Trello. Antes da entrega, ainda falta concluir ou confirmar:
+
+- Screenshots da aplicação e os materiais de proposta exigidos pelo curso.
+- Executar novamente os testes automatizados após as alterações recentes.
+- Validar o deploy público após publicar as alterações atuais.
+- Integrar as alterações da branch de trabalho na branch principal e publicar a versão final.
+
+Usa apenas dados fictícios. Não introduzas dados pessoais reais na aplicação ou nos dados de demonstração.

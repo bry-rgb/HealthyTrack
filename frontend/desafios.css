@@ -1,0 +1,34 @@
+.desafios-conteudo {
+    width: min(100% - 32px, 900px);
+    margin: 32px auto;
+    display: grid;
+    gap: 20px;
+}
+.desafios-conteudo h2 { margin-top: 0; }
+#formularioDesafio { display: grid; gap: 10px; }
+#formularioDesafio input,
+#formularioDesafio textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #9aa6b2;
+    border-radius: 8px;
+    font: inherit;
+}
+#formularioDesafio textarea { resize: vertical; }
+.datas-desafio,
+.acoes-formulario,
+.acoes-desafio { display: flex; flex-wrap: wrap; gap: 12px; }
+.datas-desafio > div { flex: 1 1 180px; display: grid; gap: 8px; }
+.lista-desafios { display: grid; gap: 16px; }
+.desafio-cartao { display: grid; gap: 10px; }
+.desafio-cartao h3,
+.desafio-cartao p { margin: 0; }
+.desafio-datas,
+.desafio-gestor,
+.desafio-participantes { color: #536273; }
+.botao-secundario { background: transparent; }
+@media (max-width: 560px) {
+    .desafios-conteudo { width: min(100% - 20px, 900px); margin: 16px auto; }
+    .acoes-formulario > button,
+    .acoes-desafio > button { flex: 1 1 100%; }
+}

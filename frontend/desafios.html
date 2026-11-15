@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b132b">
+    <title>Desafios | WaterKraft</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="desafios.css">
+</head>
+<body class="dashboard">
+    <header class="topo">
+        <div class="marca">
+            <span class="marca-icone" aria-hidden="true">🌱</span>
+            <div><h1>WaterKraft</h1><p class="marca-sub">Desafios de hidratação</p></div>
+        </div>
+        <a class="botao-configuracoes" href="index.html">Voltar ao painel</a>
+    </header>
+    <main class="desafios-conteudo">
+        <section class="card">
+            <h2>Desafios de hidratação</h2>
+            <p>Participa nos desafios de hidratação e acompanha quantas pessoas aderiram. Os gestores podem criar e gerir os seus próprios desafios.</p>
+            <p id="mensagemDesafios" role="status" aria-live="polite"></p>
+        </section>
+        <section id="painelGestor" class="card" hidden>
+            <h2 id="tituloFormularioDesafio">Criar desafio</h2>
+            <form id="formularioDesafio">
+                <label for="tituloDesafio">Título</label>
+                <input id="tituloDesafio" name="titulo" maxlength="100" required>
+                <label for="descricaoDesafio">Descrição</label>
+                <textarea id="descricaoDesafio" name="descricao" maxlength="2000" rows="4" required></textarea>
+                <div class="datas-desafio">
+                    <div><label for="dataInicioDesafio">Data de início</label><input id="dataInicioDesafio" name="data_inicio" type="date" required></div>
+                    <div><label for="dataFimDesafio">Data de fim</label><input id="dataFimDesafio" name="data_fim" type="date" required></div>
+                </div>
+                <div class="acoes-formulario">
+                    <button id="guardarDesafio" type="submit">Criar desafio</button>
+                    <button id="cancelarEdicaoDesafio" type="button" class="botao-secundario" hidden>Cancelar edição</button>
+                </div>
+            </form>
+        </section>
+        <section id="listaDesafios" class="lista-desafios" aria-label="Desafios disponíveis"></section>
+    </main>
+    <script src="api-config.js"></script>
+    <script src="desafios.js"></script>
+</body>
+</html>

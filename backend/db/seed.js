@@ -14,6 +14,8 @@ const pool = new Pool(process.env.DATABASE_URL
 
 const DEMO_EMAIL = "demo@waterkraft.local";
 const DEMO_PASSWORD = "WaterkraftDemo2026!";
+const DEMO_MANAGER_EMAIL = "gestor@waterkraft.local";
+const DEMO_MANAGER_PASSWORD = "WaterkraftGestor2026!";
 
 async function seed() {
     if (process.env.SEED_DEMO_DATA !== "true") {
@@ -41,6 +43,17 @@ async function seed() {
              RETURNING id`,
             ["Utilizador de demonstração", DEMO_EMAIL, senhaHash]
         );
+        const senhaGestorHash = await bcrypt.hash(DEMO_MANAGER_PASSWORD, 12);
+        await client.query(
+            "INSERT INTO usuarios (nome, email, senha, criado_em, perfil) VALUES ($1, $2, $3, NOW(), 'gestor_desafios')",
+            ["Gestor de demonstração", DEMO_MANAGER_EMAIL, senhaGestorHash]
+        );
+        await client.query(
+            "INSERT INTO desafios (titulo, descricao, data_inicio, data_fim, gestor_id) " +
+            "SELECT $1, $2, CURRENT_DATE, CURRENT_DATE + 7, id FROM usuarios WHERE email = $3",
+            ["Semana da Hidratação", "Regista a tua hidratação durante sete dias.", DEMO_MANAGER_EMAIL]
+        );
+
         const usuarioId = utilizador.rows[0].id;
 
         await client.query(

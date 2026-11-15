@@ -1,5 +1,9 @@
 const API_BASE_URL = window.WATERKRAFT_API_BASE_URL || "http://localhost:3000";
 
+function fetchAPI(url, opcoes = {}) {
+    return fetch(url, { ...opcoes, credentials: "include" });
+}
+
 function verificarResposta(resposta) {
     if (resposta.status === 401) {
         window.location.href = "sessao-expirada.html";
@@ -132,7 +136,7 @@ async function verificarAvisoMetaMedica() {
     const aviso = document.getElementById("avisoMetaMedica");
 
     try {
-        const resposta = await fetch(`${API_BASE_URL}/api/avaliacao-inicial`, {
+        const resposta = await fetchAPI(`${API_BASE_URL}/api/avaliacao-inicial`, {
         });
         verificarResposta(resposta);
 
@@ -173,7 +177,7 @@ document.addEventListener("click", async function (evento) {
     if (evento.target.closest("#naoMostrarAvisoMeta")) {
         fecharAviso();
         try {
-            const resposta = await fetch(`${API_BASE_URL}/api/avaliacao-inicial/ocultar-aviso`, {
+            const resposta = await fetchAPI(`${API_BASE_URL}/api/avaliacao-inicial/ocultar-aviso`, {
                 method: "PUT",
             });
             if (!resposta.ok) throw new Error("Falha ao guardar");
@@ -188,7 +192,7 @@ document.addEventListener("click", async function (evento) {
 // Carregar a meta guardada no PostgreSQL
 async function carregarMetaDiaria() {
     try {
-        const resposta = await fetch(
+        const resposta = await fetchAPI(
             `${API_BASE_URL}/api/meta-diaria`,
             {
                 headers: {
@@ -228,7 +232,7 @@ async function carregarMetaDiaria() {
  // Carregar as estatísticas de hidratação
 async function carregarEstatisticas() {
     try {
-        const resposta = await fetch(
+        const resposta = await fetchAPI(
             `${API_BASE_URL}/api/estatisticas-diarias`,
             {
                 headers: {
@@ -286,7 +290,7 @@ async function carregarCalendario() {
     if (!root) return;
     try {
         const mes = formatarChaveMesCalendario(mesCalendarioExibido);
-        const resposta = await fetch(`${API_BASE_URL}/api/calendario-hidratacao?mes=${encodeURIComponent(mes)}`, {
+        const resposta = await fetchAPI(`${API_BASE_URL}/api/calendario-hidratacao?mes=${encodeURIComponent(mes)}`, {
         });
         verificarResposta(resposta);
         const dados = await resposta.json();
@@ -386,7 +390,7 @@ botaoMeta.addEventListener("click", async function () {
     }
 
     try {
-        const resposta = await fetch(
+        const resposta = await fetchAPI(
             `${API_BASE_URL}/api/meta-diaria`,
             {
                 method: "PUT",
@@ -466,7 +470,7 @@ botaoHistorico.addEventListener("click", function () {
 // Carregar os registos de água do utilizador
 async function carregarRegistrosAgua() {
     try {
-        const resposta = await fetch(
+        const resposta = await fetchAPI(
             `${API_BASE_URL}/api/registros-agua?${parametrosDiaAtual()}`,
             {
                 headers: {
@@ -505,7 +509,7 @@ async function adicionarAgua(quantidade) {
     };
 
     try {
-        const resposta = await fetch(
+        const resposta = await fetchAPI(
             `${API_BASE_URL}/api/registros-agua`,
             {
                 method: "POST",
@@ -551,7 +555,7 @@ async function limparHistorico() {
     }
 
     try {
-        const resposta = await fetch(
+        const resposta = await fetchAPI(
             `${API_BASE_URL}/api/registros-agua`,
             {
                 method: "DELETE",
@@ -586,9 +590,9 @@ async function limparHistorico() {
 botaoLogout.addEventListener("click", async function () {
     botaoLogout.disabled = true;
     try {
-        const resposta = await fetch(`${API_BASE_URL}/api/logout`, {
+        const resposta = await fetchAPI(`${API_BASE_URL}/api/logout`, {
             method: "POST",
-            credentials: "same-origin"
+            credentials: "include"
         });
 
         if (!resposta.ok) {
@@ -829,7 +833,7 @@ document.addEventListener("keydown", function (evento) {
 // Mini perfil: nome, dias totais hidratados e sequência atual de metas diárias atingidas.
 async function carregarPerfil() {
     try {
-        const resposta = await fetch(`${API_BASE_URL}/api/perfil`, {
+        const resposta = await fetchAPI(`${API_BASE_URL}/api/perfil`, {
         });
         verificarResposta(resposta);
         const dados = await resposta.json();

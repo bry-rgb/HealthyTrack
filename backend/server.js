@@ -9,6 +9,7 @@ const { Pool } = require("pg");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { senhaValida } = require("./validacoes");
+const { agendarLimpezaDiariaLogin } = require("./jobs/limpeza-contadores-login");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_ISSUER = "healthytrack";
@@ -291,6 +292,80 @@ async function verificarToken(req, res, next) {
         res.status(401).json({ mensagem: "Token inválido ou expirado" });
     }
 }
+
+// O perfil é consultado na base de dados para aplicar imediatamente alterações
+// de permissões, sem depender do tempo restante do JWT.
+async function exigirGestorDesafios(req, res, next) {
+    try {
+        const resultado = await pool.query(
+            "SELECT perfil FROM usuarios WHERE id = $1",
+            [req.usuario.id]
+        );
+        if (resultado.rows.length === 0) {
+            res.status(401).json({ mensagem: "Utilizador não encontrado" });
+            return;
+        }
+        if (resultado.rows[0].perfil !== "gestor_desafios") {
+            res.status(403).json({ mensagem: "Permissão de gestor de desafios necessária" });
+            return;
+        }
+        next();
+    } catch (erro) {
+        console.error("Erro ao verificar perfil de gestor:", erro);
+        res.status(503).json({ mensagem: "Não foi possível verificar as permissões" });
+    }
+}
+
+async function exigirUtilizador(req, res, next) {
+    try {
+        const resultado = await pool.query(
+            "SELECT perfil FROM usuarios WHERE id = $1",
+            [req.usuario.id]
+        );
+        if (resultado.rows.length === 0) {
+            res.status(401).json({ mensagem: "Utilizador não encontrado" });
+            return;
+        }
+        if (resultado.rows[0].perfil !== "utilizador") {
+            res.status(403).json({ mensagem: "A participação está disponível para contas de utilizador" });
+            return;
+        }
+        next();
+    } catch (erro) {
+        console.error("Erro ao verificar perfil de utilizador:", erro);
+        res.status(503).json({ mensagem: "Não foi possível verificar as permissões" });
+    }
+}
+
+function dataISOValida(valor) {
+    if (typeof valor !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return false;
+    const data = new Date(valor + "T00:00:00.000Z");
+    return !Number.isNaN(data.getTime()) && data.toISOString().slice(0, 10) === valor;
+}
+
+function validarDadosDesafio(dados) {
+    if (!dados || typeof dados !== "object" || Array.isArray(dados)) {
+        return "Envia os dados do desafio num objeto JSON";
+    }
+    if (typeof dados.titulo !== "string" || dados.titulo.trim().length < 3 || dados.titulo.trim().length > 100) {
+        return "O título deve ter entre 3 e 100 caracteres";
+    }
+    if (typeof dados.descricao !== "string" || !dados.descricao.trim() || dados.descricao.trim().length > 2000) {
+        return "A descrição é obrigatória e deve ter no máximo 2000 caracteres";
+    }
+    if (!dataISOValida(dados.data_inicio) || !dataISOValida(dados.data_fim)) {
+        return "As datas devem usar o formato AAAA-MM-DD e ser datas válidas";
+    }
+    if (dados.data_fim < dados.data_inicio) {
+        return "A data de fim não pode ser anterior à data de início";
+    }
+    return null;
+}
+
+function idDesafioValido(valor) {
+    return /^\d+$/.test(valor) && Number(valor) > 0;
+}
+
 
 
 // GET - buscar registros de água
@@ -886,6 +961,166 @@ app.delete("/api/registros-agua", verificarToken, function (req, res) {
 });
 
 
+// Qualquer utilizador autenticado pode consultar os desafios. Apenas o gestor
+// pode criar, editar ou apagar os desafios que criou.
+app.get("/api/desafios", verificarToken, async function (req, res) {
+    try {
+        const [perfil, desafios] = await Promise.all([
+            pool.query("SELECT id, perfil FROM usuarios WHERE id = $1", [req.usuario.id]),
+            pool.query(
+                "SELECT d.id, d.titulo, d.descricao, d.data_inicio, d.data_fim, " +
+                "d.gestor_id, u.nome AS gestor_nome, d.criado_em, " +
+                "EXISTS (SELECT 1 FROM participacoes_desafios AS p " +
+                "WHERE p.desafio_id = d.id AND p.usuario_id = $1) AS participa, " +
+                "(SELECT COUNT(*)::int FROM participacoes_desafios AS p " +
+                "WHERE p.desafio_id = d.id) AS total_participantes " +
+                "FROM desafios AS d JOIN usuarios AS u ON u.id = d.gestor_id " +
+                "ORDER BY d.data_inicio DESC, d.id DESC",
+                [req.usuario.id]
+            )
+        ]);
+        if (perfil.rows.length === 0) {
+            res.status(401).json({ mensagem: "Utilizador não encontrado" });
+            return;
+        }
+        res.json({
+            perfil: perfil.rows[0].perfil,
+            utilizador_id: perfil.rows[0].id,
+            desafios: desafios.rows
+        });
+    } catch (erro) {
+        console.error("Erro ao consultar desafios:", erro);
+        res.status(500).json({ mensagem: "Erro ao consultar desafios" });
+    }
+});
+
+app.post("/api/desafios/:id/participacao", verificarToken, exigirUtilizador, async function (req, res) {
+    if (!idDesafioValido(req.params.id)) {
+        res.status(400).json({ mensagem: "Identificador de desafio inválido" });
+        return;
+    }
+    try {
+        const resultado = await pool.query(
+            "INSERT INTO participacoes_desafios (desafio_id, usuario_id) " +
+            "SELECT id, $2 FROM desafios WHERE id = $1 " +
+            "ON CONFLICT (desafio_id, usuario_id) DO NOTHING " +
+            "RETURNING desafio_id",
+            [Number(req.params.id), req.usuario.id]
+        );
+        if (resultado.rows.length === 0) {
+            const existente = await pool.query(
+                "SELECT 1 FROM desafios WHERE id = $1",
+                [Number(req.params.id)]
+            );
+            if (existente.rows.length === 0) {
+                res.status(404).json({ mensagem: "Desafio não encontrado" });
+                return;
+            }
+        }
+        res.status(resultado.rows.length ? 201 : 200).json({ mensagem: "Participação registada" });
+    } catch (erro) {
+        console.error("Erro ao aderir ao desafio:", erro);
+        res.status(500).json({ mensagem: "Erro ao registar participação" });
+    }
+});
+
+app.delete("/api/desafios/:id/participacao", verificarToken, exigirUtilizador, async function (req, res) {
+    if (!idDesafioValido(req.params.id)) {
+        res.status(400).json({ mensagem: "Identificador de desafio inválido" });
+        return;
+    }
+    try {
+        const resultado = await pool.query(
+            "DELETE FROM participacoes_desafios WHERE desafio_id = $1 AND usuario_id = $2 RETURNING desafio_id",
+            [Number(req.params.id), req.usuario.id]
+        );
+        if (resultado.rows.length === 0) {
+            const existente = await pool.query(
+                "SELECT 1 FROM desafios WHERE id = $1",
+                [Number(req.params.id)]
+            );
+            if (existente.rows.length === 0) {
+                res.status(404).json({ mensagem: "Desafio não encontrado" });
+                return;
+            }
+        }
+        res.json({ mensagem: resultado.rows.length ? "Participação cancelada" : "Não estavas inscrito neste desafio" });
+    } catch (erro) {
+        console.error("Erro ao cancelar participação no desafio:", erro);
+        res.status(500).json({ mensagem: "Erro ao cancelar participação" });
+    }
+});
+
+app.post("/api/desafios", verificarToken, exigirGestorDesafios, async function (req, res) {
+    const erroValidacao = validarDadosDesafio(req.body);
+    if (erroValidacao) {
+        res.status(400).json({ mensagem: erroValidacao });
+        return;
+    }
+    try {
+        const resultado = await pool.query(
+            "INSERT INTO desafios (titulo, descricao, data_inicio, data_fim, gestor_id) " +
+            "VALUES ($1, $2, $3, $4, $5) " +
+            "RETURNING id, titulo, descricao, data_inicio, data_fim, gestor_id, criado_em",
+            [req.body.titulo.trim(), req.body.descricao.trim(), req.body.data_inicio, req.body.data_fim, req.usuario.id]
+        );
+        res.status(201).json(resultado.rows[0]);
+    } catch (erro) {
+        console.error("Erro ao criar desafio:", erro);
+        res.status(500).json({ mensagem: "Erro ao criar desafio" });
+    }
+});
+
+app.put("/api/desafios/:id", verificarToken, exigirGestorDesafios, async function (req, res) {
+    if (!idDesafioValido(req.params.id)) {
+        res.status(400).json({ mensagem: "Identificador de desafio inválido" });
+        return;
+    }
+    const erroValidacao = validarDadosDesafio(req.body);
+    if (erroValidacao) {
+        res.status(400).json({ mensagem: erroValidacao });
+        return;
+    }
+    try {
+        const resultado = await pool.query(
+            "UPDATE desafios SET titulo = $1, descricao = $2, data_inicio = $3, data_fim = $4 " +
+            "WHERE id = $5 AND gestor_id = $6 " +
+            "RETURNING id, titulo, descricao, data_inicio, data_fim, gestor_id, criado_em",
+            [req.body.titulo.trim(), req.body.descricao.trim(), req.body.data_inicio, req.body.data_fim, Number(req.params.id), req.usuario.id]
+        );
+        if (resultado.rows.length === 0) {
+            res.status(404).json({ mensagem: "Desafio não encontrado ou não gerido por este utilizador" });
+            return;
+        }
+        res.json(resultado.rows[0]);
+    } catch (erro) {
+        console.error("Erro ao atualizar desafio:", erro);
+        res.status(500).json({ mensagem: "Erro ao atualizar desafio" });
+    }
+});
+
+app.delete("/api/desafios/:id", verificarToken, exigirGestorDesafios, async function (req, res) {
+    if (!idDesafioValido(req.params.id)) {
+        res.status(400).json({ mensagem: "Identificador de desafio inválido" });
+        return;
+    }
+    try {
+        const resultado = await pool.query(
+            "DELETE FROM desafios WHERE id = $1 AND gestor_id = $2 RETURNING id",
+            [Number(req.params.id), req.usuario.id]
+        );
+        if (resultado.rows.length === 0) {
+            res.status(404).json({ mensagem: "Desafio não encontrado ou não gerido por este utilizador" });
+            return;
+        }
+        res.json({ mensagem: "Desafio eliminado com sucesso" });
+    } catch (erro) {
+        console.error("Erro ao eliminar desafio:", erro);
+        res.status(500).json({ mensagem: "Erro ao eliminar desafio" });
+    }
+});
+
+
 // GET - perfil, total de dias hidratados e sequência atual de metas atingidas
 app.get("/api/perfil", verificarToken, function (req, res) {
     pool.query(
@@ -970,6 +1205,7 @@ app.get("/api", function (req, res) {
 
 
 if (require.main === module) {
+    agendarLimpezaDiariaLogin(pool);
     app.listen(PORT, "0.0.0.0", function () {
         console.log(`Servidor rodando na porta ${PORT}`);
     });

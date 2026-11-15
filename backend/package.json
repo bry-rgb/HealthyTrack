@@ -8,7 +8,8 @@
     "lint": "eslint .",
     "migrate": "node-pg-migrate",
     "migrate:up": "node-pg-migrate -m db/migrations up",
-    "seed": "node db/seed.js"
+    "seed": "node db/seed.js",
+    "promover-gestor": "node db/promover-gestor.js"
   },
   "keywords": [],
   "author": "",
