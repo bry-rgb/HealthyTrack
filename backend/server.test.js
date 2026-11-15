@@ -1899,32 +1899,39 @@ test("Os registos de água ficam isolados por utilizador em leitura, criação e
     const utilizadoresQueCriaram = [];
     const utilizadoresQueApagaram = [];
 
-    pool.query = jest.fn().mockImplementation(async function (sql, parametros, callback) {
+    pool.query = jest.fn().mockImplementation(function (sql, parametros, callback) {
+        let resultado;
+
         if (sql.includes("sessoes_utilizador")) {
             const sessao = utilizadores.find(item =>
                 item.jti === parametros[0] && item.id === parametros[1]
             );
-            return { rows: sessao ? [{ jti: sessao.jti }] : [] };
-        }
-
-        if (sql.includes("SELECT * FROM registro_agua")) {
+            resultado = { rows: sessao ? [{ jti: sessao.jti }] : [] };
+        } else if (sql.includes("SELECT * FROM registro_agua")) {
             const utilizadorId = parametros[0];
-            return {
+            resultado = {
                 rows: registos.filter(registo => registo.usuario_id === utilizadorId)
             };
-        }
-
-        if (sql.includes("INSERT INTO registro_agua")) {
+        } else if (sql.includes("INSERT INTO registro_agua")) {
             utilizadoresQueCriaram.push(parametros[2]);
-            return { rows: [] };
-        }
-
-        if (sql.includes("DELETE FROM registro_agua")) {
+            resultado = { rows: [] };
+        } else if (sql.includes("DELETE FROM registro_agua")) {
             utilizadoresQueApagaram.push(parametros[0]);
-            return { rows: [] };
+            resultado = { rows: [] };
+        } else {
+            const erro = new Error("Consulta inesperada no teste de isolamento: " + sql);
+            if (typeof callback === "function") {
+                callback(erro);
+                return;
+            }
+            return Promise.reject(erro);
         }
 
-        throw new Error("Consulta inesperada no teste de isolamento: " + sql);
+        if (typeof callback === "function") {
+            callback(null, resultado);
+            return;
+        }
+        return Promise.resolve(resultado);
     });
 
     try {
