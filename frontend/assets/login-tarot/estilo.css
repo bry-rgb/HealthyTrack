@@ -13,12 +13,13 @@
   --agua-escura: #218fd2;
   --verde: #83c96b;
   --erro: #ff9d94;
+  --dashboard-sombra: 0 24px 55px color-mix(in srgb, var(--fundo) 85%, transparent);
   --cinzel: "Cinzel", Georgia, serif;
   --nunito: "Nunito", Arial, sans-serif;
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+html { overflow-x: hidden; scroll-behavior: smooth; scroll-padding-top: 90px; }
 body { margin: 0; min-width: 320px; overflow-x: hidden; background: var(--fundo); color: var(--texto); font-family: var(--nunito); font-size: 16px; line-height: 1.6; }
 button, input { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
@@ -316,7 +317,15 @@ footer > span { color: var(--ouro); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
+  html { overflow-x: hidden; scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   .js .reveal { opacity: 1; transform: none; }
 }
+
+/* Capturas escuras com uma única moldura, mantendo as cartas originais. */
+.painel-app.painel-dashboard { max-width: 500px; padding: 0; overflow: visible; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.painel-dashboard::before, .painel-dashboard::after { display: none; }
+.captura-dashboard { position: relative; margin: 0; }
+.captura-dashboard img { width: 100%; height: auto; border: 0; border-radius: 22px; box-shadow: var(--dashboard-sombra); }
+.captura-dashboard::before { content: ""; display: block; width: 64px; height: 1px; margin: 0 auto 24px; background: var(--ouro); }
+.captura-dashboard::after { content: "✦"; display: block; margin-top: 18px; color: var(--ouro); font-size: 13px; text-align: center; }
