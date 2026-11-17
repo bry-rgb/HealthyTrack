@@ -90,10 +90,7 @@ h1 em, h2 em { color: var(--ouro-claro); font-style: normal; }
 
 .hero-arte { position: relative; height: 680px; min-width: 0; perspective: 1200px; }
 .aurora { position: absolute; top: 50%; left: 50%; width: 520px; height: 520px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, #3b65a740, transparent 68%); filter: blur(12px); }
-.carta-hero { position: absolute; top: 50%; left: 50%; width: 238px; border-radius: 15px; box-shadow: 0 30px 65px #0009, 0 0 30px #e9c45a24; }
-.carta-hero-centro { z-index: 3; width: 268px; transform: translate(-50%, -52%) rotate(1deg); animation: flutuar 6s ease-in-out infinite; }
-.carta-hero-esquerda { z-index: 1; transform: translate(-105%, -47%) rotate(-16deg); filter: brightness(.77); }
-.carta-hero-direita { z-index: 2; transform: translate(5%, -48%) rotate(15deg); filter: brightness(.83); }
+.guerreiro-hero { position: absolute; z-index: 2; inset: -6%; width: 112%; height: 112%; max-width: none; object-fit: contain; filter: drop-shadow(0 28px 45px #0008); -webkit-mask-image: radial-gradient(ellipse at center, #000 45%, #000d 58%, transparent 74%); mask-image: radial-gradient(ellipse at center, #000 45%, #000d 58%, transparent 74%); animation: flutuar-guerreiro 8s ease-in-out infinite; }
 .selo-guerreiro { position: absolute; z-index: 5; right: 2%; bottom: 55px; display: grid; place-items: center; width: 126px; height: 126px; border: 2px solid var(--ouro); border-radius: 50%; background: radial-gradient(circle, #fff2b8, #d6a640 68%, #614323); box-shadow: 0 0 0 6px #0c1730, 0 0 0 7px #e9c45a60, 0 10px 40px #0009; }
 .selo-guerreiro img { width: 108px; transform: translateY(-5px); filter: drop-shadow(0 5px 3px #0004); }
 .selo-guerreiro span { position: absolute; bottom: -24px; width: 100px; padding: 3px; border: 1px solid var(--ouro); border-radius: 99px; background: var(--fundo-suave); color: var(--ouro-claro); font-family: var(--cinzel); font-size: 8px; letter-spacing: .2em; text-align: center; }
@@ -234,7 +231,7 @@ footer > span { color: var(--ouro); }
 .js .reveal { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s ease; }
 .js .reveal.visivel { opacity: 1; transform: translateY(0); }
 
-@keyframes flutuar { 0%, 100% { transform: translate(-50%, -52%) rotate(1deg); } 50% { transform: translate(-50%, -54%) rotate(-1deg); } }
+@keyframes flutuar-guerreiro { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @keyframes rolar { 0% { opacity: 0; transform: translate(-50%, 0); } 35% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, 10px); } }
 @keyframes pulsar { to { transform: translateX(5px); } }
 
@@ -255,8 +252,6 @@ footer > span { color: var(--ouro); }
   .hero-intro { max-width: none; }
   .login-moldura { max-width: none; }
   .hero-arte { height: 630px; margin-top: 30px; transform: none; }
-  .carta-hero { width: 220px; }
-  .carta-hero-centro { width: 250px; }
   .selo-guerreiro { right: 5%; }
   .scroll-convite { position: relative; bottom: auto; margin: 40px auto 0; left: auto; transform: none; }
   .capitulo, .capitulo-inverso { width: min(570px, calc(100% - 40px)); grid-template-columns: 1fr; gap: 45px; margin-bottom: 130px; }
@@ -286,8 +281,6 @@ footer > span { color: var(--ouro); }
   .login-cabecalho h2 { font-size: 20px; }
   .mini-ornamento { display: none; }
   .hero-arte { height: 500px; margin-top: 20px; }
-  .carta-hero { width: 157px; border-radius: 10px; }
-  .carta-hero-centro { width: 185px; }
   .selo-guerreiro { right: -2%; bottom: 40px; width: 95px; height: 95px; }
   .selo-guerreiro img { width: 82px; }
   .arte-legenda { font-size: 7px; }
