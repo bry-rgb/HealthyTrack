@@ -858,3 +858,62 @@ async function carregarPerfil() {
 }
 
 carregarPerfil();
+
+async function carregarEmblemasDeDesafios() {
+    const lista = document.getElementById("listaEmblemasDesafios");
+    const mensagem = document.getElementById("mensagemEmblemasDesafios");
+    if (!lista || !mensagem) return;
+
+    try {
+        const resposta = verificarResposta(await fetchAPI(`${API_BASE_URL}/api/desafios`, {
+            headers: { "Accept": "application/json" }
+        }));
+        const dados = await resposta.json();
+        if (!resposta.ok) throw new Error(dados.mensagem || "Não foi possível carregar as conquistas.");
+
+        const desafios = Array.isArray(dados.desafios) ? dados.desafios : [];
+        const participou = desafios.some((desafio) => desafio.participa || desafio.tem_plaqueta);
+        const concluidos = desafios.filter((desafio) => desafio.medalha_rara_conquistada);
+        lista.replaceChildren();
+
+        if (participou) {
+            lista.appendChild(criarConquistaDesafioMini(
+                "assets/selos/plaqueta-participacao.png",
+                "Plaqueta de participação",
+                false
+            ));
+        }
+
+        concluidos.forEach((desafio) => {
+            lista.appendChild(criarConquistaDesafioMini(
+                "assets/selos/semana-resistencia-rara.png",
+                desafio.titulo || "Semana da Resistência",
+                true
+            ));
+        });
+
+        mensagem.textContent = participou
+            ? ""
+            : "Participa num desafio para desbloqueares a tua primeira conquista.";
+        mensagem.hidden = participou;
+    } catch (erro) {
+        console.error("Erro ao carregar conquistas de desafios:", erro);
+        mensagem.textContent = "As conquistas não estão disponíveis neste momento.";
+        mensagem.hidden = false;
+    }
+}
+
+function criarConquistaDesafioMini(imagemSrc, nome, rara) {
+    const conquista = document.createElement("span");
+    conquista.className = "conquista-desafio-mini" + (rara ? " raro" : "");
+    const imagem = document.createElement("img");
+    imagem.src = imagemSrc;
+    imagem.alt = "";
+    imagem.loading = "lazy";
+    const texto = document.createElement("span");
+    texto.textContent = nome;
+    conquista.append(imagem, texto);
+    return conquista;
+}
+
+carregarEmblemasDeDesafios();
