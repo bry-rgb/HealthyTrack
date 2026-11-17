@@ -51,7 +51,7 @@ body.dashboard {
 .dashboard .painel {
     display: grid;
     grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
-    grid-template-areas: "perfil agua" "calendario stats" "hist hist" "oraculo oraculo" "dia dia";
+    grid-template-areas: "perfil agua" "emblemas stats" "calendario stats" "hist hist" "oraculo oraculo" "dia dia";
     gap: 24px;
     align-items: start;
 }
@@ -60,6 +60,36 @@ body.dashboard {
 .dashboard .estatisticas { grid-area: stats; }
 .dashboard .historico    { grid-area: hist; }
 .dashboard .card-oraculo { grid-area: oraculo; text-align: center; }
+.dashboard .emblemas-dashboard { grid-area: emblemas; }
+.dashboard .emblemas-dashboard .card-titulo { margin-bottom: 12px; }
+.dashboard .emblemas-dashboard .card-titulo a { font-weight: 800; color: var(--verde-escuro); }
+.dashboard .mensagem-emblemas-dashboard { margin: 0; color: var(--castanho); }
+.dashboard .lista-emblemas-dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+}
+.dashboard .emblema-dashboard {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    padding: 12px;
+    background: rgba(255, 250, 240, .82);
+    border: 2px solid var(--castanho-claro);
+    border-radius: 14px;
+}
+.dashboard .emblema-dashboard img {
+    flex: 0 0 88px;
+    width: 88px;
+    height: 88px;
+    object-fit: contain;
+}
+.dashboard .emblema-dashboard.raro img { filter: drop-shadow(0 0 10px rgba(218, 172, 37, .82)); }
+.dashboard .emblema-dashboard strong,
+.dashboard .emblema-dashboard small { display: block; }
+.dashboard .emblema-dashboard strong { color: var(--verde-escuro); }
+.dashboard .emblema-dashboard small { margin-top: 4px; color: var(--castanho); }
 
 .dashboard .card {
     margin: 0;
@@ -181,7 +211,7 @@ body.dashboard {
 
 /* ---------- RESPONSIVO ---------- */
 @media (max-width: 900px) {
-    .dashboard .painel { grid-template-columns: 1fr; grid-template-areas: "perfil" "agua" "calendario" "stats" "hist" "oraculo" "dia"; }
+    .dashboard .painel { grid-template-columns: 1fr; grid-template-areas: "perfil" "agua" "emblemas" "calendario" "stats" "hist" "oraculo" "dia"; }
 }
 @media (max-width: 560px) {
     body.dashboard { padding: 18px 14px 40px; }

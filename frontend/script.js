@@ -858,3 +858,69 @@ async function carregarPerfil() {
 }
 
 carregarPerfil();
+
+async function carregarEmblemasDeDesafios() {
+    const lista = document.getElementById("listaEmblemasDesafios");
+    const mensagem = document.getElementById("mensagemEmblemasDesafios");
+    if (!lista || !mensagem) return;
+
+    try {
+        const resposta = verificarResposta(await fetchAPI(`${API_BASE_URL}/api/desafios`, {
+            headers: { "Accept": "application/json" }
+        }));
+        const dados = await resposta.json();
+        if (!resposta.ok) throw new Error(dados.mensagem || "Não foi possível carregar os emblemas.");
+
+        const desafios = Array.isArray(dados.desafios) ? dados.desafios : [];
+        const participou = desafios.some((desafio) => desafio.participa || desafio.tem_plaqueta);
+        const concluidos = desafios.filter((desafio) => desafio.medalha_rara_conquistada);
+        lista.replaceChildren();
+
+        if (participou) {
+            lista.appendChild(criarCartaoEmblemaDashboard({
+                imagem: "assets/selos/plaqueta-participacao.png",
+                alt: "Plaqueta de participação em desafios",
+                titulo: "Plaqueta de participação",
+                detalhe: "Conquistada ao participar no primeiro desafio."
+            }));
+        }
+
+        concluidos.forEach((desafio) => {
+            lista.appendChild(criarCartaoEmblemaDashboard({
+                imagem: "assets/selos/semana-resistencia-rara.png",
+                alt: "Medalha rara de conclusão do desafio",
+                titulo: desafio.titulo || "Semana da Resistência",
+                detalhe: "Conquistada com a meta diária atingida nos sete dias.",
+                raro: true
+            }));
+        });
+
+        mensagem.textContent = participou
+            ? (concluidos.length
+                ? "As tuas conquistas nos desafios."
+                : "A plaqueta já é tua. Cumpre os critérios de um desafio para conquistar a medalha rara.")
+            : "Inscreve-te num desafio para conquistares a tua primeira plaqueta.";
+    } catch (erro) {
+        console.error("Erro ao carregar emblemas dos desafios:", erro);
+        mensagem.textContent = "Não foi possível carregar os emblemas agora.";
+    }
+}
+
+function criarCartaoEmblemaDashboard(config) {
+    const cartao = document.createElement("article");
+    cartao.className = "emblema-dashboard" + (config.raro ? " raro" : "");
+    const imagem = document.createElement("img");
+    imagem.src = config.imagem;
+    imagem.alt = config.alt;
+    imagem.loading = "lazy";
+    const texto = document.createElement("div");
+    const titulo = document.createElement("strong");
+    titulo.textContent = config.titulo;
+    const detalhe = document.createElement("small");
+    detalhe.textContent = config.detalhe;
+    texto.append(titulo, detalhe);
+    cartao.append(imagem, texto);
+    return cartao;
+}
+
+carregarEmblemasDeDesafios();
