@@ -895,7 +895,7 @@ async function carregarEmblemasDeDesafios() {
         mensagem.textContent = participou
             ? ""
             : "Participa num desafio para desbloqueares a tua primeira conquista.";
-        mensagem.hidden = participou;
+        mensagem.hidden = true;
     } catch (erro) {
         console.error("Erro ao carregar conquistas de desafios:", erro);
         mensagem.textContent = "As conquistas não estão disponíveis neste momento.";
@@ -904,16 +904,55 @@ async function carregarEmblemasDeDesafios() {
 }
 
 function criarConquistaDesafioMini(imagemSrc, nome, rara) {
-    const conquista = document.createElement("span");
+    const conquista = document.createElement("button");
+    conquista.type = "button";
     conquista.className = "conquista-desafio-mini" + (rara ? " raro" : "");
+    conquista.setAttribute("aria-label", nome + ". Abre para ver a definição do emblema.");
     const imagem = document.createElement("img");
     imagem.src = imagemSrc;
     imagem.alt = "";
     imagem.loading = "lazy";
-    const texto = document.createElement("span");
-    texto.textContent = nome;
-    conquista.append(imagem, texto);
+    conquista.appendChild(imagem);
+    conquista.addEventListener("click", function () {
+        abrirDetalhesConquistaDesafio(conquista, imagemSrc, nome, rara);
+    });
     return conquista;
+}
+
+function abrirDetalhesConquistaDesafio(botao, imagemSrc, nome, rara) {
+    const modal = document.getElementById("modalSelo");
+    const emblema = document.getElementById("modalSeloEmblema");
+    const marco = document.getElementById("modalSeloMarco");
+    const titulo = document.getElementById("modalSeloTitulo");
+    const descricao = document.getElementById("modalSeloDescricao");
+    modal.classList.remove("bloqueado");
+    emblema.classList.remove("emblema-bloqueado");
+    emblema.replaceChildren();
+
+    const imagem = document.createElement("img");
+    imagem.src = imagemSrc;
+    imagem.alt = "";
+    emblema.appendChild(imagem);
+    marco.hidden = false;
+    marco.textContent = "Emblema de desafio";
+    document.getElementById("modalSeloNome").textContent = nome;
+    titulo.hidden = false;
+    titulo.textContent = rara ? "Conclusão rara" : "Participação";
+    descricao.hidden = false;
+    descricao.textContent = rara
+        ? "Conquistaste esta medalha ao atingir a tua meta diária em cada um dos sete dias consecutivos da Semana da Resistência, com a conquista validada pelo gestor."
+        : "Esta plaqueta é a tua primeira conquista nos desafios. Recebeste-a ao inscrever-te e fica guardada na tua coleção.";
+    document.getElementById("modalSeloEstado").textContent = rara
+        ? "Medalha conquistada e registada no teu perfil."
+        : "Conquista de participação registada no teu perfil.";
+
+    focoAnteriorModalSelo = botao;
+    modal.classList.remove("aberto");
+    modal.hidden = false;
+    requestAnimationFrame(function () {
+        modal.classList.add("aberto");
+        document.getElementById("fecharModalSelo").focus();
+    });
 }
 
 carregarEmblemasDeDesafios();

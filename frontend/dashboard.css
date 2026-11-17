@@ -62,24 +62,27 @@ body.dashboard {
 .dashboard .card-oraculo { grid-area: oraculo; text-align: center; }
 .dashboard .conquistas-desafios-mini { margin-top: 12px; padding-top: 11px; border-top: 1px solid rgba(153, 129, 82, .32); }
 .dashboard .conquistas-desafios-mini h3 { margin: 0 0 7px; color: var(--castanho); font-size: .9rem; font-weight: 800; }
-.dashboard .mensagem-conquistas-desafios { margin: 0; color: var(--castanho); font-size: .8rem; }
-.dashboard .lista-conquistas-desafios { display: flex; flex-wrap: wrap; gap: 7px; }
+.dashboard .mensagem-conquistas-desafios { margin: 0 0 7px; color: var(--castanho); font-size: .8rem; }
+.dashboard .mensagem-conquistas-desafios[hidden] { display: none; }
+.dashboard .lista-conquistas-desafios { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
 .dashboard .conquista-desafio-mini {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    max-width: 100%;
-    padding: 5px 9px 5px 5px;
-    color: var(--verde-escuro);
-    font-size: .78rem;
-    font-weight: 800;
-    background: rgba(255, 250, 240, .8);
-    border: 1px solid rgba(153, 129, 82, .42);
-    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    margin: 0;
+    padding: 4px;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    box-shadow: none;
+    cursor: pointer;
+    transition: transform .16s ease, filter .16s ease;
 }
-.dashboard .conquista-desafio-mini img { width: 36px; height: 36px; flex: 0 0 36px; object-fit: contain; }
-.dashboard .conquista-desafio-mini > span:last-child { min-width: 0; overflow-wrap: anywhere; }
-.dashboard .conquista-desafio-mini.raro img { filter: drop-shadow(0 0 5px rgba(218, 172, 37, .7)); }
+.dashboard .conquista-desafio-mini:hover { transform: translateY(-2px); filter: drop-shadow(0 2px 5px rgba(70, 84, 57, .28)); }
+.dashboard .conquista-desafio-mini:focus-visible { outline: 2px solid var(--verde-escuro); outline-offset: 2px; }
+.dashboard .conquista-desafio-mini img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.dashboard .conquista-desafio-mini.raro img { filter: drop-shadow(0 0 5px rgba(218, 172, 37, .68)); }
 
 .dashboard .card {
     margin: 0;
