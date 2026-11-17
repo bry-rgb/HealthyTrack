@@ -39,7 +39,6 @@ As imagens abaixo mostram o painel de hidratação, o calendário e os selos. S�
 - Utilizadores podem participar em vários desafios e sair quando quiserem.
 - Participações guardadas numa tabela de ligação, com prevenção de duplicados.
 - Plaqueta de participação atribuída ao inscrever-se e medalha rara opcional, avaliada pelo gestor após sete dias consecutivos a cumprir a meta diária.
-- Coleção de emblemas no dashboard: a plaqueta aparece após a primeira participação e as medalhas raras após aprovação do gestor.
 - [Diagrama entidade-relacionamento](docs/diagrama-er.md).
 
 ### Manutenção
