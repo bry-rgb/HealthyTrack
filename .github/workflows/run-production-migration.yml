@@ -26,10 +26,10 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Obter código da branch de segurança
+      - name: Obter código da branch principal
         uses: actions/checkout@v4
         with:
-          ref: security/helmet-headers
+          ref: master
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4

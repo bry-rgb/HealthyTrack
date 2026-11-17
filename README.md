@@ -38,6 +38,7 @@ As imagens abaixo mostram o painel de hidratação, o calendário e os selos. S�
 - Gestores podem criar, editar e apagar os seus próprios desafios.
 - Utilizadores podem participar em vários desafios e sair quando quiserem.
 - Participações guardadas numa tabela de ligação, com prevenção de duplicados.
+- Plaqueta de participação atribuída ao inscrever-se e medalha rara opcional, avaliada pelo gestor após sete dias consecutivos a cumprir a meta diária.
 - [Diagrama entidade-relacionamento](docs/diagrama-er.md).
 
 ### Manutenção
@@ -144,6 +145,8 @@ A aplicação está publicada na Vercel:
 - Base de dados PostgreSQL: Neon.
 
 O front-end encaminha as chamadas `/api` para a API publicada. As migrações pendentes devem ser aplicadas à base de dados de produção com `npm run migrate:up`, usando `DATABASE_URL` configurada apenas no ambiente local seguro. Nunca publiques a URL de conexão.
+
+Antes de utilizar os emblemas de desafios em produção, aplica também a migração `1794400000000_add-emblemas-desafios` à Neon Production. A migração cria os campos de configuração e avaliação e a tabela dos emblemas; não apaga registos de hidratação nem contas.
 
 ## Estado da entrega
 

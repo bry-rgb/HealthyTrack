@@ -36,6 +36,9 @@ Referência das rotas implementadas em `backend/server.js`.
 | `DELETE` | `/api/desafios/:id` | Gestor proprietário | Apaga um desafio criado pelo gestor. |
 | `POST` | `/api/desafios/:id/participacao` | Utilizador | Adere a um desafio. |
 | `DELETE` | `/api/desafios/:id/participacao` | Utilizador | Sai de um desafio. |
+| `GET` | `/api/desafios/:id/emblemas` | Utilizador inscrito ou ex-inscrito | Consulta emblemas e progresso pessoal. |
+| `GET` | `/api/desafios/:id/participantes` | Gestor proprietário | Consulta progresso dos participantes num desafio com medalha rara. |
+| `PUT` | `/api/desafios/:id/participantes/:usuarioId/emblema` | Gestor proprietário | Regista a avaliação da medalha rara após o desafio. |
 
 ## Conta e sessão
 
@@ -166,7 +169,7 @@ Os perfis são `utilizador` e `gestor_desafios`. O backend confirma o perfil atu
 }
 ```
 
-`participa` indica se a conta atual está inscrita; `total_participantes` é a contagem total.
+`participa` indica se a conta atual está inscrita; `total_participantes` é a contagem total. `emblema_raro` só é devolvido ao gestor proprietário e a utilizadores que participam ou participaram; quem ainda não se inscreveu vê apenas o desafio. `tem_plaqueta` e `medalha_rara_conquistada` indicam os emblemas da conta atual.
 
 ### Criar, editar e apagar desafios
 
@@ -177,11 +180,12 @@ As três operações exigem perfil `gestor_desafios` e origem permitida nos pedi
   "titulo": "Semana da Hidratação",
   "descricao": "Regista a tua hidratação durante sete dias.",
   "data_inicio": "2026-11-15",
-  "data_fim": "2026-11-22"
+  "data_fim": "2026-11-21",
+  "emblema_raro": "semana-resistencia"
 }
 ```
 
-O título deve ter entre 3 e 100 caracteres; a descrição é obrigatória e tem até 2000 caracteres; as datas têm de ser datas válidas no formato `AAAA-MM-DD`, e a data final não pode anteceder a inicial.
+O título deve ter entre 3 e 100 caracteres; a descrição é obrigatória e tem até 2000 caracteres; as datas têm de ser datas válidas no formato `AAAA-MM-DD`, e a data final não pode anteceder a inicial. `emblema_raro` é opcional; `semana-resistencia` exige um período de exatamente sete dias. Depois de alguém se inscrever, as datas e o emblema já não podem ser alterados.
 
 - `POST /api/desafios`: `201` e o desafio criado.
 - `PUT /api/desafios/:id`: `200` e o desafio atualizado.
@@ -195,6 +199,8 @@ As operações de participação estão disponíveis para o perfil `utilizador`.
 - `POST /api/desafios/:id/participacao`: adere ao desafio. Primeira adesão responde `201`; repetir a adesão responde `200` sem criar duplicado.
 - `DELETE /api/desafios/:id/participacao`: remove a adesão e responde `200`. Se a conta não estava inscrita, responde também `200` com uma mensagem informativa.
 - ID inválido: `400`; desafio inexistente: `404`; gestor ou sessão ausente: `403` ou `401`, respetivamente.
+
+Inscrever-se atribui uma plaqueta de participação. A plaqueta fica guardada mesmo se a pessoa sair do desafio. Para a medalha rara, `GET /api/desafios/:id/emblemas` devolve o progresso diário apenas a quem já se inscreveu; `GET /api/desafios/:id/participantes` é exclusivo do gestor que criou o desafio; após o fim, esse gestor pode enviar `{"estado":"conquistado"}` ou `{"estado":"nao_conquistado"}` para o endpoint `PUT`. A medalha só pode ser concedida se a meta diária tiver sido atingida nos sete dias.
 
 ## Códigos de estado comuns
 

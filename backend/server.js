@@ -359,11 +359,76 @@ function validarDadosDesafio(dados) {
     if (dados.data_fim < dados.data_inicio) {
         return "A data de fim não pode ser anterior à data de início";
     }
+    const emblemaRaro = dados.emblema_raro == null || dados.emblema_raro === ""
+        ? null
+        : dados.emblema_raro;
+    if (emblemaRaro !== null && emblemaRaro !== "semana-resistencia") {
+        return "O emblema raro selecionado não é válido";
+    }
+    if (emblemaRaro) {
+        const dias = (Date.parse(dados.data_fim + "T00:00:00.000Z") -
+            Date.parse(dados.data_inicio + "T00:00:00.000Z")) / 86400000 + 1;
+        if (dias !== 7) {
+            return "A medalha Semana da Resistência exige um desafio de exatamente 7 dias";
+        }
+    }
     return null;
 }
 
 function idDesafioValido(valor) {
     return /^\d+$/.test(valor) && Number(valor) > 0;
+}
+
+async function consultarDiasMetaDesafio(desafioId, utilizadorId, metaDiaria) {
+    const resultado = await pool.query(
+        `WITH intervalo AS (
+            SELECT data_inicio, data_fim
+            FROM desafios
+            WHERE id = $1
+        ), dias AS (
+            SELECT generate_series(
+                intervalo.data_inicio::timestamp,
+                intervalo.data_fim::timestamp,
+                INTERVAL '1 day'
+            )::date AS data
+            FROM intervalo
+        ), totais AS (
+            SELECT registros.horario::date AS data,
+                SUM(registros.quantidade) AS total_litros
+            FROM registro_agua AS registros
+            JOIN intervalo ON TRUE
+            WHERE registros.usuario_id = $2
+              AND registros.horario >= intervalo.data_inicio
+              AND registros.horario < intervalo.data_fim + INTERVAL '1 day'
+            GROUP BY registros.horario::date
+        )
+        SELECT to_char(dias.data, 'YYYY-MM-DD') AS data,
+            COALESCE(totais.total_litros, 0)::numeric(10,2) AS total_litros,
+            $3::numeric(6,2) AS meta_diaria,
+            COALESCE(totais.total_litros, 0) >= $3::numeric AS meta_cumprida,
+            CASE
+                WHEN dias.data > CURRENT_DATE THEN 'por_iniciar'
+                WHEN dias.data = CURRENT_DATE
+                    AND COALESCE(totais.total_litros, 0) < $3::numeric THEN 'em_curso'
+                WHEN COALESCE(totais.total_litros, 0) >= $3::numeric THEN 'atingida'
+                ELSE 'nao_atingida'
+            END AS estado
+        FROM dias
+        LEFT JOIN totais ON totais.data = dias.data
+        ORDER BY dias.data`,
+        [desafioId, utilizadorId, metaDiaria]
+    );
+    const dias = resultado.rows.map((dia) => ({
+        ...dia,
+        total_litros: Number(dia.total_litros),
+        meta_diaria: Number(dia.meta_diaria),
+        meta_cumprida: Boolean(dia.meta_cumprida)
+    }));
+    return {
+        dias,
+        dias_meta_cumprida: dias.filter((dia) => dia.meta_cumprida).length,
+        dias_no_desafio: dias.length
+    };
 }
 
 
@@ -970,8 +1035,18 @@ app.get("/api/desafios", verificarToken, async function (req, res) {
             pool.query(
                 "SELECT d.id, d.titulo, d.descricao, d.data_inicio, d.data_fim, " +
                 "d.gestor_id, u.nome AS gestor_nome, d.criado_em, " +
+                "CASE WHEN d.gestor_id = $1 OR EXISTS (" +
+                "SELECT 1 FROM participacoes_desafios AS p " +
+                "WHERE p.desafio_id = d.id AND p.usuario_id = $1) OR EXISTS (" +
+                "SELECT 1 FROM emblemas_desafios_utilizadores AS e " +
+                "WHERE e.desafio_id = d.id AND e.usuario_id = $1 AND e.tipo = 'participacao') " +
+                "THEN d.emblema_raro ELSE NULL END AS emblema_raro, " +
                 "EXISTS (SELECT 1 FROM participacoes_desafios AS p " +
                 "WHERE p.desafio_id = d.id AND p.usuario_id = $1) AS participa, " +
+                "EXISTS (SELECT 1 FROM emblemas_desafios_utilizadores AS e " +
+                "WHERE e.desafio_id = d.id AND e.usuario_id = $1 AND e.tipo = 'participacao') AS tem_plaqueta, " +
+                "EXISTS (SELECT 1 FROM emblemas_desafios_utilizadores AS e " +
+                "WHERE e.desafio_id = d.id AND e.usuario_id = $1 AND e.tipo = 'semana-resistencia') AS medalha_rara_conquistada, " +
                 "(SELECT COUNT(*)::int FROM participacoes_desafios AS p " +
                 "WHERE p.desafio_id = d.id) AS total_participantes " +
                 "FROM desafios AS d JOIN usuarios AS u ON u.id = d.gestor_id " +
@@ -1000,24 +1075,53 @@ app.post("/api/desafios/:id/participacao", verificarToken, exigirUtilizador, asy
         return;
     }
     try {
-        const resultado = await pool.query(
-            "INSERT INTO participacoes_desafios (desafio_id, usuario_id) " +
-            "SELECT id, $2 FROM desafios WHERE id = $1 " +
-            "ON CONFLICT (desafio_id, usuario_id) DO NOTHING " +
-            "RETURNING desafio_id",
+        const desafio = await pool.query(
+            "SELECT id, data_inicio::text AS data_inicio, data_fim::text AS data_fim, " +
+            "emblema_raro, CURRENT_DATE::text AS hoje FROM desafios WHERE id = $1",
+            [Number(req.params.id)]
+        );
+        if (desafio.rows.length === 0) {
+            res.status(404).json({ mensagem: "Desafio não encontrado" });
+            return;
+        }
+        const dadosDesafio = desafio.rows[0];
+        const participacaoExistente = await pool.query(
+            "SELECT 1 FROM participacoes_desafios WHERE desafio_id = $1 AND usuario_id = $2",
             [Number(req.params.id), req.usuario.id]
         );
-        if (resultado.rows.length === 0) {
-            const existente = await pool.query(
-                "SELECT 1 FROM desafios WHERE id = $1",
-                [Number(req.params.id)]
-            );
-            if (existente.rows.length === 0) {
-                res.status(404).json({ mensagem: "Desafio não encontrado" });
-                return;
-            }
+        if (participacaoExistente.rows.length > 0) {
+            res.json({ mensagem: "Já estás a participar neste desafio" });
+            return;
         }
-        res.status(resultado.rows.length ? 201 : 200).json({ mensagem: "Participação registada" });
+        if (dadosDesafio.emblema_raro && dadosDesafio.hoje > dadosDesafio.data_inicio) {
+            res.status(409).json({ mensagem: "As inscrições para este desafio já terminaram" });
+            return;
+        }
+
+        const resultado = await pool.query(
+            `WITH inscricao AS (
+                INSERT INTO participacoes_desafios (desafio_id, usuario_id, meta_diaria_alvo)
+                SELECT d.id, u.id, u.meta_diaria
+                FROM desafios AS d
+                JOIN usuarios AS u ON u.id = $2
+                WHERE d.id = $1
+                ON CONFLICT (desafio_id, usuario_id) DO NOTHING
+                RETURNING desafio_id, usuario_id
+            ), emblema AS (
+                INSERT INTO emblemas_desafios_utilizadores (desafio_id, usuario_id, tipo)
+                SELECT desafio_id, usuario_id, 'participacao'
+                FROM inscricao
+                ON CONFLICT (desafio_id, usuario_id, tipo) DO NOTHING
+                RETURNING desafio_id
+            )
+            SELECT EXISTS (SELECT 1 FROM inscricao) AS inscricao_criada`,
+            [Number(req.params.id), req.usuario.id]
+        );
+        if (!resultado.rows[0]?.inscricao_criada) {
+            res.status(409).json({ mensagem: "Não foi possível registar a participação" });
+            return;
+        }
+        res.status(201).json({ mensagem: "Participação registada e plaqueta atribuída" });
     } catch (erro) {
         console.error("Erro ao aderir ao desafio:", erro);
         res.status(500).json({ mensagem: "Erro ao registar participação" });
@@ -1051,6 +1155,179 @@ app.delete("/api/desafios/:id/participacao", verificarToken, exigirUtilizador, a
     }
 });
 
+// Os emblemas e o progresso só são devolvidos a quem já se inscreveu.
+app.get("/api/desafios/:id/emblemas", verificarToken, exigirUtilizador, async function (req, res) {
+    if (!idDesafioValido(req.params.id)) {
+        res.status(400).json({ mensagem: "Identificador de desafio inválido" });
+        return;
+    }
+    try {
+        const resultado = await pool.query(
+            `SELECT d.id, d.emblema_raro, p.meta_diaria_alvo, p.emblema_raro_estado,
+                (p.usuario_id IS NOT NULL) AS participa,
+                EXISTS (
+                    SELECT 1 FROM emblemas_desafios_utilizadores AS e
+                    WHERE e.desafio_id = d.id AND e.usuario_id = $2 AND e.tipo = 'participacao'
+                ) AS tem_plaqueta,
+                EXISTS (
+                    SELECT 1 FROM emblemas_desafios_utilizadores AS e
+                    WHERE e.desafio_id = d.id AND e.usuario_id = $2 AND e.tipo = 'semana-resistencia'
+                ) AS medalha_rara_conquistada
+             FROM desafios AS d
+             LEFT JOIN participacoes_desafios AS p
+                ON p.desafio_id = d.id AND p.usuario_id = $2
+             WHERE d.id = $1
+               AND (p.usuario_id IS NOT NULL OR EXISTS (
+                    SELECT 1 FROM emblemas_desafios_utilizadores AS e
+                    WHERE e.desafio_id = d.id AND e.usuario_id = $2 AND e.tipo = 'participacao'
+               ))`,
+            [Number(req.params.id), req.usuario.id]
+        );
+        if (resultado.rows.length === 0) {
+            res.status(403).json({ mensagem: "Inscreve-te no desafio para veres os emblemas" });
+            return;
+        }
+        const dados = resultado.rows[0];
+        let progresso = { dias: [], dias_meta_cumprida: 0, dias_no_desafio: 0 };
+        if (dados.participa && dados.emblema_raro === "semana-resistencia") {
+            progresso = await consultarDiasMetaDesafio(
+                Number(req.params.id),
+                req.usuario.id,
+                Number(dados.meta_diaria_alvo)
+            );
+        }
+        res.json({
+            participa: dados.participa,
+            emblema_raro: dados.emblema_raro,
+            tem_plaqueta: dados.tem_plaqueta,
+            medalha_rara_conquistada: dados.medalha_rara_conquistada,
+            estado_emblema_raro: dados.emblema_raro_estado || null,
+            ...progresso
+        });
+    } catch (erro) {
+        console.error("Erro ao consultar emblemas do desafio:", erro);
+        res.status(500).json({ mensagem: "Erro ao consultar emblemas do desafio" });
+    }
+});
+
+// Só o gestor que criou o desafio pode rever o progresso dos participantes.
+app.get("/api/desafios/:id/participantes", verificarToken, exigirGestorDesafios, async function (req, res) {
+    if (!idDesafioValido(req.params.id)) {
+        res.status(400).json({ mensagem: "Identificador de desafio inválido" });
+        return;
+    }
+    try {
+        const desafio = await pool.query(
+            "SELECT id, emblema_raro FROM desafios WHERE id = $1 AND gestor_id = $2",
+            [Number(req.params.id), req.usuario.id]
+        );
+        if (desafio.rows.length === 0) {
+            res.status(404).json({ mensagem: "Desafio não encontrado ou não gerido por este utilizador" });
+            return;
+        }
+        if (desafio.rows[0].emblema_raro !== "semana-resistencia") {
+            res.status(400).json({ mensagem: "Este desafio não tem uma medalha rara para avaliar" });
+            return;
+        }
+        const participantes = await pool.query(
+            `SELECT p.usuario_id, u.nome, p.meta_diaria_alvo,
+                p.emblema_raro_estado, p.emblema_raro_avaliado_em
+             FROM participacoes_desafios AS p
+             JOIN usuarios AS u ON u.id = p.usuario_id
+             WHERE p.desafio_id = $1
+             ORDER BY u.nome, p.usuario_id`,
+            [Number(req.params.id)]
+        );
+        const comProgresso = await Promise.all(participantes.rows.map(async (participante) => ({
+            ...participante,
+            meta_diaria_alvo: Number(participante.meta_diaria_alvo),
+            ...await consultarDiasMetaDesafio(
+                Number(req.params.id),
+                participante.usuario_id,
+                Number(participante.meta_diaria_alvo)
+            )
+        })));
+        res.json({ participantes: comProgresso });
+    } catch (erro) {
+        console.error("Erro ao consultar participantes do desafio:", erro);
+        res.status(500).json({ mensagem: "Erro ao consultar participantes do desafio" });
+    }
+});
+
+app.put("/api/desafios/:id/participantes/:usuarioId/emblema", verificarToken, exigirGestorDesafios, async function (req, res) {
+    if (!idDesafioValido(req.params.id) || !idDesafioValido(req.params.usuarioId)) {
+        res.status(400).json({ mensagem: "Identificador inválido" });
+        return;
+    }
+    const estado = req.body?.estado;
+    if (!["conquistado", "nao_conquistado"].includes(estado)) {
+        res.status(400).json({ mensagem: "Indica se o emblema foi conquistado ou não conquistado" });
+        return;
+    }
+    try {
+        const desafio = await pool.query(
+            "SELECT id, emblema_raro, data_fim::text AS data_fim, CURRENT_DATE::text AS hoje " +
+            "FROM desafios WHERE id = $1 AND gestor_id = $2",
+            [Number(req.params.id), req.usuario.id]
+        );
+        if (desafio.rows.length === 0) {
+            res.status(404).json({ mensagem: "Desafio não encontrado ou não gerido por este utilizador" });
+            return;
+        }
+        if (desafio.rows[0].emblema_raro !== "semana-resistencia") {
+            res.status(400).json({ mensagem: "Este desafio não tem uma medalha rara para avaliar" });
+            return;
+        }
+        if (desafio.rows[0].hoje <= desafio.rows[0].data_fim) {
+            res.status(409).json({ mensagem: "A avaliação só fica disponível depois dos sete dias do desafio" });
+            return;
+        }
+        const participacao = await pool.query(
+            "SELECT meta_diaria_alvo FROM participacoes_desafios WHERE desafio_id = $1 AND usuario_id = $2",
+            [Number(req.params.id), Number(req.params.usuarioId)]
+        );
+        if (participacao.rows.length === 0) {
+            res.status(404).json({ mensagem: "Participação não encontrada" });
+            return;
+        }
+        if (estado === "conquistado") {
+            const progresso = await consultarDiasMetaDesafio(
+                Number(req.params.id),
+                Number(req.params.usuarioId),
+                Number(participacao.rows[0].meta_diaria_alvo)
+            );
+            if (progresso.dias_no_desafio !== 7 || progresso.dias_meta_cumprida !== 7) {
+                res.status(409).json({ mensagem: "A medalha só pode ser concedida com a meta atingida nos sete dias" });
+                return;
+            }
+        }
+        await pool.query(
+            "UPDATE participacoes_desafios SET emblema_raro_estado = $1, " +
+            "emblema_raro_avaliado_por = $2, emblema_raro_avaliado_em = CURRENT_TIMESTAMP " +
+            "WHERE desafio_id = $3 AND usuario_id = $4",
+            [estado, req.usuario.id, Number(req.params.id), Number(req.params.usuarioId)]
+        );
+        if (estado === "conquistado") {
+            await pool.query(
+                "INSERT INTO emblemas_desafios_utilizadores (desafio_id, usuario_id, tipo, concedido_por) " +
+                "VALUES ($1, $2, 'semana-resistencia', $3) " +
+                "ON CONFLICT (desafio_id, usuario_id, tipo) DO UPDATE SET concedido_por = EXCLUDED.concedido_por",
+                [Number(req.params.id), Number(req.params.usuarioId), req.usuario.id]
+            );
+        } else {
+            await pool.query(
+                "DELETE FROM emblemas_desafios_utilizadores " +
+                "WHERE desafio_id = $1 AND usuario_id = $2 AND tipo = 'semana-resistencia'",
+                [Number(req.params.id), Number(req.params.usuarioId)]
+            );
+        }
+        res.json({ mensagem: "Resultado do emblema atualizado", estado });
+    } catch (erro) {
+        console.error("Erro ao avaliar emblema do desafio:", erro);
+        res.status(500).json({ mensagem: "Erro ao avaliar emblema do desafio" });
+    }
+});
+
 app.post("/api/desafios", verificarToken, exigirGestorDesafios, async function (req, res) {
     const erroValidacao = validarDadosDesafio(req.body);
     if (erroValidacao) {
@@ -1059,10 +1336,17 @@ app.post("/api/desafios", verificarToken, exigirGestorDesafios, async function (
     }
     try {
         const resultado = await pool.query(
-            "INSERT INTO desafios (titulo, descricao, data_inicio, data_fim, gestor_id) " +
-            "VALUES ($1, $2, $3, $4, $5) " +
-            "RETURNING id, titulo, descricao, data_inicio, data_fim, gestor_id, criado_em",
-            [req.body.titulo.trim(), req.body.descricao.trim(), req.body.data_inicio, req.body.data_fim, req.usuario.id]
+            "INSERT INTO desafios (titulo, descricao, data_inicio, data_fim, gestor_id, emblema_raro) " +
+            "VALUES ($1, $2, $3, $4, $5, $6) " +
+            "RETURNING id, titulo, descricao, data_inicio, data_fim, gestor_id, emblema_raro, criado_em",
+            [
+                req.body.titulo.trim(),
+                req.body.descricao.trim(),
+                req.body.data_inicio,
+                req.body.data_fim,
+                req.usuario.id,
+                req.body.emblema_raro || null
+            ]
         );
         res.status(201).json(resultado.rows[0]);
     } catch (erro) {
@@ -1082,11 +1366,43 @@ app.put("/api/desafios/:id", verificarToken, exigirGestorDesafios, async functio
         return;
     }
     try {
+        const atual = await pool.query(
+            `SELECT d.data_inicio::text AS data_inicio, d.data_fim::text AS data_fim,
+                d.emblema_raro,
+                EXISTS (
+                    SELECT 1 FROM participacoes_desafios AS p
+                    WHERE p.desafio_id = d.id
+                ) AS tem_participantes
+             FROM desafios AS d
+             WHERE d.id = $1 AND d.gestor_id = $2`,
+            [Number(req.params.id), req.usuario.id]
+        );
+        if (atual.rows.length === 0) {
+            res.status(404).json({ mensagem: "Desafio não encontrado ou não gerido por este utilizador" });
+            return;
+        }
+        const desafioAtual = atual.rows[0];
+        const emblemaNovo = req.body.emblema_raro || null;
+        if (desafioAtual.tem_participantes &&
+            (String(desafioAtual.data_inicio).slice(0, 10) !== req.body.data_inicio ||
+             String(desafioAtual.data_fim).slice(0, 10) !== req.body.data_fim ||
+             desafioAtual.emblema_raro !== emblemaNovo)) {
+            res.status(409).json({ mensagem: "Não podes alterar as datas ou o emblema depois de haver inscrições" });
+            return;
+        }
         const resultado = await pool.query(
-            "UPDATE desafios SET titulo = $1, descricao = $2, data_inicio = $3, data_fim = $4 " +
-            "WHERE id = $5 AND gestor_id = $6 " +
-            "RETURNING id, titulo, descricao, data_inicio, data_fim, gestor_id, criado_em",
-            [req.body.titulo.trim(), req.body.descricao.trim(), req.body.data_inicio, req.body.data_fim, Number(req.params.id), req.usuario.id]
+            "UPDATE desafios SET titulo = $1, descricao = $2, data_inicio = $3, data_fim = $4, emblema_raro = $5 " +
+            "WHERE id = $6 AND gestor_id = $7 " +
+            "RETURNING id, titulo, descricao, data_inicio, data_fim, gestor_id, emblema_raro, criado_em",
+            [
+                req.body.titulo.trim(),
+                req.body.descricao.trim(),
+                req.body.data_inicio,
+                req.body.data_fim,
+                emblemaNovo,
+                Number(req.params.id),
+                req.usuario.id
+            ]
         );
         if (resultado.rows.length === 0) {
             res.status(404).json({ mensagem: "Desafio não encontrado ou não gerido por este utilizador" });

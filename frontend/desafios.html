@@ -34,6 +34,25 @@
                     <div><label for="dataInicioDesafio">Data de início</label><input id="dataInicioDesafio" name="data_inicio" type="date" required></div>
                     <div><label for="dataFimDesafio">Data de fim</label><input id="dataFimDesafio" name="data_fim" type="date" required></div>
                 </div>
+                <fieldset class="configuracao-emblemas">
+                    <legend>Emblemas do desafio</legend>
+                    <label for="emblemaRaroDesafio">Medalha rara (opcional)</label>
+                    <select id="emblemaRaroDesafio" name="emblema_raro">
+                        <option value="">Sem medalha rara</option>
+                        <option value="semana-resistencia">Semana da Resistência · 7 dias</option>
+                    </select>
+                    <p>A plaqueta de participação é atribuída automaticamente quando alguém se inscreve.</p>
+                    <div class="pre-visualizacao-emblemas">
+                        <div class="pre-visualizacao-emblema">
+                            <img src="assets/selos/semana-resistencia-rara.png" alt="Pré-visualização da medalha rara Semana da Resistência">
+                            <span>Medalha rara de conclusão</span>
+                        </div>
+                        <div class="pre-visualizacao-emblema">
+                            <img src="assets/selos/plaqueta-participacao.png" alt="Pré-visualização da plaqueta de participação">
+                            <span>Plaqueta de participação</span>
+                        </div>
+                    </div>
+                </fieldset>
                 <div class="acoes-formulario">
                     <button id="guardarDesafio" type="submit">Criar desafio</button>
                     <button id="cancelarEdicaoDesafio" type="button" class="botao-secundario" hidden>Cancelar edição</button>
